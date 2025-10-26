@@ -14,8 +14,8 @@ backBtn.addEventListener('click', () => {
     tg.HapticFeedback.impactOccurred('light');
   }
   
-  // Go back or close
-  window.history.back();
+  // Go to home page
+  window.location.href = '/home.html';
 });
 
 // Level selector handler
