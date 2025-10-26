@@ -3,9 +3,12 @@ module.exports = {
     name: 'chinese-learning-bot',
     script: './bot.js',
     instances: 1,
+    exec_mode: 'fork', // Use fork mode instead of cluster for Telegram polling
     autorestart: true,
     watch: false,
-    max_memory_restart: '1G',
+    max_memory_restart: '500M',
+    max_restarts: 10, // Limit restarts
+    min_uptime: '10s', // Minimum uptime before considered stable
     env: {
       NODE_ENV: 'production'
     },

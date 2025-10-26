@@ -3,7 +3,21 @@ const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
 const db = require('./database');
 
-const bot = new TelegramBot(config.telegramBotToken, { polling: true });
+const bot = new TelegramBot(config.telegramBotToken, { 
+  polling: {
+    interval: 300,
+    autoStart: true,
+    params: {
+      timeout: 10
+    }
+  }
+});
+
+// Handle polling errors
+bot.on('polling_error', (error) => {
+  console.error('Telegram polling error:', error.code, error.message);
+  // Don't crash on polling errors
+});
 const app = express();
 
 // Serve static files
