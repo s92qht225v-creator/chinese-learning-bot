@@ -334,6 +334,12 @@
                             <option value="6">HSK 6</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label>Assign to Lesson (optional)</label>
+                        <select id="vocabLesson">
+                            <option value="">No specific lesson</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Audio URL (optional)</label>
@@ -351,6 +357,7 @@
                             <th>Pinyin</th>
                             <th>English</th>
                             <th>HSK</th>
+                            <th>Lesson</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -629,7 +636,7 @@
             document.getElementById(tabName + 'Panel').classList.add('active');
             
             if (tabName === 'analytics') loadAnalytics();
-            if (tabName === 'vocabulary') loadVocabulary();
+            if (tabName === 'vocabulary') { loadVocabulary(); loadLessonsForVocab(); }
             if (tabName === 'lessons') loadLessons();
             if (tabName === 'dialogues') { loadLessonsForSelect(); loadDialogues(); }
             if (tabName === 'grammar') { loadLessonsForSelect(); loadGrammar(); }
@@ -641,6 +648,7 @@
         async function loadDashboard() {
             await loadAnalytics();
             await loadVocabulary();
+            await loadLessonsForVocab();
         }
 
         // Load analytics
@@ -669,12 +677,36 @@
             }
         }
 
+        // Load lessons for vocabulary dropdown
+        async function loadLessonsForVocab() {
+            try {
+                const { data, error } = await supabase
+                    .from('lessons')
+                    .select('id, title, hsk_level, lesson_number')
+                    .order('hsk_level', { ascending: true })
+                    .order('lesson_number', { ascending: true });
+                
+                if (error) throw error;
+                
+                const select = document.getElementById('vocabLesson');
+                select.innerHTML = '<option value="">No specific lesson</option>' +
+                    data.map(lesson => `
+                        <option value="${lesson.id}">HSK ${lesson.hsk_level} - Lesson ${lesson.lesson_number}: ${lesson.title}</option>
+                    `).join('');
+            } catch (error) {
+                console.error('Error loading lessons:', error);
+            }
+        }
+
         // Load vocabulary
         async function loadVocabulary() {
             try {
                 const { data, error } = await supabase
                     .from('vocabulary')
-                    .select('*')
+                    .select(`
+                        *,
+                        lessons (title, lesson_number)
+                    `)
                     .order('hsk_level', { ascending: true });
 
                 if (error) throw error;
@@ -686,8 +718,9 @@
                         <td>${word.pinyin}</td>
                         <td>${word.english}</td>
                         <td>HSK ${word.hsk_level}</td>
+                        <td>${word.lessons ? `L${word.lessons.lesson_number}: ${word.lessons.title}` : '<span style="color:#999">None</span>'}</td>
                         <td class="actions">
-                            <button class="btn btn-small" onclick="editVocabulary(${word.id}, '${word.chinese.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${word.pinyin.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${word.english.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${word.hsk_level})">Edit</button>
+                            <button class="btn btn-small" onclick="editVocabulary(${word.id}, '${word.chinese.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${word.pinyin.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${word.english.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${word.hsk_level}, ${word.lesson_id || 'null'})">Edit</button>
                             <button class="btn btn-danger btn-small" onclick="deleteVocabulary(${word.id})">Delete</button>
                         </td>
                     </tr>
@@ -705,11 +738,13 @@
             const editId = form.dataset.editId;
             
             try {
+                const lessonId = document.getElementById('vocabLesson').value;
                 const vocabData = {
                     chinese: document.getElementById('chinese').value,
                     pinyin: document.getElementById('pinyin').value,
                     english: document.getElementById('english').value,
                     hsk_level: parseInt(document.getElementById('hskLevel').value),
+                    lesson_id: lessonId ? parseInt(lessonId) : null,
                     audio_url: document.getElementById('vocabAudioUrl').value || null
                 };
 
@@ -751,11 +786,12 @@
         }
 
         // Edit vocabulary
-        async function editVocabulary(id, chinese, pinyin, english, hskLevel) {
+        async function editVocabulary(id, chinese, pinyin, english, hskLevel, lessonId) {
             document.getElementById('chinese').value = chinese;
             document.getElementById('pinyin').value = pinyin;
             document.getElementById('english').value = english;
             document.getElementById('hskLevel').value = hskLevel;
+            document.getElementById('vocabLesson').value = lessonId || '';
             
             // Change form to edit mode
             const form = document.getElementById('vocabularyForm');
