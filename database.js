@@ -141,8 +141,190 @@ const db = {
     };
   },
 
-  // ========== ADMIN METHODS ==========
+  // ========== LESSONS ==========
+  async getLessons() {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from('lessons')
+      .select('*')
+      .order('hsk_level', { ascending: true })
+      .order('lesson_number', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  },
 
+  async addLesson(lesson) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('lessons')
+      .insert([lesson])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateLesson(id, lesson) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('lessons')
+      .update(lesson)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteLesson(id) {
+    if (!supabase) throw new Error('Database not configured');
+    const { error } = await supabase
+      .from('lessons')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  // ========== DIALOGUES ==========
+  async getDialogues() {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from('dialogues')
+      .select(`
+        *,
+        lessons (id, title, hsk_level, lesson_number)
+      `)
+      .order('id', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async addDialogue(dialogue) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('dialogues')
+      .insert([dialogue])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateDialogue(id, dialogue) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('dialogues')
+      .update(dialogue)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteDialogue(id) {
+    if (!supabase) throw new Error('Database not configured');
+    const { error } = await supabase
+      .from('dialogues')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  // ========== GRAMMAR ==========
+  async getGrammar() {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from('grammar_points')
+      .select(`
+        *,
+        lessons (id, title, hsk_level, lesson_number)
+      `)
+      .order('id', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async addGrammar(grammar) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('grammar_points')
+      .insert([grammar])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateGrammar(id, grammar) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('grammar_points')
+      .update(grammar)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteGrammar(id) {
+    if (!supabase) throw new Error('Database not configured');
+    const { error } = await supabase
+      .from('grammar_points')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  // ========== QUIZZES ==========
+  async getQuizzes() {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from('quizzes')
+      .select(`
+        *,
+        lessons (id, title, hsk_level, lesson_number)
+      `)
+      .order('id', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async addQuiz(quiz) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('quizzes')
+      .insert([quiz])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateQuiz(id, quiz) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error} = await supabase
+      .from('quizzes')
+      .update(quiz)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteQuiz(id) {
+    if (!supabase) throw new Error('Database not configured');
+    const { error } = await supabase
+      .from('quizzes')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  }
+};
+
+module.exports = db;
   // Add vocabulary
   async addVocabulary(word) {
     if (!supabase) return null;

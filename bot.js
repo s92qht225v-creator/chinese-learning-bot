@@ -283,6 +283,170 @@ app.get('/api/admin/stats', adminAuth, async (req, res) => {
   }
 });
 
+// ========== LESSONS API ==========
+app.get('/api/admin/lessons', adminAuth, async (req, res) => {
+  try {
+    const lessons = await db.getLessons();
+    res.json(lessons);
+  } catch (error) {
+    console.error('Error fetching lessons:', error);
+    res.status(500).json({ error: 'Failed to fetch lessons' });
+  }
+});
+
+app.post('/api/admin/lessons', adminAuth, async (req, res) => {
+  try {
+    const lesson = await db.addLesson(req.body);
+    res.json(lesson);
+  } catch (error) {
+    console.error('Error adding lesson:', error);
+    res.status(500).json({ error: 'Failed to add lesson' });
+  }
+});
+
+app.put('/api/admin/lessons/:id', adminAuth, async (req, res) => {
+  try {
+    const lesson = await db.updateLesson(req.params.id, req.body);
+    res.json(lesson);
+  } catch (error) {
+    console.error('Error updating lesson:', error);
+    res.status(500).json({ error: 'Failed to update lesson' });
+  }
+});
+
+app.delete('/api/admin/lessons/:id', adminAuth, async (req, res) => {
+  try {
+    await db.deleteLesson(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting lesson:', error);
+    res.status(500).json({ error: 'Failed to delete lesson' });
+  }
+});
+
+// ========== DIALOGUES API ==========
+app.get('/api/admin/dialogues', adminAuth, async (req, res) => {
+  try {
+    const dialogues = await db.getDialogues();
+    res.json(dialogues);
+  } catch (error) {
+    console.error('Error fetching dialogues:', error);
+    res.status(500).json({ error: 'Failed to fetch dialogues' });
+  }
+});
+
+app.post('/api/admin/dialogues', adminAuth, async (req, res) => {
+  try {
+    const dialogue = await db.addDialogue(req.body);
+    res.json(dialogue);
+  } catch (error) {
+    console.error('Error adding dialogue:', error);
+    res.status(500).json({ error: 'Failed to add dialogue' });
+  }
+});
+
+app.put('/api/admin/dialogues/:id', adminAuth, async (req, res) => {
+  try {
+    const dialogue = await db.updateDialogue(req.params.id, req.body);
+    res.json(dialogue);
+  } catch (error) {
+    console.error('Error updating dialogue:', error);
+    res.status(500).json({ error: 'Failed to update dialogue' });
+  }
+});
+
+app.delete('/api/admin/dialogues/:id', adminAuth, async (req, res) => {
+  try {
+    await db.deleteDialogue(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting dialogue:', error);
+    res.status(500).json({ error: 'Failed to delete dialogue' });
+  }
+});
+
+// ========== GRAMMAR API ==========
+app.get('/api/admin/grammar', adminAuth, async (req, res) => {
+  try {
+    const grammar = await db.getGrammar();
+    res.json(grammar);
+  } catch (error) {
+    console.error('Error fetching grammar:', error);
+    res.status(500).json({ error: 'Failed to fetch grammar' });
+  }
+});
+
+app.post('/api/admin/grammar', adminAuth, async (req, res) => {
+  try {
+    const grammar = await db.addGrammar(req.body);
+    res.json(grammar);
+  } catch (error) {
+    console.error('Error adding grammar:', error);
+    res.status(500).json({ error: 'Failed to add grammar' });
+  }
+});
+
+app.put('/api/admin/grammar/:id', adminAuth, async (req, res) => {
+  try {
+    const grammar = await db.updateGrammar(req.params.id, req.body);
+    res.json(grammar);
+  } catch (error) {
+    console.error('Error updating grammar:', error);
+    res.status(500).json({ error: 'Failed to update grammar' });
+  }
+});
+
+app.delete('/api/admin/grammar/:id', adminAuth, async (req, res) => {
+  try {
+    await db.deleteGrammar(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting grammar:', error);
+    res.status(500).json({ error: 'Failed to delete grammar' });
+  }
+});
+
+// ========== QUIZZES API ==========
+app.get('/api/admin/quizzes', adminAuth, async (req, res) => {
+  try {
+    const quizzes = await db.getQuizzes();
+    res.json(quizzes);
+  } catch (error) {
+    console.error('Error fetching quizzes:', error);
+    res.status(500).json({ error: 'Failed to fetch quizzes' });
+  }
+});
+
+app.post('/api/admin/quizzes', adminAuth, async (req, res) => {
+  try {
+    const quiz = await db.addQuiz(req.body);
+    res.json(quiz);
+  } catch (error) {
+    console.error('Error adding quiz:', error);
+    res.status(500).json({ error: 'Failed to add quiz' });
+  }
+});
+
+app.put('/api/admin/quizzes/:id', adminAuth, async (req, res) => {
+  try {
+    const quiz = await db.updateQuiz(req.params.id, req.body);
+    res.json(quiz);
+  } catch (error) {
+    console.error('Error updating quiz:', error);
+    res.status(500).json({ error: 'Failed to update quiz' });
+  }
+});
+
+app.delete('/api/admin/quizzes/:id', adminAuth, async (req, res) => {
+  try {
+    await db.deleteQuiz(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting quiz:', error);
+    res.status(500).json({ error: 'Failed to delete quiz' });
+  }
+});
+
 // Start server
 app.listen(config.port, () => {
   console.log(`✅ Bot is running...`);
