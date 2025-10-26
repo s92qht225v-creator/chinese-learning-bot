@@ -20,6 +20,19 @@ bot.on('polling_error', (error) => {
 });
 const app = express();
 
+// CORS middleware - allow requests from Telegram Mini Apps
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Telegram-User-Id, X-Telegram-Username, X-Telegram-First-Name');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Serve static files with caching
 app.use(express.static('public', {
   maxAge: '1d', // Cache static files for 1 day
