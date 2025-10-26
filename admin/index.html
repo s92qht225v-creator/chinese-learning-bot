@@ -274,6 +274,10 @@
         <div class="tabs">
             <button class="tab active" onclick="showTab('analytics')">📊 Analytics</button>
             <button class="tab" onclick="showTab('vocabulary')">📚 Vocabulary</button>
+            <button class="tab" onclick="showTab('lessons')">📖 Lessons</button>
+            <button class="tab" onclick="showTab('dialogues')">💬 Dialogues</button>
+            <button class="tab" onclick="showTab('grammar')">📝 Grammar</button>
+            <button class="tab" onclick="showTab('quizzes')">❓ Quizzes</button>
             <button class="tab" onclick="showTab('users')">👥 Users</button>
         </div>
 
@@ -350,6 +354,180 @@
             </div>
         </div>
 
+        <!-- Lessons Tab -->
+        <div id="lessonsPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Lesson Management</h2>
+            <div id="lessonMessage"></div>
+            
+            <form id="lessonForm" onsubmit="saveLesson(event)">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="lessonTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>HSK Level</label>
+                        <select id="lessonHskLevel" required>
+                            <option value="1">HSK 1</option>
+                            <option value="2">HSK 2</option>
+                            <option value="3">HSK 3</option>
+                            <option value="4">HSK 4</option>
+                            <option value="5">HSK 5</option>
+                            <option value="6">HSK 6</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Lesson Number</label>
+                        <input type="number" id="lessonNumber" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="lessonStatus" required>
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="lessonDescription">
+                </div>
+                <button type="submit" class="btn">Add Lesson</button>
+            </form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>HSK</th>
+                            <th>#</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lessonsTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Dialogues Tab -->
+        <div id="dialoguesPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Dialogue Management</h2>
+            <div id="dialogueMessage"></div>
+            
+            <form id="dialogueForm" onsubmit="saveDialogue(event)">
+                <div class="form-group">
+                    <label>Select Lesson</label>
+                    <select id="dialogueLesson" required>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dialogue Title</label>
+                    <input type="text" id="dialogueTitle" required>
+                </div>
+                <button type="submit" class="btn">Add Dialogue</button>
+            </form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Lesson</th>
+                            <th>Lines</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dialoguesTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Grammar Tab -->
+        <div id="grammarPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Grammar Management</h2>
+            <div id="grammarMessage"></div>
+            
+            <form id="grammarForm" onsubmit="saveGrammar(event)">
+                <div class="form-group">
+                    <label>Select Lesson</label>
+                    <select id="grammarLesson" required>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="grammarTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Explanation</label>
+                    <textarea id="grammarExplanation" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;" required></textarea>
+                </div>
+                <button type="submit" class="btn">Add Grammar Point</button>
+            </form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Lesson</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grammarTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quizzes Tab -->
+        <div id="quizzesPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Quiz Management</h2>
+            <div id="quizMessage"></div>
+            
+            <form id="quizForm" onsubmit="saveQuiz(event)">
+                <div class="form-group">
+                    <label>Select Lesson</label>
+                    <select id="quizLesson" required>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Question</label>
+                    <input type="text" id="quizQuestion" required>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="quizType" required>
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="fill_blank">Fill in the Blank</option>
+                        <option value="matching">Matching</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Correct Answer</label>
+                    <input type="text" id="quizAnswer" required>
+                </div>
+                <button type="submit" class="btn">Add Quiz</button>
+            </form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Question</th>
+                            <th>Type</th>
+                            <th>Lesson</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quizzesTable"></tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Users Tab -->
         <div id="usersPanel" class="panel">
             <h2 style="margin-bottom: 20px;">User Management</h2>
@@ -372,8 +550,8 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://tnpxusgdmnhixcjdpufy.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRucHh1c2dkbW5oaXhjamRwdWZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk4NzYzNTQsImV4cCI6MjA0NTQ1MjM1NH0.KYW2Y5-_B7nDzN-HVBvOATiT2jEh2LsVKp6xGJHqj3g';
+        const SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2ZW9xZWRza3piYmdjYXpwc2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0Nzk1MjYsImV4cCI6MjA3NzA1NTUyNn0.NfTfTWKNDmsmiLF_MX5XGGq48xbX8OOUWhVmb5U-VXM';
         const ADMIN_PASSWORD = 'admin123'; // Change this!
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -419,6 +597,10 @@
             
             if (tabName === 'analytics') loadAnalytics();
             if (tabName === 'vocabulary') loadVocabulary();
+            if (tabName === 'lessons') loadLessons();
+            if (tabName === 'dialogues') { loadLessonsForSelect(); loadDialogues(); }
+            if (tabName === 'grammar') { loadLessonsForSelect(); loadGrammar(); }
+            if (tabName === 'quizzes') { loadLessonsForSelect(); loadQuizzes(); }
             if (tabName === 'users') loadUsers();
         }
 
@@ -595,6 +777,293 @@
                 `).join('');
             } catch (error) {
                 console.error('Error loading users:', error);
+            }
+        }
+
+        // ========== LESSONS ==========
+        async function loadLessons() {
+            try {
+                const { data, error } = await supabase
+                    .from('lessons')
+                    .select('*')
+                    .order('hsk_level', { ascending: true })
+                    .order('lesson_number', { ascending: true });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('lessonsTable');
+                tbody.innerHTML = data?.map(lesson => `
+                    <tr>
+                        <td>${lesson.title}</td>
+                        <td>HSK ${lesson.hsk_level}</td>
+                        <td>${lesson.lesson_number}</td>
+                        <td><span style="padding:4px 8px;border-radius:4px;background:${lesson.status === 'published' ? '#d1fae5' : '#fee2e2'};color:${lesson.status === 'published' ? '#065f46' : '#991b1b'}">${lesson.status}</span></td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteLesson(${lesson.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="5">No lessons yet</td></tr>';
+            } catch (error) {
+                console.error('Error loading lessons:', error);
+            }
+        }
+
+        async function saveLesson(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('lessonMessage');
+            
+            try {
+                const { error } = await supabase
+                    .from('lessons')
+                    .insert([{
+                        title: document.getElementById('lessonTitle').value,
+                        hsk_level: parseInt(document.getElementById('lessonHskLevel').value),
+                        lesson_number: parseInt(document.getElementById('lessonNumber').value),
+                        description: document.getElementById('lessonDescription').value,
+                        status: document.getElementById('lessonStatus').value
+                    }]);
+
+                if (error) throw error;
+
+                messageEl.innerHTML = '<div class="message success">Lesson added successfully!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                event.target.reset();
+                await loadLessons();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        async function deleteLesson(id) {
+            if (!confirm('Are you sure? This will delete all dialogues, grammar, and quizzes for this lesson.')) return;
+            
+            try {
+                const { error } = await supabase.from('lessons').delete().eq('id', id);
+                if (error) throw error;
+                await loadLessons();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // ========== DIALOGUES ==========
+        async function loadLessonsForSelect() {
+            try {
+                const { data, error } = await supabase
+                    .from('lessons')
+                    .select('id, title, hsk_level, lesson_number')
+                    .order('hsk_level', { ascending: true });
+
+                if (error) throw error;
+
+                const selects = ['dialogueLesson', 'grammarLesson', 'quizLesson'];
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        select.innerHTML = '<option value="">Select a lesson</option>' + 
+                            data.map(l => `<option value="${l.id}">HSK ${l.hsk_level} - ${l.lesson_number}. ${l.title}</option>`).join('');
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading lessons for select:', error);
+            }
+        }
+
+        async function loadDialogues() {
+            try {
+                const { data, error } = await supabase
+                    .from('dialogues')
+                    .select(`
+                        *,
+                        lessons (title)
+                    `)
+                    .order('id', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('dialoguesTable');
+                tbody.innerHTML = data?.map(dialogue => `
+                    <tr>
+                        <td>${dialogue.title}</td>
+                        <td>${dialogue.lessons?.title || 'N/A'}</td>
+                        <td>0</td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteDialogue(${dialogue.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="4">No dialogues yet</td></tr>';
+            } catch (error) {
+                console.error('Error loading dialogues:', error);
+            }
+        }
+
+        async function saveDialogue(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('dialogueMessage');
+            
+            try {
+                const { error } = await supabase
+                    .from('dialogues')
+                    .insert([{
+                        lesson_id: parseInt(document.getElementById('dialogueLesson').value),
+                        title: document.getElementById('dialogueTitle').value
+                    }]);
+
+                if (error) throw error;
+
+                messageEl.innerHTML = '<div class="message success">Dialogue added!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                event.target.reset();
+                await loadDialogues();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        async function deleteDialogue(id) {
+            if (!confirm('Delete this dialogue?')) return;
+            try {
+                const { error } = await supabase.from('dialogues').delete().eq('id', id);
+                if (error) throw error;
+                await loadDialogues();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // ========== GRAMMAR ==========
+        async function loadGrammar() {
+            try {
+                const { data, error } = await supabase
+                    .from('grammar_points')
+                    .select(`
+                        *,
+                        lessons (title)
+                    `)
+                    .order('id', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('grammarTable');
+                tbody.innerHTML = data?.map(grammar => `
+                    <tr>
+                        <td>${grammar.title}</td>
+                        <td>${grammar.lessons?.title || 'N/A'}</td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteGrammar(${grammar.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="3">No grammar points yet</td></tr>';
+            } catch (error) {
+                console.error('Error loading grammar:', error);
+            }
+        }
+
+        async function saveGrammar(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('grammarMessage');
+            
+            try {
+                const { error } = await supabase
+                    .from('grammar_points')
+                    .insert([{
+                        lesson_id: parseInt(document.getElementById('grammarLesson').value),
+                        title: document.getElementById('grammarTitle').value,
+                        explanation: document.getElementById('grammarExplanation').value
+                    }]);
+
+                if (error) throw error;
+
+                messageEl.innerHTML = '<div class="message success">Grammar point added!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                event.target.reset();
+                await loadGrammar();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        async function deleteGrammar(id) {
+            if (!confirm('Delete this grammar point?')) return;
+            try {
+                const { error } = await supabase.from('grammar_points').delete().eq('id', id);
+                if (error) throw error;
+                await loadGrammar();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // ========== QUIZZES ==========
+        async function loadQuizzes() {
+            try {
+                const { data, error } = await supabase
+                    .from('quizzes')
+                    .select(`
+                        *,
+                        lessons (title)
+                    `)
+                    .order('id', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('quizzesTable');
+                tbody.innerHTML = data?.map(quiz => `
+                    <tr>
+                        <td>${quiz.question}</td>
+                        <td>${quiz.question_type}</td>
+                        <td>${quiz.lessons?.title || 'N/A'}</td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteQuiz(${quiz.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="4">No quizzes yet</td></tr>';
+            } catch (error) {
+                console.error('Error loading quizzes:', error);
+            }
+        }
+
+        async function saveQuiz(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('quizMessage');
+            
+            try {
+                const { error } = await supabase
+                    .from('quizzes')
+                    .insert([{
+                        lesson_id: parseInt(document.getElementById('quizLesson').value),
+                        question: document.getElementById('quizQuestion').value,
+                        question_type: document.getElementById('quizType').value,
+                        correct_answer: document.getElementById('quizAnswer').value
+                    }]);
+
+                if (error) throw error;
+
+                messageEl.innerHTML = '<div class="message success">Quiz added!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                event.target.reset();
+                await loadQuizzes();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        async function deleteQuiz(id) {
+            if (!confirm('Delete this quiz?')) return;
+            try {
+                const { error } = await supabase.from('quizzes').delete().eq('id', id);
+                if (error) throw error;
+                await loadQuizzes();
+            } catch (error) {
+                alert('Error: ' + error.message);
             }
         }
     </script>
