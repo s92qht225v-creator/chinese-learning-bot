@@ -186,12 +186,100 @@ app.get('/api/user/progress', async (req, res) => {
     if (!req.telegramUser) {
       return res.json([]);
     }
-    
+
     const progress = await db.getUserProgress(req.telegramUser.id);
     res.json(progress || []);
   } catch (error) {
     console.error('Error fetching progress:', error);
     res.status(500).json({ error: 'Failed to fetch progress' });
+  }
+});
+
+// ========== ADMIN API ENDPOINTS ==========
+
+// Simple admin authentication middleware
+const adminAuth = (req, res, next) => {
+  const adminPassword = req.headers['x-admin-password'];
+  if (adminPassword === 'admin123') { // Match the password in admin.js
+    next();
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+};
+
+// Get all vocabulary (admin)
+app.get('/api/admin/vocabulary', adminAuth, async (req, res) => {
+  try {
+    const vocabulary = await db.getVocabulary();
+    res.json(vocabulary);
+  } catch (error) {
+    console.error('Error fetching vocabulary:', error);
+    res.status(500).json({ error: 'Failed to fetch vocabulary' });
+  }
+});
+
+// Add new vocabulary (admin)
+app.post('/api/admin/vocabulary', adminAuth, async (req, res) => {
+  try {
+    const { chinese, pinyin, english, hsk_level, difficulty } = req.body;
+
+    if (!chinese || !pinyin || !english) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const newWord = await db.addVocabulary({ chinese, pinyin, english, hsk_level, difficulty });
+    res.json(newWord);
+  } catch (error) {
+    console.error('Error adding vocabulary:', error);
+    res.status(500).json({ error: 'Failed to add vocabulary' });
+  }
+});
+
+// Update vocabulary (admin)
+app.put('/api/admin/vocabulary/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { chinese, pinyin, english, hsk_level, difficulty } = req.body;
+
+    const updated = await db.updateVocabulary(id, { chinese, pinyin, english, hsk_level, difficulty });
+    res.json(updated);
+  } catch (error) {
+    console.error('Error updating vocabulary:', error);
+    res.status(500).json({ error: 'Failed to update vocabulary' });
+  }
+});
+
+// Delete vocabulary (admin)
+app.delete('/api/admin/vocabulary/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.deleteVocabulary(id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting vocabulary:', error);
+    res.status(500).json({ error: 'Failed to delete vocabulary' });
+  }
+});
+
+// Get all users (admin)
+app.get('/api/admin/users', adminAuth, async (req, res) => {
+  try {
+    const users = await db.getAllUsers();
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// Get admin statistics (admin)
+app.get('/api/admin/stats', adminAuth, async (req, res) => {
+  try {
+    const stats = await db.getAdminStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching admin stats:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
 

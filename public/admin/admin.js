@@ -54,55 +54,52 @@ async function loadData() {
 // Load stats
 async function loadStats() {
   try {
-    // Get total users
-    const usersRes = await fetch(`${SUPABASE_URL}/rest/v1/users?select=count`, {
+    const response = await fetch(`${API_BASE}/api/admin/stats`, {
       headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
+        'X-Admin-Password': ADMIN_PASSWORD
       }
     });
-    const usersData = await usersRes.json();
-    document.getElementById('totalUsers').textContent = usersData.length || 0;
 
-    // Get total vocabulary
-    const vocabRes = await fetch(`${SUPABASE_URL}/rest/v1/vocabulary?select=count`, {
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
-      }
-    });
-    const vocabData = await vocabRes.json();
-    document.getElementById('totalVocab').textContent = vocabData.length || 0;
+    if (!response.ok) {
+      throw new Error('Failed to fetch stats');
+    }
 
-    // Get total quiz attempts
-    const progressRes = await fetch(`${SUPABASE_URL}/rest/v1/user_progress?select=count`, {
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
-      }
-    });
-    const progressData = await progressRes.json();
-    document.getElementById('totalQuizzes').textContent = progressData.length || 0;
-
-    // Active today (simplified - showing total users for now)
-    document.getElementById('activeToday').textContent = usersData.length || 0;
+    const stats = await response.json();
+    document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+    document.getElementById('totalVocab').textContent = stats.totalVocabulary || 0;
+    document.getElementById('totalQuizzes').textContent = stats.totalQuizzes || 0;
+    document.getElementById('activeToday').textContent = stats.activeToday || 0;
   } catch (error) {
     console.error('Failed to load stats:', error);
+    // Set to 0 if failed
+    document.getElementById('totalUsers').textContent = 0;
+    document.getElementById('totalVocab').textContent = 0;
+    document.getElementById('totalQuizzes').textContent = 0;
+    document.getElementById('activeToday').textContent = 0;
   }
 }
 
 // Load vocabulary
 async function loadVocabulary() {
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/vocabulary?select=*&order=id`, {
+    const response = await fetch(`${API_BASE}/api/admin/vocabulary`, {
       headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
+        'X-Admin-Password': ADMIN_PASSWORD
       }
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch vocabulary');
+    }
+
     const vocabulary = await response.json();
-    
+
     const tbody = document.getElementById('vocabularyTableBody');
+    if (vocabulary.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No vocabulary yet. Add some words!</td></tr>';
+      return;
+    }
+
     tbody.innerHTML = vocabulary.map(word => `
       <tr>
         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${word.chinese}</td>
@@ -116,21 +113,31 @@ async function loadVocabulary() {
     `).join('');
   } catch (error) {
     console.error('Failed to load vocabulary:', error);
+    document.getElementById('vocabularyTableBody').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-red-500">Error loading vocabulary</td></tr>';
   }
 }
 
 // Load users
 async function loadUsers() {
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc`, {
+    const response = await fetch(`${API_BASE}/api/admin/users`, {
       headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
+        'X-Admin-Password': ADMIN_PASSWORD
       }
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch users');
+    }
+
     const users = await response.json();
-    
+
     const tbody = document.getElementById('usersTableBody');
+    if (users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No users yet</td></tr>';
+      return;
+    }
+
     tbody.innerHTML = users.map(user => `
       <tr>
         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.telegram_id}</td>
@@ -144,6 +151,7 @@ async function loadUsers() {
     `).join('');
   } catch (error) {
     console.error('Failed to load users:', error);
+    document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-red-500">Error loading users</td></tr>';
   }
 }
 
@@ -207,7 +215,7 @@ function closeAddVocabModal() {
 // Add vocabulary
 async function addVocabulary(event) {
   event.preventDefault();
-  
+
   const newWord = {
     chinese: document.getElementById('newChinese').value,
     pinyin: document.getElementById('newPinyin').value,
@@ -215,52 +223,51 @@ async function addVocabulary(event) {
     hsk_level: parseInt(document.getElementById('newHSK').value),
     difficulty: document.getElementById('newDifficulty').value
   };
-  
+
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/vocabulary`, {
+    const response = await fetch(`${API_BASE}/api/admin/vocabulary`, {
       method: 'POST',
       headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
+        'X-Admin-Password': ADMIN_PASSWORD,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(newWord)
     });
-    
+
     if (response.ok) {
       alert('Vocabulary added successfully!');
       closeAddVocabModal();
       loadVocabulary();
       loadStats();
     } else {
-      alert('Failed to add vocabulary');
+      const error = await response.json();
+      alert(`Failed to add vocabulary: ${error.error || 'Unknown error'}`);
     }
   } catch (error) {
     console.error('Failed to add vocabulary:', error);
-    alert('Failed to add vocabulary');
+    alert('Failed to add vocabulary. Make sure the database is configured.');
   }
 }
 
 // Delete vocabulary
 async function deleteVocabulary(id) {
   if (!confirm('Are you sure you want to delete this word?')) return;
-  
+
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/vocabulary?id=eq.${id}`, {
+    const response = await fetch(`${API_BASE}/api/admin/vocabulary/${id}`, {
       method: 'DELETE',
       headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
+        'X-Admin-Password': ADMIN_PASSWORD
       }
     });
-    
+
     if (response.ok) {
       alert('Vocabulary deleted successfully!');
       loadVocabulary();
       loadStats();
     } else {
-      alert('Failed to delete vocabulary');
+      const error = await response.json();
+      alert(`Failed to delete vocabulary: ${error.error || 'Unknown error'}`);
     }
   } catch (error) {
     console.error('Failed to delete vocabulary:', error);

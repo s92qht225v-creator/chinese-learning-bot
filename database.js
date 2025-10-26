@@ -139,6 +139,118 @@ const db = {
       streak: 0, // TODO: Calculate from activity log
       accuracy
     };
+  },
+
+  // ========== ADMIN METHODS ==========
+
+  // Add vocabulary
+  async addVocabulary(word) {
+    if (!supabase) return null;
+
+    const { data, error } = await supabase
+      .from('vocabulary')
+      .insert({
+        chinese: word.chinese,
+        pinyin: word.pinyin,
+        english: word.english,
+        hsk_level: word.hsk_level || 1,
+        difficulty: word.difficulty || 'beginner'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding vocabulary:', error);
+      throw error;
+    }
+
+    return data;
+  },
+
+  // Update vocabulary
+  async updateVocabulary(id, word) {
+    if (!supabase) return null;
+
+    const updates = {};
+    if (word.chinese) updates.chinese = word.chinese;
+    if (word.pinyin) updates.pinyin = word.pinyin;
+    if (word.english) updates.english = word.english;
+    if (word.hsk_level) updates.hsk_level = word.hsk_level;
+    if (word.difficulty) updates.difficulty = word.difficulty;
+
+    const { data, error } = await supabase
+      .from('vocabulary')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating vocabulary:', error);
+      throw error;
+    }
+
+    return data;
+  },
+
+  // Delete vocabulary
+  async deleteVocabulary(id) {
+    if (!supabase) return null;
+
+    const { error } = await supabase
+      .from('vocabulary')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting vocabulary:', error);
+      throw error;
+    }
+
+    return { success: true };
+  },
+
+  // Get all users
+  async getAllUsers() {
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching users:', error);
+      return [];
+    }
+
+    return data;
+  },
+
+  // Get admin statistics
+  async getAdminStats() {
+    if (!supabase) {
+      return {
+        totalUsers: 0,
+        totalVocabulary: 0,
+        totalQuizzes: 0,
+        activeToday: 0
+      };
+    }
+
+    // Get counts from database
+    const [usersResult, vocabResult, progressResult] = await Promise.all([
+      supabase.from('users').select('id', { count: 'exact', head: true }),
+      supabase.from('vocabulary').select('id', { count: 'exact', head: true }),
+      supabase.from('user_progress').select('id', { count: 'exact', head: true })
+    ]);
+
+    return {
+      totalUsers: usersResult.count || 0,
+      totalVocabulary: vocabResult.count || 0,
+      totalQuizzes: progressResult.count || 0,
+      activeToday: usersResult.count || 0 // TODO: Filter by today's activity
+    };
   }
 };
 
