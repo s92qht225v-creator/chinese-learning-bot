@@ -435,58 +435,6 @@
                 <button type="submit" class="btn">Add Dialogue</button>
             </form>
 
-            <div id="dialogueLineSection" class="hidden" style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #eee;">
-                <h3 style="margin-bottom: 20px;">Add Dialogue Lines</h3>
-                <div id="dialogueLineMessage"></div>
-                <form id="dialogueLineForm" onsubmit="saveDialogueLine(event)">
-                    <input type="hidden" id="selectedDialogueId">
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                        <div class="form-group">
-                            <label>Speaker</label>
-                            <input type="text" id="lineSpeaker" placeholder="李明" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Line Order</label>
-                            <input type="number" id="lineOrder" min="1" value="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Chinese</label>
-                            <input type="text" id="lineChinese" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Pinyin</label>
-                            <input type="text" id="linePinyin" required>
-                        </div>
-                        <div class="form-group" style="grid-column: span 2;">
-                            <label>English Translation</label>
-                            <input type="text" id="lineEnglish" required>
-                        </div>
-                        <div class="form-group" style="grid-column: span 2;">
-                            <label>Audio URL (optional)</label>
-                            <input type="url" id="lineAudioUrl" placeholder="https://example.com/audio.mp3">
-                            <small style="color: #666; font-size: 12px;">Audio for this specific dialogue line</small>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn">Add Dialogue Line</button>
-                </form>
-
-                <div class="table-container" style="margin-top: 20px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Speaker</th>
-                                <th>Chinese</th>
-                                <th>English</th>
-                                <th>Audio</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dialogueLinesTable"></tbody>
-                    </table>
-                </div>
-            </div>
-
             <div class="table-container">
                 <table>
                     <thead>
@@ -557,15 +505,42 @@
                 </div>
                 <div class="form-group">
                     <label>Type</label>
-                    <select id="quizType" required>
-                        <option value="multiple_choice">Multiple Choice</option>
+                    <select id="quizType" required onchange="updateQuizFormFields()">
+                        <option value="">Select quiz type...</option>
+                        <option value="chinese_to_uzbek">Chinese to Uzbek</option>
+                        <option value="uzbek_to_chinese">Uzbek to Chinese</option>
+                        <option value="pinyin_to_chinese">Pinyin to Chinese</option>
+                        <option value="chinese_to_pinyin">Chinese to Pinyin</option>
+                        <option value="audio_to_character">Audio to Character</option>
                         <option value="fill_blank">Fill in the Blank</option>
-                        <option value="matching">Matching</option>
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="true_false">True/False</option>
+                        <option value="typing">Typing</option>
+                        <option value="match_pairs">Match Pairs</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Correct Answer</label>
                     <input type="text" id="quizAnswer" required>
+                </div>
+                <div id="quizOptionsField" class="form-group" style="display:none;">
+                    <label>Options (comma-separated)</label>
+                    <input type="text" id="quizOptions" placeholder="Option1, Option2, Option3, Option4">
+                    <small style="color: #666; font-size: 12px;">For multiple choice, separate options with commas</small>
+                </div>
+                <div id="quizAudioField" class="form-group" style="display:none;">
+                    <label>Audio URL</label>
+                    <input type="url" id="quizAudioUrl" placeholder="https://example.com/audio.mp3">
+                    <small style="color: #666; font-size: 12px;">For audio quizzes</small>
+                </div>
+                <div id="quizPairsField" class="form-group" style="display:none;">
+                    <label>Pairs (JSON format)</label>
+                    <textarea id="quizPairs" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;" placeholder='[{"left":"你好","right":"Salom"}]'></textarea>
+                    <small style="color: #666; font-size: 12px;">For match pairs - JSON format</small>
+                </div>
+                <div class="form-group">
+                    <label>Explanation (optional)</label>
+                    <textarea id="quizExplanation" rows="2" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;"></textarea>
                 </div>
                 <button type="submit" class="btn">Add Quiz</button>
             </form>
@@ -610,8 +585,9 @@
         const SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2ZW9xZWRza3piYmdjYXpwc2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0Nzk1MjYsImV4cCI6MjA3NzA1NTUyNn0.NfTfTWKNDmsmiLF_MX5XGGq48xbX8OOUWhVmb5U-VXM';
         const ADMIN_PASSWORD = 'admin123'; // Change this!
-        
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://lingo.uz';
+
+        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
         // Login
         function login() {
@@ -948,7 +924,6 @@
                         <td>${dialogue.lessons?.title || 'N/A'}</td>
                         <td>0</td>
                         <td class="actions">
-                            <button class="btn btn-small" onclick="manageDialogueLines(${dialogue.id}, '${dialogue.title.replace(/'/g, "\\'")}')">Manage Lines</button>
                             <button class="btn btn-danger btn-small" onclick="deleteDialogue(${dialogue.id})">Delete</button>
                         </td>
                     </tr>
@@ -989,87 +964,6 @@
                 const { error } = await supabase.from('dialogues').delete().eq('id', id);
                 if (error) throw error;
                 await loadDialogues();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        // Manage dialogue lines
-        async function manageDialogueLines(dialogueId, dialogueTitle) {
-            document.getElementById('selectedDialogueId').value = dialogueId;
-            document.getElementById('dialogueLineSection').classList.remove('hidden');
-            document.querySelector('#dialogueLineSection h3').textContent = `Lines for "${dialogueTitle}"`;
-            await loadDialogueLines(dialogueId);
-            document.getElementById('dialogueLineSection').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        async function loadDialogueLines(dialogueId) {
-            try {
-                const { data, error } = await supabase
-                    .from('dialogue_lines')
-                    .select('*')
-                    .eq('dialogue_id', dialogueId)
-                    .order('line_order', { ascending: true });
-
-                if (error) throw error;
-
-                const tbody = document.getElementById('dialogueLinesTable');
-                tbody.innerHTML = data?.map(line => `
-                    <tr>
-                        <td>${line.line_order}</td>
-                        <td>${line.speaker}</td>
-                        <td>${line.chinese}</td>
-                        <td>${line.english}</td>
-                        <td>${line.audio_url ? '🔊' : '-'}</td>
-                        <td class="actions">
-                            <button class="btn btn-danger btn-small" onclick="deleteDialogueLine(${line.id})">Delete</button>
-                        </td>
-                    </tr>
-                `).join('') || '<tr><td colspan="6">No lines yet - add some above!</td></tr>';
-            } catch (error) {
-                console.error('Error loading dialogue lines:', error);
-            }
-        }
-
-        async function saveDialogueLine(event) {
-            event.preventDefault();
-            const messageEl = document.getElementById('dialogueLineMessage');
-            const dialogueId = document.getElementById('selectedDialogueId').value;
-            
-            try {
-                const { error } = await supabase
-                    .from('dialogue_lines')
-                    .insert([{
-                        dialogue_id: parseInt(dialogueId),
-                        speaker: document.getElementById('lineSpeaker').value,
-                        chinese: document.getElementById('lineChinese').value,
-                        pinyin: document.getElementById('linePinyin').value,
-                        english: document.getElementById('lineEnglish').value,
-                        line_order: parseInt(document.getElementById('lineOrder').value),
-                        audio_url: document.getElementById('lineAudioUrl').value || null
-                    }]);
-
-                if (error) throw error;
-
-                messageEl.innerHTML = '<div class="message success">Line added!</div>';
-                setTimeout(() => messageEl.innerHTML = '', 3000);
-                
-                event.target.reset();
-                document.getElementById('lineOrder').value = parseInt(document.getElementById('lineOrder').value) + 1;
-                await loadDialogueLines(dialogueId);
-            } catch (error) {
-                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
-                setTimeout(() => messageEl.innerHTML = '', 3000);
-            }
-        }
-
-        async function deleteDialogueLine(id) {
-            if (!confirm('Delete this line?')) return;
-            const dialogueId = document.getElementById('selectedDialogueId').value;
-            try {
-                const { error } = await supabase.from('dialogue_lines').delete().eq('id', id);
-                if (error) throw error;
-                await loadDialogueLines(dialogueId);
             } catch (error) {
                 alert('Error: ' + error.message);
             }
@@ -1174,14 +1068,40 @@
             const messageEl = document.getElementById('quizMessage');
             
             try {
+                const quizType = document.getElementById('quizType').value;
+                const quizData = {
+                    lesson_id: parseInt(document.getElementById('quizLesson').value),
+                    question: document.getElementById('quizQuestion').value,
+                    question_type: quizType,
+                    correct_answer: document.getElementById('quizAnswer').value,
+                    explanation: document.getElementById('quizExplanation').value || null
+                };
+                
+                // Add options if provided
+                const optionsInput = document.getElementById('quizOptions').value;
+                if (optionsInput) {
+                    quizData.options = optionsInput.split(',').map(o => o.trim());
+                }
+                
+                // Add audio URL if provided
+                const audioUrl = document.getElementById('quizAudioUrl').value;
+                if (audioUrl) {
+                    quizData.audio_url = audioUrl;
+                }
+                
+                // Add pairs if provided
+                const pairsInput = document.getElementById('quizPairs').value;
+                if (pairsInput) {
+                    try {
+                        quizData.pairs = JSON.parse(pairsInput);
+                    } catch (e) {
+                        throw new Error('Invalid JSON format for pairs');
+                    }
+                }
+
                 const { error } = await supabase
                     .from('quizzes')
-                    .insert([{
-                        lesson_id: parseInt(document.getElementById('quizLesson').value),
-                        question: document.getElementById('quizQuestion').value,
-                        question_type: document.getElementById('quizType').value,
-                        correct_answer: document.getElementById('quizAnswer').value
-                    }]);
+                    .insert([quizData]);
 
                 if (error) throw error;
 
@@ -1189,6 +1109,7 @@
                 setTimeout(() => messageEl.innerHTML = '', 3000);
                 
                 event.target.reset();
+                updateQuizFormFields(); // Reset field visibility
                 await loadQuizzes();
             } catch (error) {
                 messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
@@ -1204,6 +1125,45 @@
                 await loadQuizzes();
             } catch (error) {
                 alert('Error: ' + error.message);
+            }
+        }
+
+        // Update quiz form fields based on quiz type
+        function updateQuizFormFields() {
+            const quizType = document.getElementById('quizType').value;
+            const optionsField = document.getElementById('quizOptionsField');
+            const audioField = document.getElementById('quizAudioField');
+            const pairsField = document.getElementById('quizPairsField');
+            
+            // Hide all optional fields
+            optionsField.style.display = 'none';
+            audioField.style.display = 'none';
+            pairsField.style.display = 'none';
+            
+            // Show fields based on quiz type
+            const typesNeedingOptions = ['multiple_choice', 'chinese_to_uzbek', 'uzbek_to_chinese', 
+                                         'pinyin_to_chinese', 'chinese_to_pinyin', 'fill_blank', 
+                                         'true_false', 'audio_to_character'];
+            
+            if (typesNeedingOptions.includes(quizType)) {
+                optionsField.style.display = 'block';
+                document.getElementById('quizOptions').required = true;
+            } else {
+                document.getElementById('quizOptions').required = false;
+            }
+            
+            if (quizType === 'audio_to_character') {
+                audioField.style.display = 'block';
+                document.getElementById('quizAudioUrl').required = true;
+            } else {
+                document.getElementById('quizAudioUrl').required = false;
+            }
+            
+            if (quizType === 'match_pairs') {
+                pairsField.style.display = 'block';
+                document.getElementById('quizPairs').required = true;
+            } else {
+                document.getElementById('quizPairs').required = false;
             }
         }
     </script>
