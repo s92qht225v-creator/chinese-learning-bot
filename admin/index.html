@@ -143,6 +143,14 @@
             background: #dc2626;
         }
         
+        .btn-warning {
+            background: #f59e0b;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
         .table-container {
             overflow-x: auto;
             margin-top: 20px;
@@ -432,7 +440,15 @@
                 document.getElementById('totalVocabulary').textContent = vocabData.count || 0;
                 document.getElementById('totalUsers').textContent = usersData.count || 0;
                 document.getElementById('totalProgress').textContent = progressData.count || 0;
-                document.getElementById('activeToday').textContent = '0'; // Implement if needed
+                
+                // Calculate active today
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const { data: activeUsers } = await supabase
+                    .from('users')
+                    .select('telegram_id')
+                    .gte('last_active', today.toISOString());
+                document.getElementById('activeToday').textContent = activeUsers?.length || 0;
             } catch (error) {
                 console.error('Error loading analytics:', error);
             }
@@ -456,6 +472,7 @@
                         <td>${word.english}</td>
                         <td>HSK ${word.hsk_level}</td>
                         <td class="actions">
+                            <button class="btn btn-small" onclick="editVocabulary(${word.id}, '${word.chinese.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${word.pinyin.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${word.english.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${word.hsk_level})">Edit</button>
                             <button class="btn btn-danger btn-small" onclick="deleteVocabulary(${word.id})">Delete</button>
                         </td>
                     </tr>
@@ -469,29 +486,72 @@
         async function addVocabulary(event) {
             event.preventDefault();
             const messageEl = document.getElementById('vocabMessage');
+            const form = event.target;
+            const editId = form.dataset.editId;
             
             try {
-                const { error } = await supabase
-                    .from('vocabulary')
-                    .insert([{
-                        chinese: document.getElementById('chinese').value,
-                        pinyin: document.getElementById('pinyin').value,
-                        english: document.getElementById('english').value,
-                        hsk_level: parseInt(document.getElementById('hskLevel').value)
-                    }]);
+                const vocabData = {
+                    chinese: document.getElementById('chinese').value,
+                    pinyin: document.getElementById('pinyin').value,
+                    english: document.getElementById('english').value,
+                    hsk_level: parseInt(document.getElementById('hskLevel').value)
+                };
+
+                let error;
+                if (editId) {
+                    // Update existing
+                    const result = await supabase
+                        .from('vocabulary')
+                        .update(vocabData)
+                        .eq('id', editId);
+                    error = result.error;
+                    messageEl.innerHTML = '<div class="message success">Vocabulary updated successfully!</div>';
+                } else {
+                    // Insert new
+                    const result = await supabase
+                        .from('vocabulary')
+                        .insert([vocabData]);
+                    error = result.error;
+                    messageEl.innerHTML = '<div class="message success">Vocabulary added successfully!</div>';
+                }
 
                 if (error) throw error;
 
-                messageEl.innerHTML = '<div class="message success">Vocabulary added successfully!</div>';
                 setTimeout(() => messageEl.innerHTML = '', 3000);
                 
-                document.getElementById('vocabularyForm').reset();
+                // Reset form
+                form.reset();
+                delete form.dataset.editId;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Add Vocabulary';
+                submitBtn.classList.remove('btn-warning');
+                
                 await loadVocabulary();
                 await loadAnalytics();
             } catch (error) {
                 messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
                 setTimeout(() => messageEl.innerHTML = '', 3000);
             }
+        }
+
+        // Edit vocabulary
+        async function editVocabulary(id, chinese, pinyin, english, hskLevel) {
+            document.getElementById('chinese').value = chinese;
+            document.getElementById('pinyin').value = pinyin;
+            document.getElementById('english').value = english;
+            document.getElementById('hskLevel').value = hskLevel;
+            
+            // Change form to edit mode
+            const form = document.getElementById('vocabularyForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Update Vocabulary';
+            submitBtn.classList.add('btn-warning');
+            
+            // Store edit ID
+            form.dataset.editId = id;
+            
+            // Scroll to form
+            form.scrollIntoView({ behavior: 'smooth' });
         }
 
         // Delete vocabulary
