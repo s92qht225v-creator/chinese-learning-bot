@@ -1,10 +1,10 @@
 // API Configuration - automatically detects environment
 const API_CONFIG = {
   getBaseUrl() {
-    // Check if we're in production (on Cloudflare Pages)
+    // Check if we're in production
     if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      // Production - use HTTPS API subdomain
-      return 'https://api.lingo.uz';
+      // Production - use same domain
+      return window.location.origin;
     }
     // Development - use local backend
     return 'http://localhost:3000';
