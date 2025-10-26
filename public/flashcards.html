@@ -5,6 +5,7 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Flashcards - Chinese Learning</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="/api-config.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -167,21 +168,8 @@
     tg.expand();
     tg.ready();
 
-    // Flashcard data
-    const flashcards = [
-      { chinese: '你好', pinyin: 'nǐ hǎo', english: 'Hello' },
-      { chinese: '谢谢', pinyin: 'xiè xie', english: 'Thank you' },
-      { chinese: '再见', pinyin: 'zài jiàn', english: 'Goodbye' },
-      { chinese: '我', pinyin: 'wǒ', english: 'I, me' },
-      { chinese: '你', pinyin: 'nǐ', english: 'You' },
-      { chinese: '他', pinyin: 'tā', english: 'He, him' },
-      { chinese: '好', pinyin: 'hǎo', english: 'Good' },
-      { chinese: '是', pinyin: 'shì', english: 'To be, is' },
-      { chinese: '不', pinyin: 'bù', english: 'No, not' },
-      { chinese: '叫', pinyin: 'jiào', english: 'To be called' },
-      { chinese: '名字', pinyin: 'míngzi', english: 'Name' },
-      { chinese: '很', pinyin: 'hěn', english: 'Very' }
-    ];
+    // Flashcard data - will be loaded from API
+    let flashcards = [];
 
     let currentIndex = 0;
     let stats = { again: 0, hard: 0, good: 0, easy: 0 };
@@ -281,6 +269,31 @@
       else if (e.key === '3') goodBtn.click();
       else if (e.key === '4') easyBtn.click();
     });
+
+    // Load vocabulary from API
+    async function loadVocabulary() {
+      try {
+        const response = await fetch(API_CONFIG.url(API_CONFIG.endpoints.vocabulary));
+        const data = await response.json();
+        flashcards = data.map(word => ({
+          chinese: word.chinese,
+          pinyin: word.pinyin,
+          english: word.english
+        }));
+        
+        if (flashcards.length > 0) {
+          loadCard(0);
+        } else {
+          alert('No vocabulary available. Please add words first.');
+        }
+      } catch (error) {
+        console.error('Failed to load vocabulary:', error);
+        alert('Failed to load vocabulary. Please try again.');
+      }
+    }
+
+    // Initialize
+    loadVocabulary();
   </script>
 </body>
 </html>

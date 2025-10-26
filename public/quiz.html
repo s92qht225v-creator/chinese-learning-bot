@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Quiz - Chinese Learning</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="/api-config.js"></script>
+  <script src="/auth.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4A90E2",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "background-light": "#F8F9FA",
+            "background-dark": "#101c22",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    
+    .option-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .option-btn.correct {
+      background-color: #50E3C2;
+      color: white;
+      border-color: #50E3C2;
+    }
+    
+    .option-btn.incorrect {
+      background-color: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+      <div class="max-w-screen-xl mx-auto px-4 py-3">
+        <div class="flex items-center justify-between">
+          <button id="backBtn" class="flex items-center gap-2 text-text-light dark:text-text-dark">
+            <span class="material-symbols-outlined">arrow_back</span>
+            <span class="font-medium">Back</span>
+          </button>
+          <div class="text-center">
+            <p class="text-sm font-medium text-text-light dark:text-text-dark">Quiz</p>
+            <p class="text-xs text-text-muted-light dark:text-text-muted-dark" id="progress">Question 1 / 10</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-accent">emoji_events</span>
+            <span class="font-bold text-accent" id="score">0</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 flex flex-col px-4 py-6 max-w-screen-xl mx-auto w-full">
+      <!-- Progress Bar -->
+      <div class="mb-6">
+        <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div id="progressBar" class="h-full bg-secondary rounded-full transition-all duration-300" style="width: 10%;"></div>
+        </div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg mb-6">
+        <p class="text-sm text-text-muted-light dark:text-text-muted-dark mb-2">What does this mean?</p>
+        <h1 class="text-5xl font-bold text-center mb-3" id="questionChinese">你好</h1>
+        <p class="text-xl text-center text-primary mb-4" id="questionPinyin">nǐ hǎo</p>
+      </div>
+
+      <!-- Options -->
+      <div class="space-y-3 mb-6" id="optionsContainer">
+        <button class="option-btn w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 font-medium text-text-light dark:text-text-dark transition-colors">
+          Option 1
+        </button>
+        <button class="option-btn w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 font-medium text-text-light dark:text-text-dark transition-colors">
+          Option 2
+        </button>
+        <button class="option-btn w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 font-medium text-text-light dark:text-text-dark transition-colors">
+          Option 3
+        </button>
+        <button class="option-btn w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 font-medium text-text-light dark:text-text-dark transition-colors">
+          Option 4
+        </button>
+      </div>
+
+      <!-- Next Button -->
+      <button id="nextBtn" class="w-full bg-primary hover:bg-blue-600 text-white rounded-xl py-4 font-bold text-lg shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+        Next Question
+      </button>
+
+      <!-- Stats -->
+      <div class="mt-6 grid grid-cols-3 gap-3 text-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-3">
+          <p class="text-2xl font-bold text-secondary" id="correctCount">0</p>
+          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Correct</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-3">
+          <p class="text-2xl font-bold text-red-500" id="incorrectCount">0</p>
+          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Incorrect</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-3">
+          <p class="text-2xl font-bold text-accent" id="accuracyPercent">0%</p>
+          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Accuracy</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // State
+    let currentQuestion = 1;
+    const totalQuestions = 10;
+    let stats = { correct: 0, incorrect: 0 };
+    let currentAnswer = null;
+    let currentQuestionData = null;
+    let answered = false;
+
+    // Elements
+    const questionChinese = document.getElementById('questionChinese');
+    const questionPinyin = document.getElementById('questionPinyin');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const progress = document.getElementById('progress');
+    const progressBar = document.getElementById('progressBar');
+    const scoreEl = document.getElementById('score');
+    const nextBtn = document.getElementById('nextBtn');
+    const backBtn = document.getElementById('backBtn');
+
+    // Load question from API
+    async function loadQuestion() {
+      try {
+        const response = await fetch(API_CONFIG.url(API_CONFIG.endpoints.quiz), {
+          headers: telegramAuth.getHeaders()
+        });
+        const data = await response.json();
+        
+        questionChinese.textContent = data.question;
+        questionPinyin.textContent = data.pinyin;
+        currentAnswer = data.correctAnswer;
+        currentQuestionData = data;
+        
+        // Clear and populate options
+        optionsContainer.innerHTML = '';
+        data.options.forEach(option => {
+          const btn = document.createElement('button');
+          btn.className = 'option-btn w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 font-medium text-text-light dark:text-text-dark transition-colors';
+          btn.textContent = option;
+          btn.onclick = () => selectOption(btn, option);
+          optionsContainer.appendChild(btn);
+        });
+        
+        // Update progress
+        progress.textContent = `Question ${currentQuestion} / ${totalQuestions}`;
+        progressBar.style.width = `${(currentQuestion / totalQuestions) * 100}%`;
+        
+        answered = false;
+        nextBtn.disabled = true;
+      } catch (error) {
+        console.error('Failed to load question:', error);
+        alert('Failed to load question. Please try again.');
+      }
+    }
+
+    // Handle option selection
+    async function selectOption(selectedBtn, selectedAnswer) {
+      if (answered) return;
+      
+      answered = true;
+      nextBtn.disabled = false;
+      
+      // Check answer
+      const isCorrect = selectedAnswer === currentAnswer;
+      
+      // Save progress to backend
+      if (currentQuestionData && telegramAuth.isAuthenticated()) {
+        try {
+          await fetch(API_CONFIG.url('/api/progress/quiz'), {
+            method: 'POST',
+            headers: telegramAuth.getHeaders(),
+            body: JSON.stringify({
+              vocabularyId: currentQuestionData.id,
+              correct: isCorrect
+            })
+          });
+        } catch (error) {
+          console.error('Failed to save progress:', error);
+        }
+      }
+      
+      if (isCorrect) {
+        selectedBtn.classList.add('correct');
+        stats.correct++;
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      } else {
+        selectedBtn.classList.add('incorrect');
+        stats.incorrect++;
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+        
+        // Highlight correct answer
+        const optionBtns = optionsContainer.querySelectorAll('.option-btn');
+        optionBtns.forEach(btn => {
+          if (btn.textContent === currentAnswer) {
+            btn.classList.add('correct');
+          }
+        });
+      }
+      
+      // Disable all buttons
+      const optionBtns = optionsContainer.querySelectorAll('.option-btn');
+      optionBtns.forEach(btn => {
+        btn.disabled = true;
+        btn.style.cursor = 'default';
+      });
+      
+      updateStats();
+    }
+
+    // Update stats display
+    function updateStats() {
+      document.getElementById('correctCount').textContent = stats.correct;
+      document.getElementById('incorrectCount').textContent = stats.incorrect;
+      scoreEl.textContent = stats.correct * 10;
+      
+      const total = stats.correct + stats.incorrect;
+      const accuracy = total > 0 ? Math.round((stats.correct / total) * 100) : 0;
+      document.getElementById('accuracyPercent').textContent = accuracy + '%';
+    }
+
+    // Next question
+    nextBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      
+      if (currentQuestion < totalQuestions) {
+        currentQuestion++;
+        loadQuestion();
+      } else {
+        // Quiz finished
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        const accuracy = Math.round((stats.correct / totalQuestions) * 100);
+        alert(`Quiz Complete! 🎉\n\nScore: ${stats.correct * 10}/${totalQuestions * 10}\nCorrect: ${stats.correct}\nIncorrect: ${stats.incorrect}\nAccuracy: ${accuracy}%`);
+        window.location.href = '/practice.html';
+      }
+    });
+
+    // Back button
+    backBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      window.history.back();
+    });
+
+    // Initialize
+    loadQuestion();
+  </script>
+</body>
+</html>

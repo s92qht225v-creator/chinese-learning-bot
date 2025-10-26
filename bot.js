@@ -1,30 +1,28 @@
-require('dotenv').config();
+const config = require('./config');
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
-const path = require('path');
+const db = require('./database');
 
-const token = process.env.TELEGRAM_BOT_TOKEN;
-const bot = new TelegramBot(token, { polling: true });
+const bot = new TelegramBot(config.telegramBotToken, { polling: true });
 const app = express();
 
 // Serve static files
 app.use(express.static('public'));
 app.use(express.json());
 
-// Chinese vocabulary data
-const vocabulary = [
-  { id: 1, chinese: '你好', pinyin: 'nǐ hǎo', english: 'hello', difficulty: 'beginner' },
-  { id: 2, chinese: '谢谢', pinyin: 'xièxie', english: 'thank you', difficulty: 'beginner' },
-  { id: 3, chinese: '再见', pinyin: 'zàijiàn', english: 'goodbye', difficulty: 'beginner' },
-  { id: 4, chinese: '学习', pinyin: 'xuéxí', english: 'to study', difficulty: 'beginner' },
-  { id: 5, chinese: '中文', pinyin: 'zhōngwén', english: 'Chinese language', difficulty: 'beginner' },
-  { id: 6, chinese: '朋友', pinyin: 'péngyou', english: 'friend', difficulty: 'beginner' },
-  { id: 7, chinese: '吃饭', pinyin: 'chīfàn', english: 'to eat', difficulty: 'beginner' },
-  { id: 8, chinese: '喝水', pinyin: 'hēshuǐ', english: 'to drink water', difficulty: 'beginner' },
-];
+// Log database status
+if (db.isConfigured()) {
+  console.log('✅ Database connected');
+} else {
+  console.log('⚠️  Database not configured, using fallback data');
+}
 
 // Bot commands
-bot.onText(/\/start/, (msg) => {
+bot.onText(/\/start/, async (msg) => {
+  // Track user
+  if (db.isConfigured()) {
+    await db.getOrCreateUser(msg.from);
+  }
   const chatId = msg.chat.id;
   const opts = {
     reply_markup: {
@@ -52,54 +50,154 @@ bot.onText(/\/help/, (msg) => {
   );
 });
 
-bot.onText(/\/stats/, (msg) => {
+bot.onText(/\/stats/, async (msg) => {
   const chatId = msg.chat.id;
-  bot.sendMessage(
-    chatId,
-    '📊 Your Statistics:\n\n' +
-    '• Words learned: 0\n' +
-    '• Study streak: 0 days\n' +
-    '• Quiz accuracy: 0%\n\n' +
-    'Open the app to start learning!'
-  );
+  
+  if (db.isConfigured()) {
+    const stats = await db.getUserStats(msg.from.id);
+    bot.sendMessage(
+      chatId,
+      '📊 Your Statistics:\n\n' +
+      `• Words learned: ${stats.wordsLearned}\n` +
+      `• Study streak: ${stats.streak} days\n` +
+      `• Quiz accuracy: ${stats.accuracy}%\n\n` +
+      'Keep it up! 🎉'
+    );
+  } else {
+    bot.sendMessage(
+      chatId,
+      '📊 Your Statistics:\n\n' +
+      '• Words learned: 0\n' +
+      '• Study streak: 0 days\n' +
+      '• Quiz accuracy: 0%\n\n' +
+      'Open the app to start learning!'
+    );
+  }
 });
 
 // API endpoints for the mini app
-app.get('/api/vocabulary', (req, res) => {
-  res.json(vocabulary);
-});
-
-app.get('/api/vocabulary/random', (req, res) => {
-  const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
-  res.json(randomWord);
-});
-
-app.get('/api/quiz', (req, res) => {
-  const question = vocabulary[Math.floor(Math.random() * vocabulary.length)];
-  const options = [question.english];
-  
-  // Add 3 random wrong answers
-  while (options.length < 4) {
-    const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
-    if (!options.includes(randomWord.english)) {
-      options.push(randomWord.english);
-    }
+app.get('/api/vocabulary', async (req, res) => {
+  try {
+    const hskLevel = req.query.hsk_level ? parseInt(req.query.hsk_level) : null;
+    const vocabulary = await db.getVocabulary(hskLevel);
+    res.json(vocabulary);
+  } catch (error) {
+    console.error('Error fetching vocabulary:', error);
+    res.status(500).json({ error: 'Failed to fetch vocabulary' });
   }
+});
+
+app.get('/api/vocabulary/random', async (req, res) => {
+  try {
+    const vocabulary = await db.getVocabulary();
+    const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+    res.json(randomWord);
+  } catch (error) {
+    console.error('Error fetching random vocabulary:', error);
+    res.status(500).json({ error: 'Failed to fetch vocabulary' });
+  }
+});
+
+app.get('/api/quiz', async (req, res) => {
+  try {
+    const vocabulary = await db.getVocabulary();
+    const question = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+    const options = [question.english];
+    
+    // Add 3 random wrong answers
+    while (options.length < 4) {
+      const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+      if (!options.includes(randomWord.english)) {
+        options.push(randomWord.english);
+      }
+    }
+    
+    // Shuffle options
+    options.sort(() => Math.random() - 0.5);
+    
+    res.json({
+      id: question.id,
+      question: question.chinese,
+      pinyin: question.pinyin,
+      options: options,
+      correctAnswer: question.english
+    });
+  } catch (error) {
+    console.error('Error generating quiz:', error);
+    res.status(500).json({ error: 'Failed to generate quiz' });
+  }
+});
+
+// Middleware to extract Telegram user from headers
+app.use((req, res, next) => {
+  const userId = req.headers['x-telegram-user-id'];
+  const username = req.headers['x-telegram-username'];
+  const firstName = req.headers['x-telegram-first-name'];
   
-  // Shuffle options
-  options.sort(() => Math.random() - 0.5);
-  
-  res.json({
-    question: question.chinese,
-    pinyin: question.pinyin,
-    options: options,
-    correctAnswer: question.english
-  });
+  if (userId) {
+    req.telegramUser = {
+      id: parseInt(userId),
+      username,
+      first_name: firstName
+    };
+  }
+  next();
+});
+
+// Get user stats
+app.get('/api/user/stats', async (req, res) => {
+  try {
+    if (!req.telegramUser) {
+      return res.json({ wordsLearned: 0, streak: 0, accuracy: 0 });
+    }
+    
+    const stats = await db.getUserStats(req.telegramUser.id);
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+// Save quiz result
+app.post('/api/progress/quiz', async (req, res) => {
+  try {
+    if (!req.telegramUser) {
+      return res.json({ success: false, message: 'User not authenticated' });
+    }
+    
+    const { vocabularyId, correct } = req.body;
+    
+    if (db.isConfigured()) {
+      await db.getOrCreateUser(req.telegramUser);
+      await db.updateProgress(req.telegramUser.id, vocabularyId, correct);
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving progress:', error);
+    res.status(500).json({ error: 'Failed to save progress' });
+  }
+});
+
+// Get user progress
+app.get('/api/user/progress', async (req, res) => {
+  try {
+    if (!req.telegramUser) {
+      return res.json([]);
+    }
+    
+    const progress = await db.getUserProgress(req.telegramUser.id);
+    res.json(progress || []);
+  } catch (error) {
+    console.error('Error fetching progress:', error);
+    res.status(500).json({ error: 'Failed to fetch progress' });
+  }
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(config.port, () => {
   console.log(`✅ Bot is running...`);
-  console.log(`🌐 Mini app server running on port ${PORT}`);
+  console.log(`🌐 Mini app server running on port ${config.port}`);
+  console.log(`📱 Mini app URL: ${config.miniAppUrl}`);
 });

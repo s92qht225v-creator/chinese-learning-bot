@@ -153,7 +153,12 @@ vocabAudioBtns.forEach(btn => {
       btn.classList.remove('scale-95');
     }, 150);
     
-    alert('Audio pronunciation would play here');
+    // Get the word from the parent vocab card
+    const card = btn.closest('.vocab-card');
+    if (card && window.tts) {
+      const word = card.dataset.word;
+      tts.speak(word);
+    }
   });
 });
 

@@ -5,6 +5,8 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Character Writing - Chinese Learning</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="/api-config.js"></script>
+  <script src="/tts.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
@@ -167,14 +169,8 @@
     tg.expand();
     tg.ready();
 
-    // Character data
-    const characters = [
-      { char: '你', pinyin: 'nǐ', meaning: 'You' },
-      { char: '好', pinyin: 'hǎo', meaning: 'Good' },
-      { char: '我', pinyin: 'wǒ', meaning: 'I, me' },
-      { char: '是', pinyin: 'shì', meaning: 'To be, is' },
-      { char: '不', pinyin: 'bù', meaning: 'No, not' }
-    ];
+    // Character data - will be loaded from API
+    let characters = [];
 
     let currentIndex = 0;
     let stats = { correct: 0, attempts: 0 };
@@ -307,7 +303,10 @@
     // Play audio
     playAudioBtn.addEventListener('click', () => {
       if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-      alert('Audio pronunciation would play here');
+      const char = characters[currentIndex];
+      if (char && window.tts) {
+        tts.speak(char.char);
+      }
     });
 
     // Load character
@@ -391,8 +390,30 @@
       window.history.back();
     });
 
+    // Load vocabulary from API
+    async function loadVocabulary() {
+      try {
+        const response = await fetch(API_CONFIG.url(API_CONFIG.endpoints.vocabulary));
+        const data = await response.json();
+        characters = data.slice(0, 10).map(word => ({
+          char: word.chinese,
+          pinyin: word.pinyin,
+          meaning: word.english
+        }));
+        
+        if (characters.length > 0) {
+          loadCharacter(currentIndex);
+        } else {
+          alert('No characters available. Please add vocabulary first.');
+        }
+      } catch (error) {
+        console.error('Failed to load vocabulary:', error);
+        alert('Failed to load vocabulary. Please try again.');
+      }
+    }
+
     // Initialize
-    loadCharacter(currentIndex);
+    loadVocabulary();
   </script>
 </body>
 </html>

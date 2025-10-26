@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Chinese Learning Bot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Login Screen -->
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+      <div>
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Admin Panel
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+          Chinese Learning Bot Management
+        </p>
+      </div>
+      <form class="mt-8 space-y-6" onsubmit="login(event)">
+        <div class="rounded-md shadow-sm -space-y-px">
+          <div>
+            <input id="password" name="password" type="password" required
+              class="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+              placeholder="Admin Password">
+          </div>
+        </div>
+        <div>
+          <button type="submit"
+            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Sign in
+          </button>
+        </div>
+      </form>
+      <p class="text-xs text-gray-500 text-center">Default password: <code class="bg-gray-200 px-2 py-1 rounded">admin123</code></p>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="adminDashboard" class="hidden">
+    <!-- Header -->
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <h1 class="text-xl font-bold text-gray-900">Chinese Learning Bot Admin</h1>
+          </div>
+          <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-600" id="adminEmail">admin@lingo.uz</span>
+            <button onclick="logout()" class="text-sm text-red-600 hover:text-red-700">Logout</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Stats Overview -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-sm font-medium text-gray-600">Total Users</div>
+          <div class="mt-2 text-3xl font-bold text-gray-900" id="totalUsers">0</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-sm font-medium text-gray-600">Total Vocabulary</div>
+          <div class="mt-2 text-3xl font-bold text-gray-900" id="totalVocab">0</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-sm font-medium text-gray-600">Active Today</div>
+          <div class="mt-2 text-3xl font-bold text-gray-900" id="activeToday">0</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-sm font-medium text-gray-600">Total Quizzes</div>
+          <div class="mt-2 text-3xl font-bold text-gray-900" id="totalQuizzes">0</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="border-b border-gray-200">
+          <nav class="-mb-px flex">
+            <button onclick="showTab('vocabulary')" id="tabVocab" class="tab-btn border-b-2 border-blue-500 py-4 px-6 text-sm font-medium text-blue-600">
+              Vocabulary
+            </button>
+            <button onclick="showTab('users')" id="tabUsers" class="tab-btn border-b-2 border-transparent py-4 px-6 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+              Users
+            </button>
+            <button onclick="showTab('analytics')" id="tabAnalytics" class="tab-btn border-b-2 border-transparent py-4 px-6 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+              Analytics
+            </button>
+          </nav>
+        </div>
+
+        <!-- Vocabulary Tab -->
+        <div id="vocabularyTab" class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-semibold text-gray-900">Vocabulary Management</h2>
+            <button onclick="showAddVocabModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium">
+              + Add Word
+            </button>
+          </div>
+
+          <!-- Vocabulary Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chinese</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pinyin</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">English</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HSK</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vocabularyTableBody" class="bg-white divide-y divide-gray-200">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="usersTab" class="p-6 hidden">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6">User Management</h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HSK Level</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analyticsTab" class="p-6 hidden">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6">Analytics</h2>
+          <div class="space-y-6">
+            <div class="bg-gray-50 rounded-lg p-6">
+              <h3 class="text-sm font-medium text-gray-900 mb-4">Most Difficult Words</h3>
+              <div id="difficultWords" class="space-y-2">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-6">
+              <h3 class="text-sm font-medium text-gray-900 mb-4">User Activity (Last 7 Days)</h3>
+              <div id="userActivity">
+                Coming soon...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Vocabulary Modal -->
+  <div id="addVocabModal" class="hidden fixed z-10 inset-0 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddVocabModal()"></div>
+      <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all max-w-lg w-full z-20">
+        <form onsubmit="addVocabulary(event)">
+          <div class="bg-white px-6 py-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Vocabulary</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Chinese</label>
+                <input type="text" id="newChinese" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Pinyin</label>
+                <input type="text" id="newPinyin" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">English</label>
+                <input type="text" id="newEnglish" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">HSK Level</label>
+                <select id="newHSK" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                  <option value="1">HSK 1</option>
+                  <option value="2">HSK 2</option>
+                  <option value="3">HSK 3</option>
+                  <option value="4">HSK 4</option>
+                  <option value="5">HSK 5</option>
+                  <option value="6">HSK 6</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+                <select id="newDifficulty" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+            <button type="button" onclick="closeAddVocabModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700">
+              Add Word
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

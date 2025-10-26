@@ -5,6 +5,7 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Profile - Chinese Learning</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="/settings.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -190,15 +191,15 @@
           </button>
 
           <!-- Dark Mode -->
-          <button class="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <button id="darkModeBtn" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <div class="flex items-center gap-3">
               <span class="material-symbols-outlined text-purple-600">dark_mode</span>
               <div>
                 <p class="font-medium text-sm text-left">Theme</p>
-                <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Light Mode</p>
+                <p id="themeStatus" class="text-xs text-text-muted-light dark:text-text-muted-dark">Light Mode</p>
               </div>
             </div>
-            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
+            <span class="material-symbols-outlined text-gray-400">toggle_off</span>
           </button>
         </div>
       </section>
@@ -298,8 +299,30 @@
     tg.expand();
     tg.ready();
 
-    // Haptic feedback on clicks
-    document.querySelectorAll('a, button').forEach(element => {
+    // Dark mode toggle
+    const darkModeBtn = document.getElementById('darkModeBtn');
+    const themeStatus = document.getElementById('themeStatus');
+    const toggleIcon = darkModeBtn.querySelector('.material-symbols-outlined:last-child');
+
+    function updateThemeUI() {
+      const isDark = settings.isDarkMode();
+      themeStatus.textContent = isDark ? 'Dark Mode' : 'Light Mode';
+      toggleIcon.textContent = isDark ? 'toggle_on' : 'toggle_off';
+    }
+
+    darkModeBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('medium');
+      }
+      settings.toggleDarkMode();
+      updateThemeUI();
+    });
+
+    // Initialize theme UI
+    updateThemeUI();
+
+    // Haptic feedback on other clicks
+    document.querySelectorAll('a, button:not(#darkModeBtn)').forEach(element => {
       element.addEventListener('click', () => {
         if (tg.HapticFeedback) {
           tg.HapticFeedback.impactOccurred('light');
