@@ -324,6 +324,14 @@
                         <input type="text" id="english" required>
                     </div>
                     <div class="form-group">
+                        <label>Uzbek</label>
+                        <input type="text" id="uzbek" placeholder="O'zbek tarjimasi">
+                    </div>
+                    <div class="form-group">
+                        <label>Russian</label>
+                        <input type="text" id="russian" placeholder="Русский перевод">
+                    </div>
+                    <div class="form-group">
                         <label>HSK Level</label>
                         <select id="hskLevel" required onchange="filterLessonsByHSK()">
                             <option value="1">HSK 1</option>
@@ -356,6 +364,8 @@
                             <th>Chinese</th>
                             <th>Pinyin</th>
                             <th>English</th>
+                            <th>Uzbek</th>
+                            <th>Russian</th>
                             <th>HSK</th>
                             <th>Lesson</th>
                             <th>Actions</th>
@@ -729,19 +739,24 @@
                 if (error) throw error;
 
                 const tbody = document.getElementById('vocabularyTable');
-                tbody.innerHTML = data.map(word => `
+                tbody.innerHTML = data.map(word => {
+                    const uzbek = word.uzbek || '';
+                    const russian = word.russian || '';
+                    return `
                     <tr>
                         <td>${word.chinese}</td>
                         <td>${word.pinyin}</td>
                         <td>${word.english}</td>
+                        <td>${uzbek || '<span style="color:#999">-</span>'}</td>
+                        <td>${russian || '<span style="color:#999">-</span>'}</td>
                         <td>HSK ${word.hsk_level}</td>
                         <td>${word.lessons ? `L${word.lessons.lesson_number}: ${word.lessons.title}` : '<span style="color:#999">None</span>'}</td>
                         <td class="actions">
-                            <button class="btn btn-small" onclick="editVocabulary(${word.id}, '${word.chinese.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${word.pinyin.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${word.english.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${word.hsk_level}, ${word.lesson_id || 'null'})">Edit</button>
+                            <button class="btn btn-small" onclick='editVocabulary(${word.id}, ${JSON.stringify(word.chinese)}, ${JSON.stringify(word.pinyin)}, ${JSON.stringify(word.english)}, ${JSON.stringify(uzbek)}, ${JSON.stringify(russian)}, ${word.hsk_level}, ${word.lesson_id || 'null'})'>Edit</button>
                             <button class="btn btn-danger btn-small" onclick="deleteVocabulary(${word.id})">Delete</button>
                         </td>
                     </tr>
-                `).join('');
+                `}).join('');
             } catch (error) {
                 console.error('Error loading vocabulary:', error);
             }
@@ -760,6 +775,8 @@
                     chinese: document.getElementById('chinese').value,
                     pinyin: document.getElementById('pinyin').value,
                     english: document.getElementById('english').value,
+                    uzbek: document.getElementById('uzbek').value || null,
+                    russian: document.getElementById('russian').value || null,
                     hsk_level: parseInt(document.getElementById('hskLevel').value),
                     lesson_id: lessonId ? parseInt(lessonId) : null,
                     audio_url: document.getElementById('vocabAudioUrl').value || null
@@ -803,12 +820,15 @@
         }
 
         // Edit vocabulary
-        async function editVocabulary(id, chinese, pinyin, english, hskLevel, lessonId) {
+        async function editVocabulary(id, chinese, pinyin, english, uzbek, russian, hskLevel, lessonId) {
             document.getElementById('chinese').value = chinese;
             document.getElementById('pinyin').value = pinyin;
             document.getElementById('english').value = english;
+            document.getElementById('uzbek').value = uzbek || '';
+            document.getElementById('russian').value = russian || '';
             document.getElementById('hskLevel').value = hskLevel;
             document.getElementById('vocabLesson').value = lessonId || '';
+            filterLessonsByHSK();
             
             // Change form to edit mode
             const form = document.getElementById('vocabularyForm');
