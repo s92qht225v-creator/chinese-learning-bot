@@ -325,7 +325,7 @@
                     </div>
                     <div class="form-group">
                         <label>HSK Level</label>
-                        <select id="hskLevel" required>
+                        <select id="hskLevel" required onchange="filterLessonsByHSK()">
                             <option value="1">HSK 1</option>
                             <option value="2">HSK 2</option>
                             <option value="3">HSK 3</option>
@@ -677,6 +677,9 @@
             }
         }
 
+        // Store all lessons globally for filtering
+        let allLessons = [];
+
         // Load lessons for vocabulary dropdown
         async function loadLessonsForVocab() {
             try {
@@ -688,13 +691,27 @@
                 
                 if (error) throw error;
                 
-                const select = document.getElementById('vocabLesson');
-                select.innerHTML = '<option value="">No specific lesson</option>' +
-                    data.map(lesson => `
-                        <option value="${lesson.id}">HSK ${lesson.hsk_level} - Lesson ${lesson.lesson_number}: ${lesson.title}</option>
-                    `).join('');
+                allLessons = data || [];
+                filterLessonsByHSK();
             } catch (error) {
                 console.error('Error loading lessons:', error);
+            }
+        }
+
+        // Filter lessons based on selected HSK level
+        function filterLessonsByHSK() {
+            const hskLevel = parseInt(document.getElementById('hskLevel').value);
+            const select = document.getElementById('vocabLesson');
+            
+            const filteredLessons = allLessons.filter(lesson => lesson.hsk_level === hskLevel);
+            
+            select.innerHTML = '<option value="">No specific lesson</option>' +
+                filteredLessons.map(lesson => `
+                    <option value="${lesson.id}">Lesson ${lesson.lesson_number}: ${lesson.title}</option>
+                `).join('');
+            
+            if (filteredLessons.length === 0) {
+                select.innerHTML = '<option value="">No lessons for this HSK level yet</option>';
             }
         }
 
