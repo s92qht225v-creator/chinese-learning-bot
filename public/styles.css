@@ -1,10 +1,9 @@
 /* Optimized Tailwind CSS - Custom Build */
-@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap');
+/* Using system fonts for instant loading */
 
 /* Tailwind Base */
 *, ::before, ::after { box-sizing: border-box; border: 0 solid #e5e7eb; }
-html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; font-family: 'Work Sans', ui-sans-serif, system-ui, sans-serif; }
+html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 body { margin: 0; line-height: inherit; }
 h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
 a { color: inherit; text-decoration: inherit; }
@@ -89,7 +88,7 @@ svg { display: block; vertical-align: middle; }
 .pb-20 { padding-bottom: 5rem; }
 .text-left { text-align: left; }
 .text-center { text-align: center; }
-.font-display { font-family: 'Work Sans', sans-serif; }
+.font-display { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 .text-xs { font-size: 0.75rem; line-height: 1rem; }
 .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
 .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
@@ -150,7 +149,7 @@ svg { display: block; vertical-align: middle; }
 .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
 .material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
+  font-family: 'Material Symbols Outlined', sans-serif;
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
