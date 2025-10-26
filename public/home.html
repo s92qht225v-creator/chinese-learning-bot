@@ -4,6 +4,13 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Home - Chinese Learning</title>
+  
+  <!-- Preload critical resources -->
+  <link rel="preconnect" href="https://telegram.org">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
@@ -35,9 +42,46 @@
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
+    
+    /* Loading indicator */
+    #page-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--tg-theme-bg-color, #fff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.3s ease;
+    }
+    
+    #page-loader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(74, 144, 226, 0.1);
+      border-top-color: #4A90E2;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
+  <!-- Loading indicator -->
+  <div id="page-loader">
+    <div class="spinner"></div>
+  </div>
   <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-20">
     <!-- Header -->
     <header class="bg-gradient-to-r from-primary to-blue-600 text-white px-4 pt-8 pb-6">
@@ -240,6 +284,13 @@
   </div>
 
   <script>
+    // Hide loader when page is ready
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('page-loader').classList.add('hidden');
+      }, 100);
+    });
+    
     // Initialize Telegram WebApp
     const tg = window.Telegram.WebApp;
     tg.expand();
