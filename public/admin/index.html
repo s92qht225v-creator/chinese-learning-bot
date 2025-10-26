@@ -435,6 +435,58 @@
                 <button type="submit" class="btn">Add Dialogue</button>
             </form>
 
+            <div id="dialogueLineSection" class="hidden" style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #eee;">
+                <h3 style="margin-bottom: 20px;">Add Dialogue Lines</h3>
+                <div id="dialogueLineMessage"></div>
+                <form id="dialogueLineForm" onsubmit="saveDialogueLine(event)">
+                    <input type="hidden" id="selectedDialogueId">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div class="form-group">
+                            <label>Speaker</label>
+                            <input type="text" id="lineSpeaker" placeholder="李明" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Line Order</label>
+                            <input type="number" id="lineOrder" min="1" value="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Chinese</label>
+                            <input type="text" id="lineChinese" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Pinyin</label>
+                            <input type="text" id="linePinyin" required>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>English Translation</label>
+                            <input type="text" id="lineEnglish" required>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Audio URL (optional)</label>
+                            <input type="url" id="lineAudioUrl" placeholder="https://example.com/audio.mp3">
+                            <small style="color: #666; font-size: 12px;">Audio for this specific dialogue line</small>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Add Dialogue Line</button>
+                </form>
+
+                <div class="table-container" style="margin-top: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Speaker</th>
+                                <th>Chinese</th>
+                                <th>English</th>
+                                <th>Audio</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dialogueLinesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="table-container">
                 <table>
                     <thead>
@@ -896,6 +948,7 @@
                         <td>${dialogue.lessons?.title || 'N/A'}</td>
                         <td>0</td>
                         <td class="actions">
+                            <button class="btn btn-small" onclick="manageDialogueLines(${dialogue.id}, '${dialogue.title.replace(/'/g, "\\'")}')">Manage Lines</button>
                             <button class="btn btn-danger btn-small" onclick="deleteDialogue(${dialogue.id})">Delete</button>
                         </td>
                     </tr>
@@ -936,6 +989,87 @@
                 const { error } = await supabase.from('dialogues').delete().eq('id', id);
                 if (error) throw error;
                 await loadDialogues();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Manage dialogue lines
+        async function manageDialogueLines(dialogueId, dialogueTitle) {
+            document.getElementById('selectedDialogueId').value = dialogueId;
+            document.getElementById('dialogueLineSection').classList.remove('hidden');
+            document.querySelector('#dialogueLineSection h3').textContent = `Lines for "${dialogueTitle}"`;
+            await loadDialogueLines(dialogueId);
+            document.getElementById('dialogueLineSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function loadDialogueLines(dialogueId) {
+            try {
+                const { data, error } = await supabase
+                    .from('dialogue_lines')
+                    .select('*')
+                    .eq('dialogue_id', dialogueId)
+                    .order('line_order', { ascending: true });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('dialogueLinesTable');
+                tbody.innerHTML = data?.map(line => `
+                    <tr>
+                        <td>${line.line_order}</td>
+                        <td>${line.speaker}</td>
+                        <td>${line.chinese}</td>
+                        <td>${line.english}</td>
+                        <td>${line.audio_url ? '🔊' : '-'}</td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteDialogueLine(${line.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="6">No lines yet - add some above!</td></tr>';
+            } catch (error) {
+                console.error('Error loading dialogue lines:', error);
+            }
+        }
+
+        async function saveDialogueLine(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('dialogueLineMessage');
+            const dialogueId = document.getElementById('selectedDialogueId').value;
+            
+            try {
+                const { error } = await supabase
+                    .from('dialogue_lines')
+                    .insert([{
+                        dialogue_id: parseInt(dialogueId),
+                        speaker: document.getElementById('lineSpeaker').value,
+                        chinese: document.getElementById('lineChinese').value,
+                        pinyin: document.getElementById('linePinyin').value,
+                        english: document.getElementById('lineEnglish').value,
+                        line_order: parseInt(document.getElementById('lineOrder').value),
+                        audio_url: document.getElementById('lineAudioUrl').value || null
+                    }]);
+
+                if (error) throw error;
+
+                messageEl.innerHTML = '<div class="message success">Line added!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                event.target.reset();
+                document.getElementById('lineOrder').value = parseInt(document.getElementById('lineOrder').value) + 1;
+                await loadDialogueLines(dialogueId);
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        async function deleteDialogueLine(id) {
+            if (!confirm('Delete this line?')) return;
+            const dialogueId = document.getElementById('selectedDialogueId').value;
+            try {
+                const { error } = await supabase.from('dialogue_lines').delete().eq('id', id);
+                if (error) throw error;
+                await loadDialogueLines(dialogueId);
             } catch (error) {
                 alert('Error: ' + error.message);
             }
