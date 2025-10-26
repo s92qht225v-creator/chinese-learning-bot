@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lingo Admin Panel</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 24px;
+        }
+        
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: white;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .panel {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .panel.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .login-container h2 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginContainer" class="login-container">
+        <h2>🔐 Admin Login</h2>
+        <div id="loginMessage"></div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter admin password">
+        </div>
+        <button class="btn" style="width: 100%" onclick="login()">Login</button>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="container hidden">
+        <div class="header">
+            <h1>🎓 Lingo Admin Panel</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('analytics')">📊 Analytics</button>
+            <button class="tab" onclick="showTab('vocabulary')">📚 Vocabulary</button>
+            <button class="tab" onclick="showTab('users')">👥 Users</button>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analyticsPanel" class="panel active">
+            <h2 style="margin-bottom: 20px;">Analytics Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <div class="value" id="totalUsers">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Vocabulary</h3>
+                    <div class="value" id="totalVocabulary">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Today</h3>
+                    <div class="value" id="activeToday">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Progress</h3>
+                    <div class="value" id="totalProgress">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vocabulary Tab -->
+        <div id="vocabularyPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Vocabulary Management</h2>
+            <div id="vocabMessage"></div>
+            
+            <form id="vocabularyForm" onsubmit="addVocabulary(event)">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div class="form-group">
+                        <label>Chinese</label>
+                        <input type="text" id="chinese" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Pinyin</label>
+                        <input type="text" id="pinyin" required>
+                    </div>
+                    <div class="form-group">
+                        <label>English</label>
+                        <input type="text" id="english" required>
+                    </div>
+                    <div class="form-group">
+                        <label>HSK Level</label>
+                        <select id="hskLevel" required>
+                            <option value="1">HSK 1</option>
+                            <option value="2">HSK 2</option>
+                            <option value="3">HSK 3</option>
+                            <option value="4">HSK 4</option>
+                            <option value="5">HSK 5</option>
+                            <option value="6">HSK 6</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Add Vocabulary</button>
+            </form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chinese</th>
+                            <th>Pinyin</th>
+                            <th>English</th>
+                            <th>HSK</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vocabularyTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="usersPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">User Management</h2>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Telegram ID</th>
+                            <th>Username</th>
+                            <th>HSK Level</th>
+                            <th>Last Active</th>
+                            <th>Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://tnpxusgdmnhixcjdpufy.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRucHh1c2dkbW5oaXhjamRwdWZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk4NzYzNTQsImV4cCI6MjA0NTQ1MjM1NH0.KYW2Y5-_B7nDzN-HVBvOATiT2jEh2LsVKp6xGJHqj3g';
+        const ADMIN_PASSWORD = 'admin123'; // Change this!
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Login
+        function login() {
+            const password = document.getElementById('loginPassword').value;
+            const messageEl = document.getElementById('loginMessage');
+            
+            if (password === ADMIN_PASSWORD) {
+                localStorage.setItem('adminAuth', 'true');
+                document.getElementById('loginContainer').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                loadDashboard();
+            } else {
+                messageEl.innerHTML = '<div class="message error">Invalid password!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('adminAuth');
+            location.reload();
+        }
+
+        // Check auth on load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('adminAuth') === 'true') {
+                document.getElementById('loginContainer').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                loadDashboard();
+            }
+        });
+
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Panel').classList.add('active');
+            
+            if (tabName === 'analytics') loadAnalytics();
+            if (tabName === 'vocabulary') loadVocabulary();
+            if (tabName === 'users') loadUsers();
+        }
+
+        // Load dashboard
+        async function loadDashboard() {
+            await loadAnalytics();
+            await loadVocabulary();
+        }
+
+        // Load analytics
+        async function loadAnalytics() {
+            try {
+                const [vocabData, usersData, progressData] = await Promise.all([
+                    supabase.from('vocabulary').select('*', { count: 'exact', head: true }),
+                    supabase.from('users').select('*', { count: 'exact', head: true }),
+                    supabase.from('user_progress').select('*', { count: 'exact', head: true })
+                ]);
+
+                document.getElementById('totalVocabulary').textContent = vocabData.count || 0;
+                document.getElementById('totalUsers').textContent = usersData.count || 0;
+                document.getElementById('totalProgress').textContent = progressData.count || 0;
+                document.getElementById('activeToday').textContent = '0'; // Implement if needed
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        // Load vocabulary
+        async function loadVocabulary() {
+            try {
+                const { data, error } = await supabase
+                    .from('vocabulary')
+                    .select('*')
+                    .order('hsk_level', { ascending: true });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('vocabularyTable');
+                tbody.innerHTML = data.map(word => `
+                    <tr>
+                        <td>${word.chinese}</td>
+                        <td>${word.pinyin}</td>
+                        <td>${word.english}</td>
+                        <td>HSK ${word.hsk_level}</td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteVocabulary(${word.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading vocabulary:', error);
+            }
+        }
+
+        // Add vocabulary
+        async function addVocabulary(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('vocabMessage');
+            
+            try {
+                const { error } = await supabase
+                    .from('vocabulary')
+                    .insert([{
+                        chinese: document.getElementById('chinese').value,
+                        pinyin: document.getElementById('pinyin').value,
+                        english: document.getElementById('english').value,
+                        hsk_level: parseInt(document.getElementById('hskLevel').value)
+                    }]);
+
+                if (error) throw error;
+
+                messageEl.innerHTML = '<div class="message success">Vocabulary added successfully!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                document.getElementById('vocabularyForm').reset();
+                await loadVocabulary();
+                await loadAnalytics();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        // Delete vocabulary
+        async function deleteVocabulary(id) {
+            if (!confirm('Are you sure you want to delete this word?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('vocabulary')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                await loadVocabulary();
+                await loadAnalytics();
+            } catch (error) {
+                alert('Error deleting vocabulary: ' + error.message);
+            }
+        }
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .order('last_active', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('usersTable');
+                tbody.innerHTML = data.map(user => `
+                    <tr>
+                        <td>${user.telegram_id}</td>
+                        <td>${user.username || 'N/A'}</td>
+                        <td>HSK ${user.hsk_level || 'Not set'}</td>
+                        <td>${new Date(user.last_active).toLocaleString()}</td>
+                        <td>${user.total_words_learned || 0} words</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+    </script>
+</body>
+</html>
