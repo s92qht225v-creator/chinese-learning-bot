@@ -1,226 +1,1077 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - Chinese Learning Bot</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lingo Admin Panel</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 24px;
+        }
+        
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: white;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .panel {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .panel.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .login-container h2 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-  <!-- Login Screen -->
-  <div id="loginScreen" class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Admin Panel
-        </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
-          Chinese Learning Bot Management
-        </p>
-      </div>
-      <form class="mt-8 space-y-6" onsubmit="login(event)">
-        <div class="rounded-md shadow-sm -space-y-px">
-          <div>
-            <input id="password" name="password" type="password" required
-              class="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-              placeholder="Admin Password">
-          </div>
+<body>
+    <!-- Login Screen -->
+    <div id="loginContainer" class="login-container">
+        <h2>🔐 Admin Login</h2>
+        <div id="loginMessage"></div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter admin password">
         </div>
-        <div>
-          <button type="submit"
-            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Sign in
-          </button>
-        </div>
-      </form>
-      <p class="text-xs text-gray-500 text-center">Default password: <code class="bg-gray-200 px-2 py-1 rounded">admin123</code></p>
+        <button class="btn" style="width: 100%" onclick="login()">Login</button>
     </div>
-  </div>
 
-  <!-- Admin Dashboard -->
-  <div id="adminDashboard" class="hidden">
-    <!-- Header -->
-    <nav class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex items-center">
-            <h1 class="text-xl font-bold text-gray-900">Chinese Learning Bot Admin</h1>
-          </div>
-          <div class="flex items-center space-x-4">
-            <span class="text-sm text-gray-600" id="adminEmail">admin@lingo.uz</span>
-            <button onclick="logout()" class="text-sm text-red-600 hover:text-red-700">Logout</button>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Stats Overview -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-600">Total Users</div>
-          <div class="mt-2 text-3xl font-bold text-gray-900" id="totalUsers">0</div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-600">Total Vocabulary</div>
-          <div class="mt-2 text-3xl font-bold text-gray-900" id="totalVocab">0</div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-600">Active Today</div>
-          <div class="mt-2 text-3xl font-bold text-gray-900" id="activeToday">0</div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="text-sm font-medium text-gray-600">Total Quizzes</div>
-          <div class="mt-2 text-3xl font-bold text-gray-900" id="totalQuizzes">0</div>
-        </div>
-      </div>
-
-      <!-- Tabs -->
-      <div class="bg-white shadow rounded-lg">
-        <div class="border-b border-gray-200">
-          <nav class="-mb-px flex">
-            <button onclick="showTab('vocabulary')" id="tabVocab" class="tab-btn border-b-2 border-blue-500 py-4 px-6 text-sm font-medium text-blue-600">
-              Vocabulary
-            </button>
-            <button onclick="showTab('users')" id="tabUsers" class="tab-btn border-b-2 border-transparent py-4 px-6 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
-              Users
-            </button>
-            <button onclick="showTab('analytics')" id="tabAnalytics" class="tab-btn border-b-2 border-transparent py-4 px-6 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
-              Analytics
-            </button>
-          </nav>
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="container hidden">
+        <div class="header">
+            <h1>🎓 Lingo Admin Panel</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
 
-        <!-- Vocabulary Tab -->
-        <div id="vocabularyTab" class="p-6">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-lg font-semibold text-gray-900">Vocabulary Management</h2>
-            <button onclick="showAddVocabModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium">
-              + Add Word
-            </button>
-          </div>
-
-          <!-- Vocabulary Table -->
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chinese</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pinyin</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">English</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HSK</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="vocabularyTableBody" class="bg-white divide-y divide-gray-200">
-                <!-- Loaded dynamically -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Users Tab -->
-        <div id="usersTab" class="p-6 hidden">
-          <h2 class="text-lg font-semibold text-gray-900 mb-6">User Management</h2>
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HSK Level</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                </tr>
-              </thead>
-              <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
-                <!-- Loaded dynamically -->
-              </tbody>
-            </table>
-          </div>
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('analytics')">📊 Analytics</button>
+            <button class="tab" onclick="showTab('vocabulary')">📚 Vocabulary</button>
+            <button class="tab" onclick="showTab('lessons')">📖 Lessons</button>
+            <button class="tab" onclick="showTab('dialogues')">💬 Dialogues</button>
+            <button class="tab" onclick="showTab('grammar')">📝 Grammar</button>
+            <button class="tab" onclick="showTab('quizzes')">❓ Quizzes</button>
+            <button class="tab" onclick="showTab('users')">👥 Users</button>
         </div>
 
         <!-- Analytics Tab -->
-        <div id="analyticsTab" class="p-6 hidden">
-          <h2 class="text-lg font-semibold text-gray-900 mb-6">Analytics</h2>
-          <div class="space-y-6">
-            <div class="bg-gray-50 rounded-lg p-6">
-              <h3 class="text-sm font-medium text-gray-900 mb-4">Most Difficult Words</h3>
-              <div id="difficultWords" class="space-y-2">
-                <!-- Loaded dynamically -->
-              </div>
+        <div id="analyticsPanel" class="panel active">
+            <h2 style="margin-bottom: 20px;">Analytics Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <div class="value" id="totalUsers">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Vocabulary</h3>
+                    <div class="value" id="totalVocabulary">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Today</h3>
+                    <div class="value" id="activeToday">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Progress</h3>
+                    <div class="value" id="totalProgress">0</div>
+                </div>
             </div>
-            <div class="bg-gray-50 rounded-lg p-6">
-              <h3 class="text-sm font-medium text-gray-900 mb-4">User Activity (Last 7 Days)</h3>
-              <div id="userActivity">
-                Coming soon...
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Add Vocabulary Modal -->
-  <div id="addVocabModal" class="hidden fixed z-10 inset-0 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen px-4">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddVocabModal()"></div>
-      <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all max-w-lg w-full z-20">
-        <form onsubmit="addVocabulary(event)">
-          <div class="bg-white px-6 py-4">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Vocabulary</h3>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Chinese</label>
-                <input type="text" id="newChinese" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Pinyin</label>
-                <input type="text" id="newPinyin" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">English</label>
-                <input type="text" id="newEnglish" required class="w-full border border-gray-300 rounded-md px-3 py-2">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">HSK Level</label>
-                <select id="newHSK" class="w-full border border-gray-300 rounded-md px-3 py-2">
-                  <option value="1">HSK 1</option>
-                  <option value="2">HSK 2</option>
-                  <option value="3">HSK 3</option>
-                  <option value="4">HSK 4</option>
-                  <option value="5">HSK 5</option>
-                  <option value="6">HSK 6</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
-                <select id="newDifficulty" class="w-full border border-gray-300 rounded-md px-3 py-2">
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </div>
+        <!-- Vocabulary Tab -->
+        <div id="vocabularyPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Vocabulary Management</h2>
+            <div id="vocabMessage"></div>
+            
+            <form id="vocabularyForm" onsubmit="addVocabulary(event)">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div class="form-group">
+                        <label>Chinese</label>
+                        <input type="text" id="chinese" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Pinyin</label>
+                        <input type="text" id="pinyin" required>
+                    </div>
+                    <div class="form-group">
+                        <label>English</label>
+                        <input type="text" id="english" required>
+                    </div>
+                    <div class="form-group">
+                        <label>HSK Level</label>
+                        <select id="hskLevel" required>
+                            <option value="1">HSK 1</option>
+                            <option value="2">HSK 2</option>
+                            <option value="3">HSK 3</option>
+                            <option value="4">HSK 4</option>
+                            <option value="5">HSK 5</option>
+                            <option value="6">HSK 6</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Audio URL (optional)</label>
+                    <input type="url" id="vocabAudioUrl" placeholder="https://example.com/audio.mp3">
+                    <small style="color: #666; font-size: 12px;">Upload audio to Google Drive, Dropbox, or any CDN and paste the direct link here</small>
+                </div>
+                <button type="submit" class="btn">Add Vocabulary</button>
+            </form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chinese</th>
+                            <th>Pinyin</th>
+                            <th>English</th>
+                            <th>HSK</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vocabularyTable"></tbody>
+                </table>
             </div>
-          </div>
-          <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
-            <button type="button" onclick="closeAddVocabModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-              Cancel
-            </button>
-            <button type="submit" class="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700">
-              Add Word
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+        </div>
 
-  <script src="admin.js"></script>
+        <!-- Lessons Tab -->
+        <div id="lessonsPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Lesson Management</h2>
+            <div id="lessonMessage"></div>
+            
+            <form id="lessonForm" onsubmit="saveLesson(event)">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="lessonTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>HSK Level</label>
+                        <select id="lessonHskLevel" required>
+                            <option value="1">HSK 1</option>
+                            <option value="2">HSK 2</option>
+                            <option value="3">HSK 3</option>
+                            <option value="4">HSK 4</option>
+                            <option value="5">HSK 5</option>
+                            <option value="6">HSK 6</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Lesson Number</label>
+                        <input type="number" id="lessonNumber" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="lessonStatus" required>
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="lessonDescription">
+                </div>
+                <button type="submit" class="btn">Add Lesson</button>
+            </form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>HSK</th>
+                            <th>#</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lessonsTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Dialogues Tab -->
+        <div id="dialoguesPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Dialogue Management</h2>
+            <div id="dialogueMessage"></div>
+            
+            <form id="dialogueForm" onsubmit="saveDialogue(event)">
+                <div class="form-group">
+                    <label>Select Lesson</label>
+                    <select id="dialogueLesson" required>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dialogue Title</label>
+                    <input type="text" id="dialogueTitle" required>
+                </div>
+                <button type="submit" class="btn">Add Dialogue</button>
+            </form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Lesson</th>
+                            <th>Lines</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dialoguesTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Grammar Tab -->
+        <div id="grammarPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Grammar Management</h2>
+            <div id="grammarMessage"></div>
+            
+            <form id="grammarForm" onsubmit="saveGrammar(event)">
+                <div class="form-group">
+                    <label>Select Lesson</label>
+                    <select id="grammarLesson" required>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="grammarTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Explanation</label>
+                    <textarea id="grammarExplanation" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;" required></textarea>
+                </div>
+                <button type="submit" class="btn">Add Grammar Point</button>
+            </form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Lesson</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grammarTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quizzes Tab -->
+        <div id="quizzesPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Quiz Management</h2>
+            <div id="quizMessage"></div>
+            
+            <form id="quizForm" onsubmit="saveQuiz(event)">
+                <div class="form-group">
+                    <label>Select Lesson</label>
+                    <select id="quizLesson" required>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Question</label>
+                    <input type="text" id="quizQuestion" required>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="quizType" required>
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="fill_blank">Fill in the Blank</option>
+                        <option value="matching">Matching</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Correct Answer</label>
+                    <input type="text" id="quizAnswer" required>
+                </div>
+                <button type="submit" class="btn">Add Quiz</button>
+            </form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Question</th>
+                            <th>Type</th>
+                            <th>Lesson</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quizzesTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="usersPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">User Management</h2>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Telegram ID</th>
+                            <th>Username</th>
+                            <th>HSK Level</th>
+                            <th>Last Active</th>
+                            <th>Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2ZW9xZWRza3piYmdjYXpwc2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0Nzk1MjYsImV4cCI6MjA3NzA1NTUyNn0.NfTfTWKNDmsmiLF_MX5XGGq48xbX8OOUWhVmb5U-VXM';
+        const ADMIN_PASSWORD = 'admin123'; // Change this!
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Login
+        function login() {
+            const password = document.getElementById('loginPassword').value;
+            const messageEl = document.getElementById('loginMessage');
+            
+            if (password === ADMIN_PASSWORD) {
+                localStorage.setItem('adminAuth', 'true');
+                document.getElementById('loginContainer').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                loadDashboard();
+            } else {
+                messageEl.innerHTML = '<div class="message error">Invalid password!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('adminAuth');
+            location.reload();
+        }
+
+        // Check auth on load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('adminAuth') === 'true') {
+                document.getElementById('loginContainer').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                loadDashboard();
+            }
+        });
+
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Panel').classList.add('active');
+            
+            if (tabName === 'analytics') loadAnalytics();
+            if (tabName === 'vocabulary') loadVocabulary();
+            if (tabName === 'lessons') loadLessons();
+            if (tabName === 'dialogues') { loadLessonsForSelect(); loadDialogues(); }
+            if (tabName === 'grammar') { loadLessonsForSelect(); loadGrammar(); }
+            if (tabName === 'quizzes') { loadLessonsForSelect(); loadQuizzes(); }
+            if (tabName === 'users') loadUsers();
+        }
+
+        // Load dashboard
+        async function loadDashboard() {
+            await loadAnalytics();
+            await loadVocabulary();
+        }
+
+        // Load analytics
+        async function loadAnalytics() {
+            try {
+                const [vocabData, usersData, progressData] = await Promise.all([
+                    supabase.from('vocabulary').select('*', { count: 'exact', head: true }),
+                    supabase.from('users').select('*', { count: 'exact', head: true }),
+                    supabase.from('user_progress').select('*', { count: 'exact', head: true })
+                ]);
+
+                document.getElementById('totalVocabulary').textContent = vocabData.count || 0;
+                document.getElementById('totalUsers').textContent = usersData.count || 0;
+                document.getElementById('totalProgress').textContent = progressData.count || 0;
+                
+                // Calculate active today
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const { data: activeUsers } = await supabase
+                    .from('users')
+                    .select('telegram_id')
+                    .gte('last_active', today.toISOString());
+                document.getElementById('activeToday').textContent = activeUsers?.length || 0;
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        // Load vocabulary
+        async function loadVocabulary() {
+            try {
+                const { data, error } = await supabase
+                    .from('vocabulary')
+                    .select('*')
+                    .order('hsk_level', { ascending: true });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('vocabularyTable');
+                tbody.innerHTML = data.map(word => `
+                    <tr>
+                        <td>${word.chinese}</td>
+                        <td>${word.pinyin}</td>
+                        <td>${word.english}</td>
+                        <td>HSK ${word.hsk_level}</td>
+                        <td class="actions">
+                            <button class="btn btn-small" onclick="editVocabulary(${word.id}, '${word.chinese.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${word.pinyin.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${word.english.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${word.hsk_level})">Edit</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteVocabulary(${word.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading vocabulary:', error);
+            }
+        }
+
+        // Add vocabulary
+        async function addVocabulary(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('vocabMessage');
+            const form = event.target;
+            const editId = form.dataset.editId;
+            
+            try {
+                const vocabData = {
+                    chinese: document.getElementById('chinese').value,
+                    pinyin: document.getElementById('pinyin').value,
+                    english: document.getElementById('english').value,
+                    hsk_level: parseInt(document.getElementById('hskLevel').value),
+                    audio_url: document.getElementById('vocabAudioUrl').value || null
+                };
+
+                let error;
+                if (editId) {
+                    // Update existing
+                    const result = await supabase
+                        .from('vocabulary')
+                        .update(vocabData)
+                        .eq('id', editId);
+                    error = result.error;
+                    messageEl.innerHTML = '<div class="message success">Vocabulary updated successfully!</div>';
+                } else {
+                    // Insert new
+                    const result = await supabase
+                        .from('vocabulary')
+                        .insert([vocabData]);
+                    error = result.error;
+                    messageEl.innerHTML = '<div class="message success">Vocabulary added successfully!</div>';
+                }
+
+                if (error) throw error;
+
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                // Reset form
+                form.reset();
+                delete form.dataset.editId;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Add Vocabulary';
+                submitBtn.classList.remove('btn-warning');
+                
+                await loadVocabulary();
+                await loadAnalytics();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        // Edit vocabulary
+        async function editVocabulary(id, chinese, pinyin, english, hskLevel) {
+            document.getElementById('chinese').value = chinese;
+            document.getElementById('pinyin').value = pinyin;
+            document.getElementById('english').value = english;
+            document.getElementById('hskLevel').value = hskLevel;
+            
+            // Change form to edit mode
+            const form = document.getElementById('vocabularyForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Update Vocabulary';
+            submitBtn.classList.add('btn-warning');
+            
+            // Store edit ID
+            form.dataset.editId = id;
+            
+            // Scroll to form
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Delete vocabulary
+        async function deleteVocabulary(id) {
+            if (!confirm('Are you sure you want to delete this word?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('vocabulary')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                await loadVocabulary();
+                await loadAnalytics();
+            } catch (error) {
+                alert('Error deleting vocabulary: ' + error.message);
+            }
+        }
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .order('last_active', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('usersTable');
+                tbody.innerHTML = data.map(user => `
+                    <tr>
+                        <td>${user.telegram_id}</td>
+                        <td>${user.username || 'N/A'}</td>
+                        <td>HSK ${user.hsk_level || 'Not set'}</td>
+                        <td>${new Date(user.last_active).toLocaleString()}</td>
+                        <td>${user.total_words_learned || 0} words</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // ========== LESSONS ==========
+        async function loadLessons() {
+            try {
+                const { data, error } = await supabase
+                    .from('lessons')
+                    .select('*')
+                    .order('hsk_level', { ascending: true })
+                    .order('lesson_number', { ascending: true });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('lessonsTable');
+                tbody.innerHTML = data?.map(lesson => `
+                    <tr>
+                        <td>${lesson.title}</td>
+                        <td>HSK ${lesson.hsk_level}</td>
+                        <td>${lesson.lesson_number}</td>
+                        <td><span style="padding:4px 8px;border-radius:4px;background:${lesson.status === 'published' ? '#d1fae5' : '#fee2e2'};color:${lesson.status === 'published' ? '#065f46' : '#991b1b'}">${lesson.status}</span></td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteLesson(${lesson.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="5">No lessons yet</td></tr>';
+            } catch (error) {
+                console.error('Error loading lessons:', error);
+            }
+        }
+
+        async function saveLesson(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('lessonMessage');
+            
+            try {
+                const { error } = await supabase
+                    .from('lessons')
+                    .insert([{
+                        title: document.getElementById('lessonTitle').value,
+                        hsk_level: parseInt(document.getElementById('lessonHskLevel').value),
+                        lesson_number: parseInt(document.getElementById('lessonNumber').value),
+                        description: document.getElementById('lessonDescription').value,
+                        status: document.getElementById('lessonStatus').value
+                    }]);
+
+                if (error) throw error;
+
+                messageEl.innerHTML = '<div class="message success">Lesson added successfully!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                event.target.reset();
+                await loadLessons();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        async function deleteLesson(id) {
+            if (!confirm('Are you sure? This will delete all dialogues, grammar, and quizzes for this lesson.')) return;
+            
+            try {
+                const { error } = await supabase.from('lessons').delete().eq('id', id);
+                if (error) throw error;
+                await loadLessons();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // ========== DIALOGUES ==========
+        async function loadLessonsForSelect() {
+            try {
+                const { data, error } = await supabase
+                    .from('lessons')
+                    .select('id, title, hsk_level, lesson_number')
+                    .order('hsk_level', { ascending: true });
+
+                if (error) throw error;
+
+                const selects = ['dialogueLesson', 'grammarLesson', 'quizLesson'];
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        select.innerHTML = '<option value="">Select a lesson</option>' + 
+                            data.map(l => `<option value="${l.id}">HSK ${l.hsk_level} - ${l.lesson_number}. ${l.title}</option>`).join('');
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading lessons for select:', error);
+            }
+        }
+
+        async function loadDialogues() {
+            try {
+                const { data, error } = await supabase
+                    .from('dialogues')
+                    .select(`
+                        *,
+                        lessons (title)
+                    `)
+                    .order('id', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('dialoguesTable');
+                tbody.innerHTML = data?.map(dialogue => `
+                    <tr>
+                        <td>${dialogue.title}</td>
+                        <td>${dialogue.lessons?.title || 'N/A'}</td>
+                        <td>0</td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteDialogue(${dialogue.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="4">No dialogues yet</td></tr>';
+            } catch (error) {
+                console.error('Error loading dialogues:', error);
+            }
+        }
+
+        async function saveDialogue(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('dialogueMessage');
+            
+            try {
+                const { error } = await supabase
+                    .from('dialogues')
+                    .insert([{
+                        lesson_id: parseInt(document.getElementById('dialogueLesson').value),
+                        title: document.getElementById('dialogueTitle').value
+                    }]);
+
+                if (error) throw error;
+
+                messageEl.innerHTML = '<div class="message success">Dialogue added!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                event.target.reset();
+                await loadDialogues();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        async function deleteDialogue(id) {
+            if (!confirm('Delete this dialogue?')) return;
+            try {
+                const { error } = await supabase.from('dialogues').delete().eq('id', id);
+                if (error) throw error;
+                await loadDialogues();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // ========== GRAMMAR ==========
+        async function loadGrammar() {
+            try {
+                const { data, error } = await supabase
+                    .from('grammar_points')
+                    .select(`
+                        *,
+                        lessons (title)
+                    `)
+                    .order('id', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('grammarTable');
+                tbody.innerHTML = data?.map(grammar => `
+                    <tr>
+                        <td>${grammar.title}</td>
+                        <td>${grammar.lessons?.title || 'N/A'}</td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteGrammar(${grammar.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="3">No grammar points yet</td></tr>';
+            } catch (error) {
+                console.error('Error loading grammar:', error);
+            }
+        }
+
+        async function saveGrammar(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('grammarMessage');
+            
+            try {
+                const { error } = await supabase
+                    .from('grammar_points')
+                    .insert([{
+                        lesson_id: parseInt(document.getElementById('grammarLesson').value),
+                        title: document.getElementById('grammarTitle').value,
+                        explanation: document.getElementById('grammarExplanation').value
+                    }]);
+
+                if (error) throw error;
+
+                messageEl.innerHTML = '<div class="message success">Grammar point added!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                event.target.reset();
+                await loadGrammar();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        async function deleteGrammar(id) {
+            if (!confirm('Delete this grammar point?')) return;
+            try {
+                const { error } = await supabase.from('grammar_points').delete().eq('id', id);
+                if (error) throw error;
+                await loadGrammar();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // ========== QUIZZES ==========
+        async function loadQuizzes() {
+            try {
+                const { data, error } = await supabase
+                    .from('quizzes')
+                    .select(`
+                        *,
+                        lessons (title)
+                    `)
+                    .order('id', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('quizzesTable');
+                tbody.innerHTML = data?.map(quiz => `
+                    <tr>
+                        <td>${quiz.question}</td>
+                        <td>${quiz.question_type}</td>
+                        <td>${quiz.lessons?.title || 'N/A'}</td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-small" onclick="deleteQuiz(${quiz.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="4">No quizzes yet</td></tr>';
+            } catch (error) {
+                console.error('Error loading quizzes:', error);
+            }
+        }
+
+        async function saveQuiz(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('quizMessage');
+            
+            try {
+                const { error } = await supabase
+                    .from('quizzes')
+                    .insert([{
+                        lesson_id: parseInt(document.getElementById('quizLesson').value),
+                        question: document.getElementById('quizQuestion').value,
+                        question_type: document.getElementById('quizType').value,
+                        correct_answer: document.getElementById('quizAnswer').value
+                    }]);
+
+                if (error) throw error;
+
+                messageEl.innerHTML = '<div class="message success">Quiz added!</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                event.target.reset();
+                await loadQuizzes();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        async function deleteQuiz(id) {
+            if (!confirm('Delete this quiz?')) return;
+            try {
+                const { error } = await supabase.from('quizzes').delete().eq('id', id);
+                if (error) throw error;
+                await loadQuizzes();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
 </body>
 </html>
