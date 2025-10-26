@@ -304,8 +304,21 @@
     playAudioBtn.addEventListener('click', () => {
       if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
       const char = characters[currentIndex];
-      if (char && window.tts) {
-        tts.speak(char.char);
+      if (char) {
+        // Try to play audio from URL first
+        if (char.audio_url) {
+          const audio = new Audio(char.audio_url);
+          audio.play().catch(err => {
+            console.error('Audio playback failed:', err);
+            // Fallback to TTS
+            if (window.tts) {
+              tts.speak(char.char);
+            }
+          });
+        } else if (window.tts) {
+          // Use TTS if no audio URL
+          tts.speak(char.char);
+        }
       }
     });
 
@@ -398,7 +411,8 @@
         characters = data.slice(0, 10).map(word => ({
           char: word.chinese,
           pinyin: word.pinyin,
-          meaning: word.english
+          meaning: word.english,
+          audio_url: word.audio_url
         }));
         
         if (characters.length > 0) {
