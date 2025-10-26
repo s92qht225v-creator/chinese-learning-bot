@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Flashcards - Chinese Learning</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4A90E2",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "background-light": "#F8F9FA",
+            "background-dark": "#101c22",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    
+    .flashcard {
+      perspective: 1000px;
+    }
+    
+    .flashcard-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    
+    .flashcard.flipped .flashcard-inner {
+      transform: rotateY(180deg);
+    }
+    
+    .flashcard-front,
+    .flashcard-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 1rem;
+      padding: 2rem;
+    }
+    
+    .flashcard-back {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+      <div class="max-w-screen-xl mx-auto px-4 py-3">
+        <div class="flex items-center justify-between">
+          <button id="backBtn" class="flex items-center gap-2 text-text-light dark:text-text-dark">
+            <span class="material-symbols-outlined">arrow_back</span>
+            <span class="font-medium">Back</span>
+          </button>
+          <div class="text-center">
+            <p class="text-sm font-medium text-text-light dark:text-text-dark">Flashcards</p>
+            <p class="text-xs text-text-muted-light dark:text-text-muted-dark" id="progress">1 / 12</p>
+          </div>
+          <div class="w-20"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 flex flex-col px-4 py-6 max-w-screen-xl mx-auto w-full">
+      <!-- Progress Bar -->
+      <div class="mb-6">
+        <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div id="progressBar" class="h-full bg-primary rounded-full transition-all duration-300" style="width: 8.33%;"></div>
+        </div>
+      </div>
+
+      <!-- Flashcard Container -->
+      <div class="flex-1 flex items-center justify-center py-4">
+        <div class="flashcard w-full max-w-md cursor-pointer" id="flashcard" style="height: 400px;">
+          <div class="flashcard-inner">
+            <!-- Front (Chinese) -->
+            <div class="flashcard-front bg-gradient-to-br from-primary to-blue-600 text-white shadow-xl">
+              <p class="text-sm opacity-80 mb-4">Tap to flip</p>
+              <p class="text-7xl font-bold mb-4" id="cardChinese">你好</p>
+              <p class="text-2xl opacity-90" id="cardPinyin">nǐ hǎo</p>
+            </div>
+            
+            <!-- Back (English) -->
+            <div class="flashcard-back bg-white dark:bg-gray-800 text-text-light dark:text-text-dark shadow-xl border-2 border-primary">
+              <p class="text-sm text-text-muted-light dark:text-text-muted-dark mb-4">Translation</p>
+              <p class="text-4xl font-bold" id="cardEnglish">Hello</p>
+              <p class="text-sm text-text-muted-light dark:text-text-muted-dark mt-6">Tap to flip back</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-6 space-y-3">
+        <div class="flex gap-3">
+          <button id="againBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-xl py-4 font-semibold flex items-center justify-center gap-2 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+            Again
+          </button>
+          <button id="hardBtn" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-4 font-semibold flex items-center justify-center gap-2 transition-colors">
+            <span class="material-symbols-outlined">sentiment_dissatisfied</span>
+            Hard
+          </button>
+        </div>
+        <div class="flex gap-3">
+          <button id="goodBtn" class="flex-1 bg-secondary hover:bg-green-500 text-white rounded-xl py-4 font-semibold flex items-center justify-center gap-2 transition-colors">
+            <span class="material-symbols-outlined">check</span>
+            Good
+          </button>
+          <button id="easyBtn" class="flex-1 bg-primary hover:bg-blue-600 text-white rounded-xl py-4 font-semibold flex items-center justify-center gap-2 transition-colors">
+            <span class="material-symbols-outlined">sentiment_very_satisfied</span>
+            Easy
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="mt-6 grid grid-cols-4 gap-2 text-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-2">
+          <p class="text-lg font-bold text-red-500" id="againCount">0</p>
+          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Again</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-2">
+          <p class="text-lg font-bold text-orange-500" id="hardCount">0</p>
+          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Hard</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-2">
+          <p class="text-lg font-bold text-secondary" id="goodCount">0</p>
+          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Good</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-2">
+          <p class="text-lg font-bold text-primary" id="easyCount">0</p>
+          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Easy</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // Flashcard data
+    const flashcards = [
+      { chinese: '你好', pinyin: 'nǐ hǎo', english: 'Hello' },
+      { chinese: '谢谢', pinyin: 'xiè xie', english: 'Thank you' },
+      { chinese: '再见', pinyin: 'zài jiàn', english: 'Goodbye' },
+      { chinese: '我', pinyin: 'wǒ', english: 'I, me' },
+      { chinese: '你', pinyin: 'nǐ', english: 'You' },
+      { chinese: '他', pinyin: 'tā', english: 'He, him' },
+      { chinese: '好', pinyin: 'hǎo', english: 'Good' },
+      { chinese: '是', pinyin: 'shì', english: 'To be, is' },
+      { chinese: '不', pinyin: 'bù', english: 'No, not' },
+      { chinese: '叫', pinyin: 'jiào', english: 'To be called' },
+      { chinese: '名字', pinyin: 'míngzi', english: 'Name' },
+      { chinese: '很', pinyin: 'hěn', english: 'Very' }
+    ];
+
+    let currentIndex = 0;
+    let stats = { again: 0, hard: 0, good: 0, easy: 0 };
+
+    // Elements
+    const flashcard = document.getElementById('flashcard');
+    const cardChinese = document.getElementById('cardChinese');
+    const cardPinyin = document.getElementById('cardPinyin');
+    const cardEnglish = document.getElementById('cardEnglish');
+    const progress = document.getElementById('progress');
+    const progressBar = document.getElementById('progressBar');
+    const backBtn = document.getElementById('backBtn');
+    const againBtn = document.getElementById('againBtn');
+    const hardBtn = document.getElementById('hardBtn');
+    const goodBtn = document.getElementById('goodBtn');
+    const easyBtn = document.getElementById('easyBtn');
+
+    // Flip card
+    flashcard.addEventListener('click', () => {
+      flashcard.classList.toggle('flipped');
+      if (tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('light');
+      }
+    });
+
+    // Load card
+    function loadCard(index) {
+      const card = flashcards[index];
+      cardChinese.textContent = card.chinese;
+      cardPinyin.textContent = card.pinyin;
+      cardEnglish.textContent = card.english;
+      progress.textContent = `${index + 1} / ${flashcards.length}`;
+      progressBar.style.width = `${((index + 1) / flashcards.length) * 100}%`;
+      
+      // Reset flip
+      flashcard.classList.remove('flipped');
+    }
+
+    // Next card
+    function nextCard() {
+      if (currentIndex < flashcards.length - 1) {
+        currentIndex++;
+        loadCard(currentIndex);
+      } else {
+        // Finished
+        if (tg.HapticFeedback) {
+          tg.HapticFeedback.notificationOccurred('success');
+        }
+        alert(`Session complete! 🎉\n\nAgain: ${stats.again}\nHard: ${stats.hard}\nGood: ${stats.good}\nEasy: ${stats.easy}`);
+        window.location.href = '/practice.html';
+      }
+    }
+
+    // Update stats
+    function updateStats(type) {
+      stats[type]++;
+      document.getElementById(`${type}Count`).textContent = stats[type];
+    }
+
+    // Button handlers
+    againBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+      updateStats('again');
+      nextCard();
+    });
+
+    hardBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      updateStats('hard');
+      nextCard();
+    });
+
+    goodBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      updateStats('good');
+      nextCard();
+    });
+
+    easyBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      updateStats('easy');
+      nextCard();
+    });
+
+    backBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      window.history.back();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === ' ') {
+        e.preventDefault();
+        flashcard.click();
+      } else if (e.key === '1') againBtn.click();
+      else if (e.key === '2') hardBtn.click();
+      else if (e.key === '3') goodBtn.click();
+      else if (e.key === '4') easyBtn.click();
+    });
+  </script>
+</body>
+</html>

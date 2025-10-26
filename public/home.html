@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Home - Chinese Learning</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4A90E2",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "background-light": "#F8F9FA",
+            "background-dark": "#101c22",
+            "text-light": "#333333",
+            "text-dark": "#F8F9FA",
+            "text-muted-light": "#6c757d",
+            "text-muted-dark": "#a0aec0",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
+  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-20">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-primary to-blue-600 text-white px-4 pt-8 pb-6">
+      <div class="max-w-screen-xl mx-auto">
+        <h1 class="text-2xl font-bold mb-1">Welcome back!</h1>
+        <p class="text-blue-100 text-sm">Let's continue your learning journey</p>
+        
+        <!-- Streak Counter -->
+        <div class="mt-4 flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 inline-flex">
+          <span class="text-2xl">🔥</span>
+          <div>
+            <p class="font-bold text-lg">5 Day Streak</p>
+            <p class="text-xs text-blue-100">Keep it up!</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-4 py-6 max-w-screen-xl mx-auto w-full">
+      <!-- Daily Progress -->
+      <section class="mb-6">
+        <h2 class="text-lg font-bold mb-3">Today's Progress</h2>
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium">Daily Goal</span>
+            <span class="text-sm text-primary font-bold">60%</span>
+          </div>
+          <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div class="h-full bg-primary rounded-full" style="width: 60%;"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-3 mt-4">
+            <div class="text-center">
+              <p class="text-2xl font-bold text-primary">1</p>
+              <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Lessons</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-secondary">8</p>
+              <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Words</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-accent">12</p>
+              <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Minutes</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Continue Learning -->
+      <section class="mb-6">
+        <h2 class="text-lg font-bold mb-3">Continue Learning</h2>
+        <a href="/lesson.html" class="block bg-gradient-to-br from-primary to-blue-600 rounded-xl p-5 shadow-lg text-white">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <p class="text-sm opacity-90">HSK 1 · Lesson 2</p>
+              <h3 class="text-xl font-bold mt-1">Self Introduction</h3>
+            </div>
+            <div class="bg-white/20 rounded-full p-3">
+              <span class="material-symbols-outlined text-3xl">play_arrow</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
+              <div class="h-full bg-white rounded-full" style="width: 50%;"></div>
+            </div>
+            <span class="text-sm font-medium">50%</span>
+          </div>
+        </a>
+      </section>
+
+      <!-- Quick Actions -->
+      <section class="mb-6">
+        <h2 class="text-lg font-bold mb-3">Quick Actions</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Practice Writing -->
+          <a href="#" class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm flex flex-col items-center text-center">
+            <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-2">
+              <span class="material-symbols-outlined text-accent text-2xl">edit</span>
+            </div>
+            <p class="font-semibold text-sm">Practice Writing</p>
+            <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">5 characters</p>
+          </a>
+
+          <!-- Take Quiz -->
+          <a href="#" class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm flex flex-col items-center text-center">
+            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+              <span class="material-symbols-outlined text-primary text-2xl">quiz</span>
+            </div>
+            <p class="font-semibold text-sm">Take Quiz</p>
+            <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">Test yourself</p>
+          </a>
+
+          <!-- Review Vocabulary -->
+          <a href="#" class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm flex flex-col items-center text-center">
+            <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-2">
+              <span class="material-symbols-outlined text-secondary text-2xl">book</span>
+            </div>
+            <p class="font-semibold text-sm">Vocabulary</p>
+            <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">12 words</p>
+          </a>
+
+          <!-- All Lessons -->
+          <a href="/lessons.html" class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm flex flex-col items-center text-center">
+            <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mb-2">
+              <span class="material-symbols-outlined text-purple-600 text-2xl">school</span>
+            </div>
+            <p class="font-semibold text-sm">All Lessons</p>
+            <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">Browse</p>
+          </a>
+        </div>
+      </section>
+
+      <!-- Phrase of the Day -->
+      <section class="mb-6">
+        <h2 class="text-lg font-bold mb-3">Phrase of the Day</h2>
+        <div class="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-5 shadow-lg text-white">
+          <p class="text-3xl font-bold mb-2">加油！</p>
+          <p class="text-lg mb-1">jiā yóu</p>
+          <p class="text-sm opacity-90">Keep going! / Add oil! (encouragement)</p>
+        </div>
+      </section>
+
+      <!-- Recent Activity -->
+      <section class="mb-6">
+        <h2 class="text-lg font-bold mb-3">Recent Activity</h2>
+        <div class="space-y-3">
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-secondary">check_circle</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm">Completed Lesson 1</p>
+              <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Basic Greetings · 2 hours ago</p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-accent">star</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm">Learned 8 new words</p>
+              <p class="text-xs text-text-muted-light dark:text-text-muted-dark">你, 我, 好, 叫... · Today</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-50">
+      <div class="max-w-screen-xl mx-auto px-2">
+        <div class="flex justify-around items-center h-16">
+          <!-- Home -->
+          <a href="/home.html" class="nav-item flex flex-col items-center justify-center flex-1 py-2 transition-colors active" data-nav="home">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span class="text-xs font-medium">Home</span>
+          </a>
+          
+          <!-- Learn -->
+          <a href="/lessons.html" class="nav-item flex flex-col items-center justify-center flex-1 py-2 transition-colors" data-nav="learn">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+            </svg>
+            <span class="text-xs font-medium">Learn</span>
+          </a>
+          
+          <!-- Practice -->
+          <a href="/practice.html" class="nav-item flex flex-col items-center justify-center flex-1 py-2 transition-colors" data-nav="practice">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <span class="text-xs font-medium">Practice</span>
+          </a>
+          
+          <!-- Profile -->
+          <a href="/profile.html" class="nav-item flex flex-col items-center justify-center flex-1 py-2 transition-colors" data-nav="profile">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            <span class="text-xs font-medium">Profile</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <style>
+      .nav-item {
+        color: #6b7280;
+        text-decoration: none;
+      }
+      .nav-item:hover {
+        color: #4A90E2;
+      }
+      .nav-item.active {
+        color: #4A90E2;
+      }
+    </style>
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // Haptic feedback on navigation clicks
+    document.querySelectorAll('.nav-item, a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (tg.HapticFeedback) {
+          tg.HapticFeedback.impactOccurred('light');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

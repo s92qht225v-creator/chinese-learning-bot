@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Character Writing - Chinese Learning</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4A90E2",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "background-light": "#F8F9FA",
+            "background-dark": "#101c22",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    
+    #drawingCanvas {
+      touch-action: none;
+      cursor: crosshair;
+    }
+    
+    .stroke-guide {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.3;
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+    
+    .writing-canvas {
+      background-image:
+        linear-gradient(#e0e0e0 1px, transparent 1px),
+        linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+        linear-gradient(hsla(0, 0%, 87%, 0.5) 1px, transparent 1px),
+        linear-gradient(to right, hsla(0, 0%, 87%, 0.5) 1px, transparent 1px);
+      background-size: 50% 50%, 50% 50%, 12.5% 12.5%, 12.5% 12.5%;
+    }
+    
+    .dark .writing-canvas {
+      background-image:
+        linear-gradient(#4a4a4a 1px, transparent 1px),
+        linear-gradient(to right, #4a4a4a 1px, transparent 1px),
+        linear-gradient(hsla(0, 0%, 29%, 0.5) 1px, transparent 1px),
+        linear-gradient(to right, hsla(0, 0%, 29%, 0.5) 1px, transparent 1px);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+      <div class="max-w-screen-xl mx-auto px-4 py-3">
+        <div class="flex items-center justify-between">
+          <button id="backBtn" class="flex items-center gap-2 text-text-light dark:text-text-dark">
+            <span class="material-symbols-outlined">arrow_back</span>
+            <span class="font-medium">Back</span>
+          </button>
+          <div class="text-center">
+            <p class="text-sm font-medium text-text-light dark:text-text-dark">Character Writing</p>
+            <p class="text-xs text-text-muted-light dark:text-text-muted-dark" id="progress">1 / 5</p>
+          </div>
+          <div class="w-20"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 flex flex-col px-4 py-6 max-w-screen-xl mx-auto w-full">
+      <!-- Progress Bar -->
+      <div class="mb-6">
+        <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div id="progressBar" class="h-full bg-accent rounded-full transition-all duration-300" style="width: 20%;"></div>
+        </div>
+      </div>
+
+      <!-- Character Info -->
+      <div class="flex flex-col items-center pt-4 pb-3 px-4">
+        <div class="flex items-center gap-4">
+          <h1 class="text-slate-900 dark:text-white text-7xl md:text-8xl font-black leading-tight" id="targetCharacter" style="font-family: 'Noto Sans SC', sans-serif;">你</h1>
+          <button id="playAudioBtn" class="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-2xl">volume_up</span>
+          </button>
+        </div>
+        <h2 class="text-slate-600 dark:text-slate-400 text-lg font-bold leading-tight tracking-[-0.015em] pt-2">
+          <span id="characterPinyin">nǐ</span> - <span id="characterMeaning">You</span>
+        </h2>
+      </div>
+
+      <!-- Drawing Canvas -->
+      <div class="px-4 py-3 flex-grow">
+        <div class="relative w-full mx-auto max-w-md aspect-square rounded-xl bg-white dark:bg-slate-800 shadow-md writing-canvas overflow-hidden">
+          <!-- Reference Character (guide) -->
+          <div id="guideCharacter" class="stroke-guide absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-600" style="font-size: 280px; display: none;">你</div>
+          
+          <!-- Drawing Canvas -->
+          <canvas id="drawingCanvas" class="absolute inset-0 w-full h-full"></canvas>
+        </div>
+      </div>
+
+      <!-- Control Panel -->
+      <div class="flex flex-col gap-4 p-4 bg-background-light dark:bg-background-dark">
+        <div class="flex justify-center items-center gap-4">
+          <button id="undoBtn" class="flex flex-col items-center justify-center rounded-xl h-16 w-16 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 gap-1 text-sm font-bold shadow-sm hover:shadow-md transition-all">
+            <span class="material-symbols-outlined text-2xl">undo</span>
+            <span class="text-xs">Undo</span>
+          </button>
+          <button id="showGuideBtn" class="flex flex-col items-center justify-center rounded-xl h-20 w-20 bg-primary text-white gap-1 text-sm font-bold shadow-lg hover:shadow-xl transition-all">
+            <span class="material-symbols-outlined text-3xl">visibility</span>
+            <span class="text-xs">Guide</span>
+          </button>
+          <button id="clearBtn" class="flex flex-col items-center justify-center rounded-xl h-16 w-16 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 gap-1 text-sm font-bold shadow-sm hover:shadow-md transition-all">
+            <span class="material-symbols-outlined text-2xl">delete_sweep</span>
+            <span class="text-xs">Clear</span>
+          </button>
+        </div>
+        
+        <div class="flex gap-3">
+          <button id="skipBtn" class="flex-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl py-3 font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all">
+            <span class="material-symbols-outlined">skip_next</span>
+            Skip
+          </button>
+          <button id="checkBtn" class="flex-1 bg-accent hover:bg-orange-500 text-white rounded-xl py-3 font-semibold flex items-center justify-center gap-2 shadow-lg transition-all">
+            <span class="material-symbols-outlined">check_circle</span>
+            Check
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-3">
+          <p class="text-2xl font-bold text-secondary" id="correctCount">0</p>
+          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Correct</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-3">
+          <p class="text-2xl font-bold text-primary" id="attemptCount">0</p>
+          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Attempts</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-3">
+          <p class="text-2xl font-bold text-accent" id="accuracyPercent">0%</p>
+          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Accuracy</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // Character data
+    const characters = [
+      { char: '你', pinyin: 'nǐ', meaning: 'You' },
+      { char: '好', pinyin: 'hǎo', meaning: 'Good' },
+      { char: '我', pinyin: 'wǒ', meaning: 'I, me' },
+      { char: '是', pinyin: 'shì', meaning: 'To be, is' },
+      { char: '不', pinyin: 'bù', meaning: 'No, not' }
+    ];
+
+    let currentIndex = 0;
+    let stats = { correct: 0, attempts: 0 };
+    let isDrawing = false;
+    let showGuide = false;
+    let strokes = []; // Store each stroke for undo
+    let currentStroke = []; // Current stroke being drawn
+
+    // Elements
+    const canvas = document.getElementById('drawingCanvas');
+    const ctx = canvas.getContext('2d');
+    const targetCharacter = document.getElementById('targetCharacter');
+    const characterPinyin = document.getElementById('characterPinyin');
+    const characterMeaning = document.getElementById('characterMeaning');
+    const guideCharacter = document.getElementById('guideCharacter');
+    const progress = document.getElementById('progress');
+    const progressBar = document.getElementById('progressBar');
+    const backBtn = document.getElementById('backBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const undoBtn = document.getElementById('undoBtn');
+    const showGuideBtn = document.getElementById('showGuideBtn');
+    const playAudioBtn = document.getElementById('playAudioBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const checkBtn = document.getElementById('checkBtn');
+
+    // Setup canvas
+    function setupCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      
+      ctx.strokeStyle = '#4A90E2';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+    }
+
+    setupCanvas();
+    window.addEventListener('resize', setupCanvas);
+
+    // Drawing functions
+    function startDrawing(e) {
+      isDrawing = true;
+      const pos = getPosition(e);
+      currentStroke = [pos];
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      const pos = getPosition(e);
+      currentStroke.push(pos);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    }
+
+    function stopDrawing() {
+      if (isDrawing && currentStroke.length > 0) {
+        strokes.push([...currentStroke]);
+        currentStroke = [];
+        stats.attempts++;
+        updateStats();
+      }
+      isDrawing = false;
+    }
+    
+    // Redraw all strokes
+    function redrawStrokes() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      strokes.forEach(stroke => {
+        if (stroke.length > 0) {
+          ctx.beginPath();
+          ctx.moveTo(stroke[0].x, stroke[0].y);
+          stroke.forEach(point => {
+            ctx.lineTo(point.x, point.y);
+          });
+          ctx.stroke();
+        }
+      });
+    }
+
+    function getPosition(e) {
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches ? e.touches[0] : e;
+      return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      };
+    }
+
+    // Event listeners for drawing
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDrawing);
+
+    // Undo last stroke
+    undoBtn.addEventListener('click', () => {
+      if (strokes.length > 0) {
+        strokes.pop();
+        redrawStrokes();
+        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      }
+    });
+    
+    // Clear canvas
+    clearBtn.addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      strokes = [];
+      currentStroke = [];
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    });
+
+    // Toggle guide
+    showGuideBtn.addEventListener('click', () => {
+      showGuide = !showGuide;
+      guideCharacter.style.display = showGuide ? 'flex' : 'none';
+      const icon = showGuideBtn.querySelector('.material-symbols-outlined');
+      icon.textContent = showGuide ? 'visibility_off' : 'visibility';
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    });
+    
+    // Play audio
+    playAudioBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      alert('Audio pronunciation would play here');
+    });
+
+    // Load character
+    function loadCharacter(index) {
+      const char = characters[index];
+      targetCharacter.textContent = char.char;
+      characterPinyin.textContent = char.pinyin;
+      characterMeaning.textContent = char.meaning;
+      guideCharacter.textContent = char.char;
+      progress.textContent = `${index + 1} / ${characters.length}`;
+      progressBar.style.width = `${((index + 1) / characters.length) * 100}%`;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      strokes = [];
+      currentStroke = [];
+      showGuide = false;
+      guideCharacter.style.display = 'none';
+      const icon = showGuideBtn.querySelector('.material-symbols-outlined');
+      icon.textContent = 'visibility';
+    }
+
+    // Check answer (simplified - in real app, would use OCR or stroke order validation)
+    checkBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      
+      // Simplified check - just count as correct if they drew something
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const hasDrawing = imageData.data.some(channel => channel !== 0);
+      
+      if (hasDrawing) {
+        stats.correct++;
+        updateStats();
+        
+        // Show success feedback
+        const originalBg = checkBtn.style.backgroundColor;
+        checkBtn.style.backgroundColor = '#50E3C2';
+        checkBtn.innerHTML = '<span class="material-symbols-outlined">check</span> Correct!';
+        
+        setTimeout(() => {
+          checkBtn.style.backgroundColor = originalBg;
+          checkBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Check';
+          nextCharacter();
+        }, 1000);
+      } else {
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+        alert('Please draw the character first!');
+      }
+    });
+
+    // Skip
+    skipBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      nextCharacter();
+    });
+
+    // Next character
+    function nextCharacter() {
+      if (currentIndex < characters.length - 1) {
+        currentIndex++;
+        loadCharacter(currentIndex);
+      } else {
+        // Finished
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
+        alert(`Practice complete! 🎉\n\nCorrect: ${stats.correct}\nAttempts: ${stats.attempts}\nAccuracy: ${accuracy}%`);
+        window.location.href = '/practice.html';
+      }
+    }
+
+    // Update stats
+    function updateStats() {
+      document.getElementById('correctCount').textContent = stats.correct;
+      document.getElementById('attemptCount').textContent = stats.attempts;
+      const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
+      document.getElementById('accuracyPercent').textContent = accuracy + '%';
+    }
+
+    // Back button
+    backBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      window.history.back();
+    });
+
+    // Initialize
+    loadCharacter(currentIndex);
+  </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Chinese Learning</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="onboarding.css">
+</head>
+<body>
+  <div class="onboarding-container">
+    <!-- Slide 1 -->
+    <div class="slide active" data-slide="1">
+      <div class="skip-button">
+        <button id="skipBtn">Skip</button>
+      </div>
+      <div class="slide-content">
+        <div class="hero-image">
+          <div class="chinese-char">你好</div>
+          <div class="pinyin">nǐ hǎo</div>
+        </div>
+        <h1>Welcome to Chinese Learning</h1>
+        <p>Master Chinese vocabulary with interactive flashcards and fun quizzes.</p>
+      </div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="slide" data-slide="2">
+      <div class="skip-button">
+        <button id="skipBtn2">Skip</button>
+      </div>
+      <div class="slide-content">
+        <div class="hero-image">
+          <div class="flashcard-demo">
+            <div class="demo-card">谢谢</div>
+            <div class="demo-pinyin">xiè xie</div>
+          </div>
+        </div>
+        <h1>Learn with Flashcards</h1>
+        <p>Flip cards to reveal meanings, pinyin pronunciation, and English translations.</p>
+      </div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="slide" data-slide="3">
+      <div class="skip-button">
+        <button id="skipBtn3">Skip</button>
+      </div>
+      <div class="slide-content">
+        <div class="hero-image">
+          <div class="quiz-demo">
+            <div class="quiz-question">再见</div>
+            <div class="quiz-options">
+              <div class="quiz-option">Hello</div>
+              <div class="quiz-option correct">Goodbye ✓</div>
+            </div>
+          </div>
+        </div>
+        <h1>Test Your Knowledge</h1>
+        <p>Take quizzes to reinforce what you've learned and track your progress.</p>
+      </div>
+    </div>
+
+    <!-- Slide 4 -->
+    <div class="slide" data-slide="4">
+      <div class="skip-button">
+        <button id="skipBtn4">Skip</button>
+      </div>
+      <div class="slide-content">
+        <div class="hero-image">
+          <div class="stats-demo">
+            <div class="stat">
+              <div class="stat-number">8+</div>
+              <div class="stat-label">Words</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">∞</div>
+              <div class="stat-label">Practice</div>
+            </div>
+          </div>
+        </div>
+        <h1>Ready to Start?</h1>
+        <p>Begin your Chinese learning journey today!</p>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+      <div class="dots">
+        <span class="dot active" data-dot="1"></span>
+        <span class="dot" data-dot="2"></span>
+        <span class="dot" data-dot="3"></span>
+        <span class="dot" data-dot="4"></span>
+      </div>
+      
+      <div class="buttons">
+        <button class="btn-next" id="nextBtn">Next</button>
+        <button class="btn-start" id="startBtn" style="display: none;">Start Learning</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="onboarding.js"></script>
+</body>
+</html>

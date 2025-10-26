@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>HSK Level Selection</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#D62828",
+            "secondary": "#003049",
+            "background-light": "#F7F7F7",
+            "background-dark": "#0D1117",
+            "card-light": "#FFFFFF",
+            "card-dark": "#161B22",
+            "text-light": "#003049",
+            "text-dark": "#E6EDF3",
+            "subtext-light": "#617c89",
+            "subtext-dark": "#8B949E",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 24px;
+    }
+    /* Custom radio button styles */
+    .hsk-level-card {
+      transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .hsk-level-card:has(input:checked) {
+      border-color: #D62828;
+      box-shadow: 0 4px 12px rgba(214, 40, 40, 0.15);
+    }
+    .hsk-level-card:has(input:checked) .checkmark-circle {
+      background-color: #D62828;
+      color: #FFFFFF;
+      border-color: #D62828;
+    }
+    .hsk-level-card:has(input:checked) .checkmark-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .checkmark-icon {
+      transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+    <div class="flex flex-col flex-grow px-4 sm:px-6 lg:px-8">
+      <!-- Header Section -->
+      <header class="pt-10 pb-6">
+        <h1 class="text-text-light dark:text-text-dark text-3xl font-bold tracking-tight">Select Your Starting Point</h1>
+        <p class="text-subtext-light dark:text-subtext-dark text-base mt-2">Choose the HSK level that best matches your current ability.</p>
+      </header>
+
+      <!-- Vertical Card List -->
+      <main class="flex-grow space-y-4 pb-32">
+        <!-- HSK 1 Card -->
+        <label class="hsk-level-card flex cursor-pointer items-center gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-card-light dark:bg-card-dark p-4 shadow-sm">
+          <div class="text-text-light dark:text-text-dark flex size-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-lg font-bold">HSK 1</div>
+          <div class="flex-1">
+            <p class="text-text-light dark:text-text-dark text-base font-semibold">Beginner</p>
+            <p class="text-subtext-light dark:text-subtext-dark text-sm">Know around 150 common words and basic phrases.</p>
+          </div>
+          <div class="checkmark-circle flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent transition-colors">
+            <span class="material-symbols-outlined checkmark-icon scale-75 text-sm text-white opacity-0">check</span>
+          </div>
+          <input class="hidden" name="hsk-level" type="radio" value="1"/>
+        </label>
+
+        <!-- HSK 2 Card -->
+        <label class="hsk-level-card flex cursor-pointer items-center gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-card-light dark:bg-card-dark p-4 shadow-sm">
+          <div class="text-text-light dark:text-text-dark flex size-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-lg font-bold">HSK 2</div>
+          <div class="flex-1">
+            <p class="text-text-light dark:text-text-dark text-base font-semibold">Elementary</p>
+            <p class="text-subtext-light dark:text-subtext-dark text-sm">Handle simple communication on familiar topics.</p>
+          </div>
+          <div class="checkmark-circle flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent transition-colors">
+            <span class="material-symbols-outlined checkmark-icon scale-75 text-sm text-white opacity-0">check</span>
+          </div>
+          <input class="hidden" name="hsk-level" type="radio" value="2"/>
+        </label>
+
+        <!-- HSK 3 Card -->
+        <label class="hsk-level-card flex cursor-pointer items-center gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-card-light dark:bg-card-dark p-4 shadow-sm">
+          <div class="text-text-light dark:text-text-dark flex size-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-lg font-bold">HSK 3</div>
+          <div class="flex-1">
+            <p class="text-text-light dark:text-text-dark text-base font-semibold">Lower Intermediate</p>
+            <p class="text-subtext-light dark:text-subtext-dark text-sm">Master ~600 words for everyday conversations.</p>
+          </div>
+          <div class="checkmark-circle flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent transition-colors">
+            <span class="material-symbols-outlined checkmark-icon scale-75 text-sm text-white opacity-0">check</span>
+          </div>
+          <input class="hidden" name="hsk-level" type="radio" value="3"/>
+        </label>
+
+        <!-- HSK 4 Card -->
+        <label class="hsk-level-card flex cursor-pointer items-center gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-card-light dark:bg-card-dark p-4 shadow-sm">
+          <div class="text-text-light dark:text-text-dark flex size-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-lg font-bold">HSK 4</div>
+          <div class="flex-1">
+            <p class="text-text-light dark:text-text-dark text-base font-semibold">Intermediate</p>
+            <p class="text-subtext-light dark:text-subtext-dark text-sm">Discuss a wide range of topics with ~1200 words.</p>
+          </div>
+          <div class="checkmark-circle flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent transition-colors">
+            <span class="material-symbols-outlined checkmark-icon scale-75 text-sm text-white opacity-0">check</span>
+          </div>
+          <input class="hidden" name="hsk-level" type="radio" value="4"/>
+        </label>
+
+        <!-- HSK 5 Card -->
+        <label class="hsk-level-card flex cursor-pointer items-center gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-card-light dark:bg-card-dark p-4 shadow-sm">
+          <div class="text-text-light dark:text-text-dark flex size-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-lg font-bold">HSK 5</div>
+          <div class="flex-1">
+            <p class="text-text-light dark:text-text-dark text-base font-semibold">Upper Intermediate</p>
+            <p class="text-subtext-light dark:text-subtext-dark text-sm">Read Chinese newspapers, watch films with ~2500 words.</p>
+          </div>
+          <div class="checkmark-circle flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent transition-colors">
+            <span class="material-symbols-outlined checkmark-icon scale-75 text-sm text-white opacity-0">check</span>
+          </div>
+          <input class="hidden" name="hsk-level" type="radio" value="5"/>
+        </label>
+
+        <!-- HSK 6 Card -->
+        <label class="hsk-level-card flex cursor-pointer items-center gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-card-light dark:bg-card-dark p-4 shadow-sm">
+          <div class="text-text-light dark:text-text-dark flex size-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-lg font-bold">HSK 6</div>
+          <div class="flex-1">
+            <p class="text-text-light dark:text-text-dark text-base font-semibold">Advanced</p>
+            <p class="text-subtext-light dark:text-subtext-dark text-sm">Easily comprehend and express complex ideas.</p>
+          </div>
+          <div class="checkmark-circle flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent transition-colors">
+            <span class="material-symbols-outlined checkmark-icon scale-75 text-sm text-white opacity-0">check</span>
+          </div>
+          <input class="hidden" name="hsk-level" type="radio" value="6"/>
+        </label>
+
+        <div class="flex justify-center pt-2">
+          <button id="notSureBtn" type="button" class="text-sm font-medium text-primary dark:text-red-400 hover:underline">I'm not sure</button>
+        </div>
+      </main>
+
+      <!-- CTA Section -->
+      <footer class="fixed bottom-0 left-0 right-0 w-full bg-background-light dark:bg-background-dark py-6 px-4 sm:px-6 lg:px-8">
+        <button id="continueBtn" disabled class="flex w-full max-w-[480px] mx-auto items-center justify-center rounded-xl bg-primary px-6 py-4 text-base font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-primary/40 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:shadow-none dark:disabled:bg-gray-600">
+          Continue
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="level-select.js"></script>
+</body>
+</html>
