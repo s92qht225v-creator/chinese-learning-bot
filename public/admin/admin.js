@@ -1,8 +1,8 @@
 // Admin Panel JavaScript
 const ADMIN_PASSWORD = 'admin123'; // Change this in production!
-const API_BASE = window.location.hostname === 'localhost' 
+const API_BASE = window.location.hostname === 'localhost'
   ? 'http://localhost:3000'
-  : 'https://api.lingo.uz';
+  : 'https://lingo.uz';
 
 // Supabase configuration
 const SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';
