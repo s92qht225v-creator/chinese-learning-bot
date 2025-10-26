@@ -320,6 +320,22 @@
                         <input type="text" id="pinyin" required>
                     </div>
                     <div class="form-group">
+                        <label>Part of Speech</label>
+                        <select id="partOfSpeech">
+                            <option value="">Not specified</option>
+                            <option value="n">n (noun)</option>
+                            <option value="v">v (verb)</option>
+                            <option value="adj">adj (adjective)</option>
+                            <option value="adv">adv (adverb)</option>
+                            <option value="pron">pron (pronoun)</option>
+                            <option value="prep">prep (preposition)</option>
+                            <option value="conj">conj (conjunction)</option>
+                            <option value="interj">interj (interjection)</option>
+                            <option value="mw">mw (measure word)</option>
+                            <option value="particle">particle</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>English</label>
                         <input type="text" id="english" required>
                     </div>
@@ -363,6 +379,7 @@
                         <tr>
                             <th>Chinese</th>
                             <th>Pinyin</th>
+                            <th>POS</th>
                             <th>English</th>
                             <th>Uzbek</th>
                             <th>Russian</th>
@@ -742,17 +759,19 @@
                 tbody.innerHTML = data.map(word => {
                     const uzbek = word.uzbek || '';
                     const russian = word.russian || '';
+                    const pos = word.part_of_speech || '';
                     return `
                     <tr>
                         <td>${word.chinese}</td>
                         <td>${word.pinyin}</td>
+                        <td>${pos ? `<span style="background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600">${pos}</span>` : '<span style="color:#999">-</span>'}</td>
                         <td>${word.english}</td>
                         <td>${uzbek || '<span style="color:#999">-</span>'}</td>
                         <td>${russian || '<span style="color:#999">-</span>'}</td>
                         <td>HSK ${word.hsk_level}</td>
                         <td>${word.lessons ? `L${word.lessons.lesson_number}: ${word.lessons.title}` : '<span style="color:#999">None</span>'}</td>
                         <td class="actions">
-                            <button class="btn btn-small" onclick='editVocabulary(${word.id}, ${JSON.stringify(word.chinese)}, ${JSON.stringify(word.pinyin)}, ${JSON.stringify(word.english)}, ${JSON.stringify(uzbek)}, ${JSON.stringify(russian)}, ${word.hsk_level}, ${word.lesson_id || 'null'})'>Edit</button>
+                            <button class="btn btn-small" onclick='editVocabulary(${word.id}, ${JSON.stringify(word.chinese)}, ${JSON.stringify(word.pinyin)}, ${JSON.stringify(pos)}, ${JSON.stringify(word.english)}, ${JSON.stringify(uzbek)}, ${JSON.stringify(russian)}, ${word.hsk_level}, ${word.lesson_id || 'null'})'>Edit</button>
                             <button class="btn btn-danger btn-small" onclick="deleteVocabulary(${word.id})">Delete</button>
                         </td>
                     </tr>
@@ -771,9 +790,11 @@
             
             try {
                 const lessonId = document.getElementById('vocabLesson').value;
+                const partOfSpeech = document.getElementById('partOfSpeech').value;
                 const vocabData = {
                     chinese: document.getElementById('chinese').value,
                     pinyin: document.getElementById('pinyin').value,
+                    part_of_speech: partOfSpeech || null,
                     english: document.getElementById('english').value,
                     uzbek: document.getElementById('uzbek').value || null,
                     russian: document.getElementById('russian').value || null,
@@ -820,9 +841,10 @@
         }
 
         // Edit vocabulary
-        async function editVocabulary(id, chinese, pinyin, english, uzbek, russian, hskLevel, lessonId) {
+        async function editVocabulary(id, chinese, pinyin, partOfSpeech, english, uzbek, russian, hskLevel, lessonId) {
             document.getElementById('chinese').value = chinese;
             document.getElementById('pinyin').value = pinyin;
+            document.getElementById('partOfSpeech').value = partOfSpeech || '';
             document.getElementById('english').value = english;
             document.getElementById('uzbek').value = uzbek || '';
             document.getElementById('russian').value = russian || '';
