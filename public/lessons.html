@@ -92,100 +92,9 @@
         <p class="text-sm font-normal leading-normal text-text-muted-light dark:text-text-muted-dark">Lessons Completed</p>
       </div>
 
-      <!-- Lesson List -->
+      <!-- Lesson List (dynamically populated by lessons.js) -->
       <div class="flex flex-col gap-3 px-4 pb-4">
-        <!-- Completed Lesson Card -->
-        <div class="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 min-h-[72px] rounded-xl shadow-sm justify-between border border-secondary/50 dark:border-secondary/40">
-          <div class="flex items-center gap-4">
-            <div class="flex items-center justify-center rounded-full bg-secondary text-white shrink-0 size-12">
-              <span class="material-symbols-outlined">check_circle</span>
-            </div>
-            <div class="flex flex-col justify-center">
-              <p class="text-base font-medium leading-normal line-clamp-1 text-text-light dark:text-text-dark">Lesson 1: Basic Greetings</p>
-              <p class="text-sm font-normal leading-normal line-clamp-2 text-secondary">Completed</p>
-            </div>
-          </div>
-          <button class="shrink-0 text-primary text-base font-medium leading-normal">Review</button>
-        </div>
-
-        <!-- In Progress Lesson Card (Highlighted) -->
-        <div class="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 min-h-[72px] rounded-xl shadow-sm justify-between border-2 border-accent">
-          <div class="flex items-center gap-4 w-full">
-            <div class="relative size-12 shrink-0">
-              <svg class="size-full" height="36" viewbox="0 0 36 36" width="36" xmlns="http://www.w3.org/2000/svg">
-                <circle class="stroke-current text-gray-200 dark:text-gray-700" cx="18" cy="18" fill="transparent" r="16" stroke-width="3"></circle>
-                <circle class="stroke-current text-accent" cx="18" cy="18" fill="transparent" r="16" stroke-dasharray="100.53" stroke-dashoffset="50.265" stroke-linecap="round" stroke-width="3" transform="rotate(-90 18 18)"></circle>
-              </svg>
-              <div class="absolute inset-0 flex items-center justify-center text-accent text-xs font-bold">50%</div>
-            </div>
-            <div class="flex flex-col justify-center flex-1 min-w-0">
-              <p class="text-base font-medium leading-normal line-clamp-1 text-text-light dark:text-text-dark">Lesson 2: Self Introduction</p>
-              <p class="text-sm font-normal leading-normal text-text-muted-light dark:text-text-muted-dark truncate">我, 你, 他, 叫, 名字...</p>
-            </div>
-          </div>
-          <button class="shrink-0 flex items-center justify-center size-10 rounded-full bg-primary text-white">
-            <span class="material-symbols-outlined">play_arrow</span>
-          </button>
-        </div>
-
-        <!-- Upcoming Lesson Card -->
-        <div class="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 min-h-[72px] rounded-xl shadow-sm justify-between">
-          <div class="flex items-center gap-4 w-full">
-            <div class="relative size-12 shrink-0">
-              <svg class="size-full" height="36" viewbox="0 0 36 36" width="36" xmlns="http://www.w3.org/2000/svg">
-                <circle class="stroke-current text-gray-200 dark:text-gray-700" cx="18" cy="18" fill="transparent" r="16" stroke-width="3"></circle>
-              </svg>
-              <div class="absolute inset-0 flex items-center justify-center text-text-light dark:text-text-dark text-lg font-bold">3</div>
-            </div>
-            <div class="flex flex-col justify-center flex-1 min-w-0">
-              <p class="text-base font-medium leading-normal line-clamp-1 text-text-light dark:text-text-dark">Lesson 3: Numbers 1-10</p>
-              <p class="text-sm font-normal leading-normal text-text-muted-light dark:text-text-muted-dark truncate">一, 二, 三, 四, 五...</p>
-            </div>
-          </div>
-          <button class="shrink-0 text-primary text-base font-medium leading-normal">Start</button>
-        </div>
-
-        <!-- More Upcoming Lessons -->
-        <div class="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 min-h-[72px] rounded-xl shadow-sm justify-between">
-          <div class="flex items-center gap-4 w-full">
-            <div class="relative size-12 shrink-0">
-              <svg class="size-full" height="36" viewbox="0 0 36 36" width="36" xmlns="http://www.w3.org/2000/svg">
-                <circle class="stroke-current text-gray-200 dark:text-gray-700" cx="18" cy="18" fill="transparent" r="16" stroke-width="3"></circle>
-              </svg>
-              <div class="absolute inset-0 flex items-center justify-center text-text-light dark:text-text-dark text-lg font-bold">4</div>
-            </div>
-            <div class="flex flex-col justify-center flex-1 min-w-0">
-              <p class="text-base font-medium leading-normal line-clamp-1 text-text-light dark:text-text-dark">Lesson 4: Dates and Time</p>
-              <p class="text-sm font-normal leading-normal text-text-muted-light dark:text-text-muted-dark truncate">今天, 明天, 昨天, 现在...</p>
-            </div>
-          </div>
-          <button class="shrink-0 text-primary text-base font-medium leading-normal">Start</button>
-        </div>
-
-        <!-- Locked Lesson Card -->
-        <div class="flex items-center gap-4 bg-white/50 dark:bg-gray-800/50 p-4 min-h-[72px] rounded-xl shadow-sm justify-between opacity-60">
-          <div class="flex items-center gap-4 w-full">
-            <div class="flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-text-muted-light dark:text-text-muted-dark shrink-0 size-12">
-              <span class="material-symbols-outlined">lock</span>
-            </div>
-            <div class="flex flex-col justify-center flex-1 min-w-0">
-              <p class="text-base font-medium leading-normal line-clamp-1 text-text-muted-light dark:text-text-muted-dark">Lesson 5: Family Members</p>
-              <p class="text-sm font-normal leading-normal text-text-muted-light dark:text-text-muted-dark truncate">爸爸, 妈妈, 哥哥, 姐姐...</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-4 bg-white/50 dark:bg-gray-800/50 p-4 min-h-[72px] rounded-xl shadow-sm justify-between opacity-60">
-          <div class="flex items-center gap-4 w-full">
-            <div class="flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-text-muted-light dark:text-text-muted-dark shrink-0 size-12">
-              <span class="material-symbols-outlined">lock</span>
-            </div>
-            <div class="flex flex-col justify-center flex-1 min-w-0">
-              <p class="text-base font-medium leading-normal line-clamp-1 text-text-muted-light dark:text-text-muted-dark">Lesson 6: Colors and Objects</p>
-              <p class="text-sm font-normal leading-normal text-text-muted-light dark:text-text-muted-dark truncate">红, 蓝, 黄, 书, 笔...</p>
-            </div>
-          </div>
-        </div>
+        <!-- Lessons will be loaded here by JavaScript -->
       </div>
     </main>
   </div>
@@ -246,6 +155,6 @@
     }
   </style>
 
-  <script src="lessons.js"></script>
+  <script src="lessons.js?v=20251027-1"></script>
 </body>
 </html>

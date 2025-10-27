@@ -44,7 +44,7 @@ const db = {
   },
 
   // Get all vocabulary
-  async getVocabulary(hskLevel = null) {
+  async getVocabulary(hskLevel = null, lessonId = null) {
     if (!supabase) {
       // Fallback to hardcoded data
       return require('./vocabulary-data');
@@ -57,6 +57,10 @@ const db = {
 
     if (hskLevel) {
       query = query.eq('hsk_level', hskLevel);
+    }
+
+    if (lessonId) {
+      query = query.eq('lesson_id', lessonId);
     }
 
     const { data, error } = await query;
@@ -142,15 +146,47 @@ const db = {
   },
 
   // ========== LESSONS ==========
-  async getLessons() {
-    if (!supabase) return [];
+  async getLessons(hskLevel = null) {
+    if (!supabase) {
+      console.warn('[DB] Supabase not configured, returning empty lessons array');
+      return [];
+    }
+    
+    try {
+      let query = supabase
+        .from('lessons')
+        .select('*')
+        .order('hsk_level', { ascending: true })
+        .order('lesson_number', { ascending: true });
+      
+      if (hskLevel) {
+        query = query.eq('hsk_level', hskLevel);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('[DB] Error fetching lessons:', error);
+        return [];
+      }
+      
+      console.log(`[DB] Retrieved ${data ? data.length : 0} lessons for HSK ${hskLevel || 'all'}`);
+      return data || [];
+    } catch (err) {
+      console.error('[DB] Exception in getLessons:', err);
+      return [];
+    }
+  },
+
+  async getLesson(id) {
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('lessons')
       .select('*')
-      .order('hsk_level', { ascending: true })
-      .order('lesson_number', { ascending: true });
+      .eq('id', id)
+      .single();
     if (error) throw error;
-    return data || [];
+    return data;
   },
 
   async addLesson(lesson) {
@@ -229,6 +265,27 @@ const db = {
       .delete()
       .eq('id', id);
     if (error) throw error;
+  },
+
+  async getDialoguesByLesson(lessonId) {
+    if (!supabase) return [];
+    try {
+      const { data, error } = await supabase
+        .from('dialogues')
+        .select('*')
+        .eq('lesson_id', lessonId)
+        .order('dialogue_order', { ascending: true });
+      
+      if (error) {
+        console.error('[DB] Error fetching dialogues:', error);
+        return [];
+      }
+      
+      return data || [];
+    } catch (err) {
+      console.error('[DB] Exception in getDialoguesByLesson:', err);
+      return [];
+    }
   },
 
   // ========== GRAMMAR ==========

@@ -110,7 +110,8 @@ bot.onText(/\/stats/, async (msg) => {
 app.get('/api/vocabulary', async (req, res) => {
   try {
     const hskLevel = req.query.hsk_level ? parseInt(req.query.hsk_level) : null;
-    const vocabulary = await db.getVocabulary(hskLevel);
+    const lessonId = req.query.lesson_id ? parseInt(req.query.lesson_id) : null;
+    const vocabulary = await db.getVocabulary(hskLevel, lessonId);
     res.json(vocabulary);
   } catch (error) {
     console.error('Error fetching vocabulary:', error);
@@ -156,6 +157,45 @@ app.get('/api/quiz', async (req, res) => {
   } catch (error) {
     console.error('Error generating quiz:', error);
     res.status(500).json({ error: 'Failed to generate quiz' });
+  }
+});
+
+// Get lessons (frontend public endpoint)
+app.get('/api/lessons', async (req, res) => {
+  try {
+    const hskLevel = req.query.hsk_level ? parseInt(req.query.hsk_level) : null;
+    console.log(`[API] Fetching lessons for HSK level: ${hskLevel}`);
+    const lessons = await db.getLessons(hskLevel);
+    console.log(`[API] Found ${lessons ? lessons.length : 0} lessons`);
+    res.json(lessons || []);
+  } catch (error) {
+    console.error('Error fetching lessons:', error);
+    res.json([]);
+  }
+});
+
+// Get single lesson (frontend public endpoint)
+app.get('/api/lessons/:id', async (req, res) => {
+  try {
+    const lesson = await db.getLesson(req.params.id);
+    if (!lesson) {
+      return res.status(404).json({ error: 'Lesson not found' });
+    }
+    res.json(lesson);
+  } catch (error) {
+    console.error('Error fetching lesson:', error);
+    res.status(500).json({ error: 'Failed to fetch lesson' });
+  }
+});
+
+// Get dialogues for a lesson (frontend public endpoint)
+app.get('/api/lessons/:lessonId/dialogues', async (req, res) => {
+  try {
+    const dialogues = await db.getDialoguesByLesson(req.params.lessonId);
+    res.json(dialogues || []);
+  } catch (error) {
+    console.error('Error fetching dialogues:', error);
+    res.json([]);
   }
 });
 

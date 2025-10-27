@@ -17,12 +17,9 @@ let currentHskLevel = 1;
 
 // Back button handler
 backBtn.addEventListener('click', () => {
-  // Haptic feedback
   if (tg.HapticFeedback) {
     tg.HapticFeedback.impactOccurred('light');
   }
-  
-  // Go to home page
   window.location.href = '/home.html';
 });
 
@@ -31,16 +28,12 @@ levelRadios.forEach(radio => {
   radio.addEventListener('change', (e) => {
     const level = parseInt(e.target.value.replace('HSK ', ''));
     currentHskLevel = level;
-    
-    // Haptic feedback
+
     if (tg.HapticFeedback) {
       tg.HapticFeedback.impactOccurred('light');
     }
-    
-    // Update page title
+
     document.querySelector('h1').textContent = `HSK ${level} Lessons`;
-    
-    // Load lessons for this level
     loadLessons(level);
   });
 });
@@ -54,23 +47,21 @@ async function loadLessons(hskLevel = 1) {
       .eq('hsk_level', hskLevel)
       .eq('status', 'published')
       .order('lesson_number', { ascending: true });
-    
+
     if (error) throw error;
-    
-    // Clear existing lessons
+
     lessonsContainer.innerHTML = '';
-    
+
     if (!lessons || lessons.length === 0) {
       lessonsContainer.innerHTML = '<p class="text-center text-text-muted-light dark:text-text-muted-dark p-8">No lessons available for this level yet.</p>';
       return;
     }
-    
-    // Render each lesson
+
     lessons.forEach((lesson, index) => {
       const card = createLessonCard(lesson, index);
       lessonsContainer.appendChild(card);
     });
-    
+
   } catch (error) {
     console.error('Error loading lessons:', error);
     lessonsContainer.innerHTML = '<p class="text-center text-red-500 p-8">Failed to load lessons. Please try again.</p>';
@@ -80,8 +71,7 @@ async function loadLessons(hskLevel = 1) {
 // Create lesson card HTML
 function createLessonCard(lesson, index) {
   const div = document.createElement('div');
-  
-  // Simple card for now - all lessons are clickable
+
   div.className = 'flex items-center gap-4 bg-white dark:bg-gray-800 p-4 min-h-[72px] rounded-xl shadow-sm justify-between';
   div.innerHTML = `
     <div class="flex items-center gap-4 w-full">
@@ -98,7 +88,7 @@ function createLessonCard(lesson, index) {
     </div>
     <button class="shrink-0 text-primary text-base font-medium leading-normal" onclick="openLesson(${lesson.id})">Start</button>
   `;
-  
+
   return div;
 }
 
@@ -112,26 +102,3 @@ window.openLesson = function(lessonId) {
 
 // Load lessons on page load
 loadLessons(currentHskLevel);
-
-// Lesson button handlers
-document.addEventListener('click', (e) => {
-  const button = e.target.closest('button');
-  if (!button || button.id === 'backBtn') return;
-  
-  const buttonText = button.textContent.trim();
-  
-  // Haptic feedback
-  if (tg.HapticFeedback) {
-    tg.HapticFeedback.impactOccurred('medium');
-  }
-  
-  if (buttonText === 'Review' || buttonText === 'Start') {
-    // Navigate to lesson content
-    console.log('Opening lesson...');
-    alert('Lesson content will be available soon!');
-  } else if (button.querySelector('.material-symbols-outlined')) {
-    // Play button clicked for Lesson 2 (in progress)
-    console.log('Continuing lesson 2...');
-    window.location.href = '/lesson.html';
-  }
-});

@@ -521,7 +521,7 @@
                         <label>Status</label>
                         <select id="lessonStatus" required>
                             <option value="draft">Draft</option>
-                            <option value="published">Published</option>
+                            <option value="published" selected>Published</option>
                         </select>
                     </div>
                 </div>
@@ -563,6 +563,34 @@
                 <div class="form-group">
                     <label>Dialogue Title</label>
                     <input type="text" id="dialogueTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Speaker</label>
+                    <input type="text" id="dialogueSpeaker" placeholder="e.g., Person A, Person B, Narrator" required>
+                </div>
+                <div class="form-group">
+                    <label>Chinese Text</label>
+                    <input type="text" id="dialogueChinese" placeholder="e.g., 你好" required>
+                </div>
+                <div class="form-group">
+                    <label>Pinyin</label>
+                    <input type="text" id="dialoguePinyin" placeholder="e.g., Nǐ hǎo" required>
+                </div>
+                <div class="form-group">
+                    <label>English Translation</label>
+                    <input type="text" id="dialogueEnglish" placeholder="e.g., Hello" required>
+                </div>
+                <div class="form-group">
+                    <label>Uzbek Translation</label>
+                    <input type="text" id="dialogueUzbek" placeholder="e.g., Salom">
+                </div>
+                <div class="form-group">
+                    <label>Russian Translation</label>
+                    <input type="text" id="dialogueRussian" placeholder="e.g., Привет">
+                </div>
+                <div class="form-group">
+                    <label>Dialogue Line Number (order)</label>
+                    <input type="number" id="dialogueOrder" min="1" value="1">
                 </div>
                 <button type="submit" class="btn">Add Dialogue</button>
             </form>
@@ -1187,7 +1215,14 @@
                     .from('dialogues')
                     .insert([{
                         lesson_id: parseInt(document.getElementById('dialogueLesson').value),
-                        title: document.getElementById('dialogueTitle').value
+                        title: document.getElementById('dialogueTitle').value,
+                        speaker: document.getElementById('dialogueSpeaker').value,
+                        chinese: document.getElementById('dialogueChinese').value,
+                        pinyin: document.getElementById('dialoguePinyin').value,
+                        english: document.getElementById('dialogueEnglish').value,
+                        uzbek: document.getElementById('dialogueUzbek').value || null,
+                        russian: document.getElementById('dialogueRussian').value || null,
+                        dialogue_order: parseInt(document.getElementById('dialogueOrder').value)
                     }]);
 
                 if (error) throw error;
