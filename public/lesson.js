@@ -107,9 +107,42 @@ async function loadVocabulary(lessonId) {
 
     currentVocabulary = await response.json();
     renderVocabulary(currentVocabulary);
+
+    // Load favorite states for all vocabulary
+    await loadFavoriteStates();
   } catch (error) {
     console.error('Error loading vocabulary:', error);
     document.getElementById('vocabularyContainer').innerHTML = '<p class="text-center text-text-secondary-light">No vocabulary available</p>';
+  }
+}
+
+async function loadFavoriteStates() {
+  try {
+    const userId = tg.initDataUnsafe?.user?.id;
+    if (!userId || !currentVocabulary || currentVocabulary.length === 0) return;
+
+    // Get all user's favorites
+    const response = await fetch(`/api/favorites/list?user_id=${userId}`);
+    const favorites = await response.json();
+
+    // Create a set of favorited vocabulary IDs for quick lookup
+    const favoritedIds = new Set(favorites.map(f => f.id));
+
+    // Update heart icons for favorited words
+    currentVocabulary.forEach(word => {
+      if (favoritedIds.has(word.id)) {
+        const btn = document.querySelector(`button[data-word-id="${word.id}"]`);
+        if (btn) {
+          const icon = btn.querySelector('.material-symbols-outlined');
+          if (icon) {
+            icon.textContent = 'favorite';
+            icon.style.fontVariationSettings = "'FILL' 1";
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error loading favorite states:', error);
   }
 }
 
@@ -148,8 +181,8 @@ function renderVocabulary(vocabulary) {
         <button onclick="playAudio('${word.id}')" aria-label="Play audio for ${word.chinese}" class="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white transition-transform active:scale-95">
           <span class="material-symbols-outlined">volume_up</span>
         </button>
-        <button onclick="toggleFavorite('${word.id}')" aria-label="Add ${word.chinese} to favorites" class="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary-light transition-colors hover:bg-red-500/10 hover:text-red-500 focus-visible:text-red-500 dark:text-text-secondary-dark dark:hover:bg-red-400/10 dark:hover:text-red-400">
-          <span class="material-symbols-outlined text-xl">favorite</span>
+        <button onclick="toggleFavorite('${word.id}', event)" aria-label="Add ${word.chinese} to favorites" class="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary-light transition-colors hover:bg-red-500/10 hover:text-red-500 focus-visible:text-red-500 dark:text-text-secondary-dark dark:hover:bg-red-400/10 dark:hover:text-red-400" data-word-id="${word.id}">
+          <span class="material-symbols-outlined text-xl">favorite_border</span>
         </button>
         <button onclick="addToReview('${word.id}')" aria-label="Add ${word.chinese} to review queue" class="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary-light transition-colors hover:bg-primary/10 hover:text-primary focus-visible:text-primary dark:text-text-secondary-dark dark:hover:bg-primary/20 dark:hover:text-primary">
           <span class="material-symbols-outlined text-xl">add_circle</span>
@@ -420,7 +453,7 @@ async function addToReview(wordId) {
   }
 }
 
-async function toggleFavorite(wordId) {
+async function toggleFavorite(wordId, event) {
   tg.HapticFeedback.impactOccurred('light');
 
   try {
@@ -435,6 +468,14 @@ async function toggleFavorite(wordId) {
     const favorites = await checkResponse.json();
     const isFavorited = favorites.length > 0;
 
+    // Find the button - either from event or by word id
+    let btn;
+    if (event) {
+      btn = event.target.closest('button');
+    } else {
+      btn = document.querySelector(`button[onclick*="toggleFavorite('${wordId}')"]`);
+    }
+
     if (isFavorited) {
       // Remove from favorites
       const response = await fetch(`/api/favorites/${favorites[0].id}`, {
@@ -443,8 +484,11 @@ async function toggleFavorite(wordId) {
       if (response.ok) {
         tg.showPopup({ message: '♡ Removed from favorites' });
         // Update button visual
-        const btn = event.target.closest('button');
-        if (btn) btn.querySelector('.material-symbols-outlined').textContent = 'favorite_border';
+        if (btn) {
+          const icon = btn.querySelector('.material-symbols-outlined');
+          icon.textContent = 'favorite_border';
+          icon.style.fontVariationSettings = "'FILL' 0";
+        }
       }
     } else {
       // Add to favorites
@@ -456,8 +500,11 @@ async function toggleFavorite(wordId) {
       if (response.ok) {
         tg.showPopup({ message: '❤️ Added to favorites!' });
         // Update button visual
-        const btn = event.target.closest('button');
-        if (btn) btn.querySelector('.material-symbols-outlined').textContent = 'favorite';
+        if (btn) {
+          const icon = btn.querySelector('.material-symbols-outlined');
+          icon.textContent = 'favorite';
+          icon.style.fontVariationSettings = "'FILL' 1";
+        }
       }
     }
   } catch (error) {
