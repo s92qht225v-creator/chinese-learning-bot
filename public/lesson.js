@@ -98,18 +98,40 @@ function renderVocabulary(vocabulary) {
     return;
   }
 
-  container.innerHTML = vocabulary.map(word => `
-    <div class="flex items-center gap-4 p-3 rounded-lg bg-background-light dark:bg-background-dark">
+  const posColors = {
+    'n': 'blue',
+    'v': 'purple',
+    'adj': 'green',
+    'adv': 'yellow',
+    'prep': 'red',
+    'conj': 'pink'
+  };
+
+  container.innerHTML = vocabulary.map(word => {
+    const posType = (word.pos || 'n').toLowerCase();
+    const color = posColors[posType] || 'gray';
+    
+    return `
+    <div class="group flex cursor-pointer items-start justify-between gap-4 rounded-lg border border-border-light bg-surface-light p-3 transition-all hover:shadow-md hover:-translate-y-0.5 focus-within:ring-2 focus-within:ring-primary dark:border-border-dark dark:bg-surface-dark">
       <div class="flex-1">
-        <p class="text-xl font-semibold">${word.chinese}</p>
-        <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm">${word.pinyin} (${word.pos || 'n.'})</p>
-        <p class="text-sm">${word.english}</p>
+        <div class="flex items-baseline gap-2">
+          <h3 class="text-2xl font-bold">${word.chinese}</h3>
+          <span class="rounded-full bg-${color}-100 px-2 py-0.5 text-xs font-medium text-${color}-800 dark:bg-${color}-900 dark:text-${color}-200">${word.pos || 'n.'}</span>
+        </div>
+        <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${word.pinyin}</p>
+        <p class="mt-1 text-base text-text-primary-light dark:text-text-primary-dark">${word.english}</p>
       </div>
-      <button onclick="playAudio('${word.id}')" class="flex items-center justify-center h-10 w-10 rounded-full text-primary bg-primary/20 hover:bg-primary/30">
-        <span class="material-symbols-outlined">volume_up</span>
-      </button>
+      <div class="flex flex-col items-center gap-3">
+        <button onclick="playAudio('${word.id}')" aria-label="Play audio for ${word.chinese}" class="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white transition-transform active:scale-95">
+          <span class="material-symbols-outlined">volume_up</span>
+        </button>
+        <button onclick="addToReview('${word.id}')" aria-label="Add ${word.chinese} to review queue" class="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary-light transition-colors hover:bg-primary/10 hover:text-primary focus-visible:text-primary dark:text-text-secondary-dark dark:hover:bg-primary/20 dark:hover:text-primary">
+          <span class="material-symbols-outlined text-xl">add_circle</span>
+        </button>
+      </div>
     </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 async function loadGrammar(lessonId) {
@@ -239,6 +261,11 @@ function updateDialogueDisplay() {
 function playAudio(wordId) {
   tg.HapticFeedback.impactOccurred('light');
   console.log('Playing audio for word:', wordId);
+}
+
+function addToReview(wordId) {
+  tg.HapticFeedback.impactOccurred('medium');
+  console.log('Added to review:', wordId);
 }
 
 function saveGrammar(grammarId) {
