@@ -83,7 +83,7 @@ function createLessonCard(lesson, index) {
       </div>
       <div class="flex flex-col justify-center flex-1 min-w-0">
         <p class="text-base font-medium leading-normal line-clamp-1 text-text-light dark:text-text-dark">${lesson.title}</p>
-        <p class="text-sm font-normal leading-normal text-text-muted-light dark:text-text-muted-dark truncate">${lesson.description || ''}</p>
+        <p class="text-sm font-normal leading-normal text-text-muted-light dark:text-text-muted-dark line-clamp-2">${lesson.description || ''}</p>
       </div>
     </div>
     <button class="shrink-0 text-primary text-base font-medium leading-normal" onclick="openLesson(${lesson.id})">Start</button>
