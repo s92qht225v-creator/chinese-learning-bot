@@ -554,6 +554,7 @@
             <div id="dialogueMessage"></div>
             
             <form id="dialogueForm" onsubmit="saveDialogue(event)">
+                <input type="hidden" id="dialogueId" value="">
                 <div class="form-group">
                     <label>Select Lesson</label>
                     <select id="dialogueLesson" required>
@@ -592,7 +593,8 @@
                     <label>Dialogue Line Number (order)</label>
                     <input type="number" id="dialogueOrder" min="1" value="1">
                 </div>
-                <button type="submit" class="btn">Add Dialogue</button>
+                <button type="submit" class="btn" id="dialogueSubmitBtn">Add Dialogue</button>
+                <button type="button" class="btn btn-secondary" id="dialogueCancelBtn" onclick="cancelEditDialogue()" style="display:none;margin-left:10px;">Cancel</button>
             </form>
 
             <div class="table-container">
@@ -1197,6 +1199,7 @@
                         <td>${dialogue.lessons?.title || 'N/A'}</td>
                         <td>0</td>
                         <td class="actions">
+                            <button class="btn btn-primary btn-small" onclick='editDialogue(${JSON.stringify(dialogue)})'>Edit</button>
                             <button class="btn btn-danger btn-small" onclick="deleteDialogue(${dialogue.id})">Delete</button>
                         </td>
                     </tr>
@@ -1209,33 +1212,80 @@
         async function saveDialogue(event) {
             event.preventDefault();
             const messageEl = document.getElementById('dialogueMessage');
-            
+            const dialogueId = document.getElementById('dialogueId').value;
+
             try {
-                const { error } = await supabase
-                    .from('dialogues')
-                    .insert([{
-                        lesson_id: parseInt(document.getElementById('dialogueLesson').value),
-                        title: document.getElementById('dialogueTitle').value,
-                        speaker: document.getElementById('dialogueSpeaker').value,
-                        chinese: document.getElementById('dialogueChinese').value,
-                        pinyin: document.getElementById('dialoguePinyin').value,
-                        english: document.getElementById('dialogueEnglish').value,
-                        uzbek: document.getElementById('dialogueUzbek').value || null,
-                        russian: document.getElementById('dialogueRussian').value || null,
-                        dialogue_order: parseInt(document.getElementById('dialogueOrder').value)
-                    }]);
+                const dialogueData = {
+                    lesson_id: parseInt(document.getElementById('dialogueLesson').value),
+                    title: document.getElementById('dialogueTitle').value,
+                    speaker: document.getElementById('dialogueSpeaker').value,
+                    chinese: document.getElementById('dialogueChinese').value,
+                    pinyin: document.getElementById('dialoguePinyin').value,
+                    english: document.getElementById('dialogueEnglish').value,
+                    uzbek: document.getElementById('dialogueUzbek').value || null,
+                    russian: document.getElementById('dialogueRussian').value || null,
+                    dialogue_order: parseInt(document.getElementById('dialogueOrder').value)
+                };
+
+                let error;
+                if (dialogueId) {
+                    // Update existing dialogue
+                    const result = await supabase
+                        .from('dialogues')
+                        .update(dialogueData)
+                        .eq('id', parseInt(dialogueId));
+                    error = result.error;
+                    messageEl.innerHTML = '<div class="message success">Dialogue updated!</div>';
+                } else {
+                    // Insert new dialogue
+                    const result = await supabase
+                        .from('dialogues')
+                        .insert([dialogueData]);
+                    error = result.error;
+                    messageEl.innerHTML = '<div class="message success">Dialogue added!</div>';
+                }
 
                 if (error) throw error;
 
-                messageEl.innerHTML = '<div class="message success">Dialogue added!</div>';
                 setTimeout(() => messageEl.innerHTML = '', 3000);
-                
-                event.target.reset();
+
+                cancelEditDialogue();
                 await loadDialogues();
             } catch (error) {
                 messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
                 setTimeout(() => messageEl.innerHTML = '', 3000);
             }
+        }
+
+        function editDialogue(dialogue) {
+            // Populate form with dialogue data
+            document.getElementById('dialogueId').value = dialogue.id;
+            document.getElementById('dialogueLesson').value = dialogue.lesson_id;
+            document.getElementById('dialogueTitle').value = dialogue.title;
+            document.getElementById('dialogueSpeaker').value = dialogue.speaker;
+            document.getElementById('dialogueChinese').value = dialogue.chinese;
+            document.getElementById('dialoguePinyin').value = dialogue.pinyin;
+            document.getElementById('dialogueEnglish').value = dialogue.english;
+            document.getElementById('dialogueUzbek').value = dialogue.uzbek || '';
+            document.getElementById('dialogueRussian').value = dialogue.russian || '';
+            document.getElementById('dialogueOrder').value = dialogue.dialogue_order;
+
+            // Update button text and show cancel button
+            document.getElementById('dialogueSubmitBtn').textContent = 'Update Dialogue';
+            document.getElementById('dialogueCancelBtn').style.display = 'inline-block';
+
+            // Scroll to form
+            document.getElementById('dialogueForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEditDialogue() {
+            // Reset form
+            document.getElementById('dialogueForm').reset();
+            document.getElementById('dialogueId').value = '';
+
+            // Reset button text and hide cancel button
+            document.getElementById('dialogueSubmitBtn').textContent = 'Add Dialogue';
+            document.getElementById('dialogueCancelBtn').style.display = 'none';
         }
 
         async function deleteDialogue(id) {
