@@ -702,19 +702,9 @@
                 document.getElementById('totalUsers').textContent = usersData.count || 0;
                 document.getElementById('totalProgress').textContent = progressData.count || 0;
                 
-                // Calculate active today (with error handling)
-                try {
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const { data: activeUsers } = await supabase
-                        .from('users')
-                        .select('telegram_id')
-                        .gte('last_active', today.toISOString());
-                    document.getElementById('activeToday').textContent = activeUsers?.length || 0;
-                } catch (e) {
-                    // Ignore if last_active field doesn't exist
-                    document.getElementById('activeToday').textContent = 0;
-                }
+                // Calculate active today - just set to 0 for now
+                // TODO: Add last_active field to users table in Supabase
+                document.getElementById('activeToday').textContent = 0;
             } catch (error) {
                 console.error('Error loading analytics:', error);
             }
