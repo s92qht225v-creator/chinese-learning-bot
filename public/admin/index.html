@@ -400,6 +400,9 @@
                 <button type="submit" class="btn">Add Vocabulary</button>
             </form>
 
+            <!-- Pagination Info -->
+            <div id="paginationInfo" style="margin-bottom: 10px; color: #666; font-size: 14px;"></div>
+            
             <div class="table-container">
                 <table>
                     <thead>
@@ -418,6 +421,9 @@
                     <tbody id="vocabularyTable"></tbody>
                 </table>
             </div>
+            
+            <!-- Pagination Controls -->
+            <div id="paginationControls" style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 10px;"></div>
         </div>
 
         <!-- Lessons Tab -->
@@ -798,6 +804,10 @@
                         </td>
                     </tr>
                 `}).join('');
+                
+                // Apply pagination after loading
+                currentPage = 1; // Reset to first page
+                applyPagination();
             } catch (error) {
                 console.error('Error loading vocabulary:', error);
             }
@@ -1284,6 +1294,10 @@
             }
         }
         
+        // ========== PAGINATION STATE ==========
+        let currentPage = 1;
+        const itemsPerPage = 50;
+        
         // ========== VOCABULARY SEARCH & FILTER ==========
         function filterVocabularyTable() {
             const searchInput = document.getElementById('vocabularySearch');
@@ -1319,6 +1333,91 @@
                 // Show/hide row based on both filters
                 row.style.display = (matchesSearch && matchesHSK) ? '' : 'none';
             }
+            
+            // Apply pagination after filtering
+            applyPagination();
+        }
+        
+        function applyPagination() {
+            const tbody = document.getElementById('vocabularyTable');
+            const rows = Array.from(tbody.getElementsByTagName('tr'));
+            
+            // Get visible rows only
+            const visibleRows = rows.filter(row => row.style.display !== 'none');
+            const totalPages = Math.ceil(visibleRows.length / itemsPerPage);
+            
+            // Reset to page 1 if current page exceeds total
+            if (currentPage > totalPages && totalPages > 0) {
+                currentPage = 1;
+            }
+            
+            // Calculate range
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            
+            // Hide all visible rows first
+            visibleRows.forEach((row, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Update pagination info
+            const paginationInfo = document.getElementById('paginationInfo');
+            if (visibleRows.length > 0) {
+                paginationInfo.textContent = `Showing ${startIndex + 1}-${Math.min(endIndex, visibleRows.length)} of ${visibleRows.length} words`;
+            } else {
+                paginationInfo.textContent = 'No words found';
+            }
+            
+            // Update pagination controls
+            updatePaginationControls(totalPages);
+        }
+        
+        function updatePaginationControls(totalPages) {
+            const container = document.getElementById('paginationControls');
+            
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            
+            // Previous button
+            html += `<button class="btn btn-small" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>« Prev</button>`;
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    const activeClass = i === currentPage ? 'btn-warning' : '';
+                    html += `<button class="btn btn-small ${activeClass}" onclick="goToPage(${i})">${i}</button>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += '<span>...</span>';
+                }
+            }
+            
+            // Next button
+            html += `<button class="btn btn-small" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next »</button>`;
+            
+            container.innerHTML = html;
+        }
+        
+        function goToPage(page) {
+            const tbody = document.getElementById('vocabularyTable');
+            const rows = Array.from(tbody.getElementsByTagName('tr'));
+            const visibleRows = rows.filter(row => row.style.display !== 'none' || row.style.display === '');
+            const totalPages = Math.ceil(visibleRows.length / itemsPerPage);
+            
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            applyPagination();
+            
+            // Scroll to top of table
+            document.getElementById('vocabularyPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         
         // ========== CSV EXPORT ==========
