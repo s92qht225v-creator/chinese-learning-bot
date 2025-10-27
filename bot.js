@@ -272,6 +272,9 @@ app.get('/api/user/progress', async (req, res) => {
 // Get user favorites
 app.get('/api/favorites', async (req, res) => {
   try {
+    if (!db.supabase) {
+      return res.status(503).json({ error: 'Database not configured' });
+    }
     const { user_id, vocabulary_id } = req.query;
     const { data, error } = await db.supabase
       .from('user_favorites')
@@ -290,6 +293,9 @@ app.get('/api/favorites', async (req, res) => {
 // Get all user favorites with vocabulary details
 app.get('/api/favorites/list', async (req, res) => {
   try {
+    if (!db.supabase) {
+      return res.json([]);
+    }
     const { user_id } = req.query;
     const { data, error } = await db.supabase
       .from('user_favorites')
@@ -321,6 +327,9 @@ app.get('/api/favorites/list', async (req, res) => {
 // Add to favorites
 app.post('/api/favorites', async (req, res) => {
   try {
+    if (!db.supabase) {
+      return res.status(503).json({ error: 'Database not configured' });
+    }
     const { user_id, vocabulary_id } = req.body;
     const { data, error } = await db.supabase
       .from('user_favorites')
@@ -338,6 +347,9 @@ app.post('/api/favorites', async (req, res) => {
 // Remove from favorites
 app.delete('/api/favorites/:id', async (req, res) => {
   try {
+    if (!db.supabase) {
+      return res.status(503).json({ error: 'Database not configured' });
+    }
     const { id } = req.params;
     const { error } = await db.supabase
       .from('user_favorites')
@@ -355,6 +367,9 @@ app.delete('/api/favorites/:id', async (req, res) => {
 // Add to review queue
 app.post('/api/review-queue', async (req, res) => {
   try {
+    if (!db.supabase) {
+      return res.status(503).json({ error: 'Database not configured' });
+    }
     const { user_id, vocabulary_id } = req.body;
     const { data, error } = await db.supabase
       .from('user_review_queue')
@@ -372,6 +387,9 @@ app.post('/api/review-queue', async (req, res) => {
 // Get review queue
 app.get('/api/review-queue', async (req, res) => {
   try {
+    if (!db.supabase) {
+      return res.json([]);
+    }
     const { user_id } = req.query;
     const { data, error } = await db.supabase
       .from('user_review_queue')
@@ -403,6 +421,9 @@ app.get('/api/review-queue', async (req, res) => {
 // Remove from review queue
 app.delete('/api/review-queue/:id', async (req, res) => {
   try {
+    if (!db.supabase) {
+      return res.status(503).json({ error: 'Database not configured' });
+    }
     const { id } = req.params;
     const { error } = await db.supabase
       .from('user_review_queue')
