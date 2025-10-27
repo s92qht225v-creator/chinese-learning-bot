@@ -327,6 +327,23 @@
                     <option value="5">HSK 5</option>
                     <option value="6">HSK 6</option>
                 </select>
+                <select 
+                    id="posFilterDropdown" 
+                    onchange="filterVocabularyTable()" 
+                    style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"
+                >
+                    <option value="">All Parts of Speech</option>
+                    <option value="n">Noun</option>
+                    <option value="v">Verb</option>
+                    <option value="adj">Adjective</option>
+                    <option value="adv">Adverb</option>
+                    <option value="pron">Pronoun</option>
+                    <option value="prep">Preposition</option>
+                    <option value="conj">Conjunction</option>
+                    <option value="interj">Interjection</option>
+                    <option value="mw">Measure Word</option>
+                    <option value="particle">Particle</option>
+                </select>
                 <input 
                     type="text" 
                     id="vocabularySearch" 
@@ -1302,8 +1319,10 @@
         function filterVocabularyTable() {
             const searchInput = document.getElementById('vocabularySearch');
             const hskFilter = document.getElementById('hskFilterDropdown');
+            const posFilter = document.getElementById('posFilterDropdown');
             const query = searchInput.value.toLowerCase();
             const selectedHSK = hskFilter.value;
+            const selectedPOS = posFilter.value;
             const tbody = document.getElementById('vocabularyTable');
             const rows = tbody.getElementsByTagName('tr');
             
@@ -1314,6 +1333,7 @@
                 // Get text from cells
                 const chinese = cells[0]?.textContent.toLowerCase() || '';
                 const pinyin = cells[1]?.textContent.toLowerCase() || '';
+                const posCell = cells[2]?.textContent.trim() || ''; // POS badge
                 const english = cells[3]?.textContent.toLowerCase() || '';
                 const uzbek = cells[4]?.textContent.toLowerCase() || '';
                 const russian = cells[5]?.textContent.toLowerCase() || '';
@@ -1330,8 +1350,11 @@
                 // Check HSK filter match
                 const matchesHSK = !selectedHSK || hskText.includes(`HSK ${selectedHSK}`);
                 
-                // Show/hide row based on both filters
-                row.style.display = (matchesSearch && matchesHSK) ? '' : 'none';
+                // Check POS filter match
+                const matchesPOS = !selectedPOS || posCell.toLowerCase() === selectedPOS.toLowerCase();
+                
+                // Show/hide row based on all filters
+                row.style.display = (matchesSearch && matchesHSK && matchesPOS) ? '' : 'none';
             }
             
             // Apply pagination after filtering
