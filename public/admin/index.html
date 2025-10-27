@@ -854,9 +854,45 @@
             try {
                 const lessonId = document.getElementById('vocabLesson').value;
                 const partOfSpeech = document.getElementById('partOfSpeech').value;
+                const chinese = document.getElementById('chinese').value;
+                const pinyin = document.getElementById('pinyin').value;
+                
+                // Validate pinyin format
+                if (!validatePinyin(pinyin)) {
+                    messageEl.innerHTML = '<div class="message error">Invalid pinyin format. Use tone marks (nǐ hǎo) or numbers (ni3 hao3)</div>';
+                    setTimeout(() => messageEl.innerHTML = '', 5000);
+                    return;
+                }
+                
+                // Check for duplicates (only when adding new, not editing)
+                if (!editId) {
+                    const { data: existingWords } = await supabase
+                        .from('vocabulary')
+                        .select('*')
+                        .eq('chinese', chinese);
+                    
+                    if (existingWords && existingWords.length > 0) {
+                        const existing = existingWords[0];
+                        const confirmed = confirm(
+                            `⚠️ Duplicate Warning\n\n` +
+                            `The word "${chinese}" already exists:\n` +
+                            `Pinyin: ${existing.pinyin}\n` +
+                            `English: ${existing.english}\n` +
+                            `HSK: ${existing.hsk_level}\n\n` +
+                            `Add anyway?`
+                        );
+                        
+                        if (!confirmed) {
+                            messageEl.innerHTML = '<div class="message">Duplicate entry cancelled</div>';
+                            setTimeout(() => messageEl.innerHTML = '', 3000);
+                            return;
+                        }
+                    }
+                }
+                
                 const vocabData = {
-                    chinese: document.getElementById('chinese').value,
-                    pinyin: document.getElementById('pinyin').value,
+                    chinese,
+                    pinyin,
                     part_of_speech: partOfSpeech || null,
                     english: document.getElementById('english').value,
                     uzbek: document.getElementById('uzbek').value || null,
@@ -1631,6 +1667,19 @@
                 messageEl.innerHTML = `<div class="message error">Export failed: ${error.message}</div>`;
                 setTimeout(() => messageEl.innerHTML = '', 3000);
             }
+        }
+        
+        // ========== VALIDATION ==========
+        function validatePinyin(pinyin) {
+            if (!pinyin || pinyin.trim() === '') return false;
+            
+            // Regex for pinyin with tone marks (ā á ǎ à ē é ě è etc.)
+            const toneMarkRegex = /^[a-zA-Zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜü\s]+$/;
+            
+            // Regex for pinyin with numbers (ni3 hao3)
+            const numberToneRegex = /^[a-zA-Z]+[1-5]?(\s+[a-zA-Z]+[1-5]?)*$/;
+            
+            return toneMarkRegex.test(pinyin) || numberToneRegex.test(pinyin);
         }
         
         // ========== AUDIO UPLOAD ==========
