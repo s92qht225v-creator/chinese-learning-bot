@@ -710,9 +710,9 @@
                 dialogueLines = [{
                     chinese: '',
                     pinyin: '',
-                    translation_en: '',
-                    translation_ru: '',
-                    translation_uz: '',
+                    english: '',
+                    russian: '',
+                    uzbek: '',
                     line_order: 1
                 }];
             }
@@ -766,23 +766,23 @@
 
                     <div class="form-group">
                         <label>🇬🇧 English Translation *</label>
-                        <textarea id="line${index}_translation_en" rows="2" required
+                        <textarea id="line${index}_english" rows="2" required
                                   style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
-                                  onchange="updateLine(${index}, 'translation_en', this.value)">${line.translation_en || ''}</textarea>
+                                  onchange="updateLine(${index}, 'english', this.value)">${line.english || ''}</textarea>
                     </div>
 
                     <div class="form-group">
                         <label>🇷🇺 Russian Translation (Русский) *</label>
-                        <textarea id="line${index}_translation_ru" rows="2" required
+                        <textarea id="line${index}_russian" rows="2" required
                                   style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
-                                  onchange="updateLine(${index}, 'translation_ru', this.value)">${line.translation_ru || ''}</textarea>
+                                  onchange="updateLine(${index}, 'russian', this.value)">${line.russian || ''}</textarea>
                     </div>
 
                     <div class="form-group">
                         <label>🇺🇿 Uzbek Translation (O'zbek) *</label>
-                        <textarea id="line${index}_translation_uz" rows="2" required
+                        <textarea id="line${index}_uzbek" rows="2" required
                                   style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
-                                  onchange="updateLine(${index}, 'translation_uz', this.value)">${line.translation_uz || ''}</textarea>
+                                  onchange="updateLine(${index}, 'uzbek', this.value)">${line.uzbek || ''}</textarea>
                     </div>
                 </div>
             `).join('');
@@ -798,9 +798,9 @@
             dialogueLines.push({
                 chinese: '',
                 pinyin: '',
-                translation_en: '',
-                translation_ru: '',
-                translation_uz: '',
+                english: '',
+                russian: '',
+                uzbek: '',
                 line_order: dialogueLines.length + 1
             });
             renderDialogueLines();
@@ -861,7 +861,7 @@
                 // Validate all lines have required fields
                 for (let i = 0; i < dialogueLines.length; i++) {
                     const line = dialogueLines[i];
-                    if (!line.chinese || !line.pinyin || !line.translation_en || !line.translation_ru || !line.translation_uz) {
+                    if (!line.chinese || !line.pinyin || !line.english || !line.russian || !line.uzbek) {
                         messageEl.innerHTML = `<div class="message error">Line ${i + 1}: All fields are required</div>`;
                         setTimeout(() => messageEl.innerHTML = '', 3000);
                         return;
