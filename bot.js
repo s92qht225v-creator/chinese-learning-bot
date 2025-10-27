@@ -2,6 +2,7 @@ const config = require('./config');
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
 const db = require('./database');
+const { supabase } = require('./database');
 
 const bot = new TelegramBot(config.telegramBotToken, { 
   polling: {
