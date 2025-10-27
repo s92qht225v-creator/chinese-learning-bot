@@ -599,6 +599,18 @@
                     <label>Description</label>
                     <input type="text" id="lessonDescription">
                 </div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div class="form-group">
+                        <label>Audio File (MP3)</label>
+                        <input type="file" id="lessonAudioFile" accept="audio/mp3,audio/mpeg">
+                        <small id="currentAudioInfo" style="color: #666; display: none;"></small>
+                    </div>
+                    <div class="form-group">
+                        <label>Thumbnail Image (JPG/PNG)</label>
+                        <input type="file" id="lessonThumbnailFile" accept="image/jpeg,image/png,image/jpg">
+                        <small id="currentThumbnailInfo" style="color: #666; display: none;"></small>
+                    </div>
+                </div>
                 <button type="submit" class="btn">Add Lesson</button>
             </form>
 
@@ -1764,6 +1776,8 @@
             const editLessonId = document.getElementById('editLessonId').value;
 
             try {
+                messageEl.innerHTML = '<div class="message">Uploading files...</div>';
+
                 const lessonData = {
                     title: document.getElementById('lessonTitle').value,
                     hsk_level: parseInt(document.getElementById('lessonHskLevel').value),
@@ -1771,6 +1785,46 @@
                     description: document.getElementById('lessonDescription').value,
                     status: document.getElementById('lessonStatus').value
                 };
+
+                // Handle audio file upload
+                const audioFile = document.getElementById('lessonAudioFile').files[0];
+                if (audioFile) {
+                    const audioFileName = `lesson-${lessonData.hsk_level}-${lessonData.lesson_number}-audio-${Date.now()}.mp3`;
+                    const { data: audioData, error: audioError } = await supabase.storage
+                        .from('audio')
+                        .upload(audioFileName, audioFile, {
+                            contentType: audioFile.type,
+                            upsert: false
+                        });
+
+                    if (audioError) throw new Error(`Audio upload failed: ${audioError.message}`);
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('audio')
+                        .getPublicUrl(audioFileName);
+
+                    lessonData.audio_url = publicUrl;
+                }
+
+                // Handle thumbnail file upload
+                const thumbnailFile = document.getElementById('lessonThumbnailFile').files[0];
+                if (thumbnailFile) {
+                    const thumbnailFileName = `lesson-${lessonData.hsk_level}-${lessonData.lesson_number}-thumbnail-${Date.now()}.${thumbnailFile.type.split('/')[1]}`;
+                    const { data: thumbnailData, error: thumbnailError } = await supabase.storage
+                        .from('thumbnails')
+                        .upload(thumbnailFileName, thumbnailFile, {
+                            contentType: thumbnailFile.type,
+                            upsert: false
+                        });
+
+                    if (thumbnailError) throw new Error(`Thumbnail upload failed: ${thumbnailError.message}`);
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('thumbnails')
+                        .getPublicUrl(thumbnailFileName);
+
+                    lessonData.thumbnail_url = publicUrl;
+                }
 
                 let error;
                 if (editLessonId) {
@@ -1797,6 +1851,8 @@
                 // Reset form
                 event.target.reset();
                 document.getElementById('editLessonId').value = '';
+                document.getElementById('currentAudioInfo').style.display = 'none';
+                document.getElementById('currentThumbnailInfo').style.display = 'none';
                 document.querySelector('#lessonForm button[type="submit"]').textContent = 'Add Lesson';
 
                 await loadLessons();
@@ -1835,6 +1891,26 @@
                 document.getElementById('lessonNumber').value = lesson.lesson_number;
                 document.getElementById('lessonDescription').value = lesson.description || '';
                 document.getElementById('lessonStatus').value = lesson.status;
+
+                // Show current audio info
+                const audioInfo = document.getElementById('currentAudioInfo');
+                if (lesson.audio_url) {
+                    audioInfo.textContent = '✓ Current: ' + lesson.audio_url.split('/').pop();
+                    audioInfo.style.display = 'block';
+                } else {
+                    audioInfo.textContent = 'No audio uploaded';
+                    audioInfo.style.display = 'block';
+                }
+
+                // Show current thumbnail info
+                const thumbnailInfo = document.getElementById('currentThumbnailInfo');
+                if (lesson.thumbnail_url) {
+                    thumbnailInfo.innerHTML = '✓ Current: <a href="' + lesson.thumbnail_url + '" target="_blank">View</a>';
+                    thumbnailInfo.style.display = 'block';
+                } else {
+                    thumbnailInfo.textContent = 'No thumbnail uploaded';
+                    thumbnailInfo.style.display = 'block';
+                }
 
                 // Change submit button text
                 document.querySelector('#lessonForm button[type="submit"]').textContent = 'Update Lesson';
