@@ -87,6 +87,8 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
         }
         
         .panel.active {
@@ -107,10 +109,10 @@
         .form-group input,
         .form-group select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 18px !important;
             background: white;
             color: #333;
         }
@@ -118,8 +120,66 @@
         .form-group select option {
             background: white;
             color: #333;
-            padding: 10px;
-            font-size: 16px !important;
+            padding: 12px;
+            font-size: 18px !important;
+        }
+
+        /* iOS Safari select fixes - keep native picker but ensure proper rendering */
+        .form-group select {
+            position: relative;
+            z-index: 1;
+            /* Keep native appearance for iOS */
+            -webkit-appearance: menulist;
+            appearance: menulist;
+        }
+
+        /* Ensure dialogue editor has proper stacking context */
+        #dialogueEditorView {
+            position: relative;
+            z-index: 100;
+            isolation: isolate;
+        }
+
+        /* Fix for iOS select rendering issues */
+        @supports (-webkit-touch-callout: none) {
+            .form-group select {
+                font-size: 20px !important;
+                min-height: 48px;
+                line-height: 1.5;
+            }
+
+            .form-group select option {
+                font-size: 20px !important;
+                min-height: 48px;
+            }
+
+            /* Prevent iOS zoom on focus */
+            body {
+                -webkit-text-size-adjust: 100%;
+            }
+        }
+
+        /* Additional iOS Safari select fixes */
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+            .form-group select {
+                background-position: right 10px center;
+                background-repeat: no-repeat;
+                padding-right: 30px;
+            }
+        }
+
+        /* Force light background on iOS even in dark mode */
+        .form-group select,
+        .form-group select option {
+            background-color: white !important;
+            color: #333 !important;
+            color-scheme: light;
+        }
+
+        /* Prevent iOS dark mode from affecting form */
+        #dialogueEditorView,
+        #dialogueEditorView * {
+            color-scheme: light;
         }
 
         .form-group input:focus,
@@ -281,13 +341,13 @@
         </div>
 
         <div class="tabs">
-            <button class="tab active" onclick="showTab('analytics')">📊 Analytics</button>
-            <button class="tab" onclick="showTab('vocabulary')">📚 Vocabulary</button>
-            <button class="tab" onclick="showTab('lessons')">📖 Lessons</button>
-            <button class="tab" onclick="showTab('dialogues')">💬 Dialogues</button>
-            <button class="tab" onclick="showTab('grammar')">📝 Grammar</button>
-            <button class="tab" onclick="showTab('quizzes')">❓ Quizzes</button>
-            <button class="tab" onclick="showTab('users')">👥 Users</button>
+            <button class="tab active" onclick="showTab(event, 'analytics')">📊 Analytics</button>
+            <button class="tab" onclick="showTab(event, 'vocabulary')">📚 Vocabulary</button>
+            <button class="tab" onclick="showTab(event, 'lessons')">📖 Lessons</button>
+            <button class="tab" onclick="showTab(event, 'dialogues')">💬 Dialogues</button>
+            <button class="tab" onclick="showTab(event, 'grammar')">📝 Grammar</button>
+            <button class="tab" onclick="showTab(event, 'quizzes')">❓ Quizzes</button>
+            <button class="tab" onclick="showTab(event, 'users')">👥 Users</button>
         </div>
 
         <!-- Analytics Tab -->
@@ -588,7 +648,7 @@
 
                         <div class="form-group">
                             <label>HSK Level *</label>
-                            <select id="dialogueHskLevelSelect" required onchange="filterLessonsByHskLevel()" style="font-size: 16px;">
+                            <select id="dialogueHskLevelSelect" required onchange="filterLessonsByHskLevel()">
                                 <option value="">Select HSK level...</option>
                                 <option value="1">HSK 1</option>
                                 <option value="2">HSK 2</option>
@@ -601,7 +661,7 @@
 
                         <div class="form-group">
                             <label>Assign to Lesson *</label>
-                            <select id="dialogueLessonSelect" required style="font-size: 16px;">
+                            <select id="dialogueLessonSelect" required>
                                 <option value="">Select HSK level first...</option>
                             </select>
                         </div>
@@ -616,8 +676,8 @@
                         </button>
 
                         <div style="display: flex; gap: 10px;">
-                            <button type="submit" class="btn btn-primary">💾 Save Dialogue</button>
-                            <button type="button" class="btn btn-secondary" onclick="hideDialogueEditor()">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="saveDialogueBtn">💾 Save Dialogue</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideDialogueEditor()" id="cancelDialogueBtn">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -625,6 +685,14 @@
         </div>
 
         <script>
+        // HTML escaping helper to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Dialogue Management State
         let dialogueLines = [];
         let editingDialogueId = null;
@@ -754,35 +822,35 @@
                         <label>Chinese Characters *</label>
                         <textarea id="line${index}_chinese" rows="2" required
                                   style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
-                                  onchange="updateLine(${index}, 'chinese', this.value)">${line.chinese || ''}</textarea>
+                                  onchange="updateLine(${index}, 'chinese', this.value)">${escapeHtml(line.chinese)}</textarea>
                     </div>
 
                     <div class="form-group">
                         <label>Pinyin *</label>
                         <textarea id="line${index}_pinyin" rows="2" required
                                   style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
-                                  onchange="updateLine(${index}, 'pinyin', this.value)">${line.pinyin || ''}</textarea>
+                                  onchange="updateLine(${index}, 'pinyin', this.value)">${escapeHtml(line.pinyin)}</textarea>
                     </div>
 
                     <div class="form-group">
                         <label>🇬🇧 English Translation *</label>
                         <textarea id="line${index}_translation_en" rows="2" required
                                   style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
-                                  onchange="updateLine(${index}, 'translation_en', this.value)">${line.translation_en || ''}</textarea>
+                                  onchange="updateLine(${index}, 'translation_en', this.value)">${escapeHtml(line.translation_en)}</textarea>
                     </div>
 
                     <div class="form-group">
                         <label>🇷🇺 Russian Translation (Русский) *</label>
                         <textarea id="line${index}_translation_ru" rows="2" required
                                   style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
-                                  onchange="updateLine(${index}, 'translation_ru', this.value)">${line.translation_ru || ''}</textarea>
+                                  onchange="updateLine(${index}, 'translation_ru', this.value)">${escapeHtml(line.translation_ru)}</textarea>
                     </div>
 
                     <div class="form-group">
                         <label>🇺🇿 Uzbek Translation (O'zbek) *</label>
                         <textarea id="line${index}_translation_uz" rows="2" required
                                   style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
-                                  onchange="updateLine(${index}, 'translation_uz', this.value)">${line.translation_uz || ''}</textarea>
+                                  onchange="updateLine(${index}, 'translation_uz', this.value)">${escapeHtml(line.translation_uz)}</textarea>
                     </div>
                 </div>
             `).join('');
@@ -846,8 +914,16 @@
         async function saveMultiLineDialogue(event) {
             event.preventDefault();
             const messageEl = document.getElementById('dialogueMessage');
+            const saveBtn = document.getElementById('saveDialogueBtn');
+            const cancelBtn = document.getElementById('cancelDialogueBtn');
+            const originalBtnText = saveBtn.innerHTML;
 
             try {
+                // Show loading state
+                saveBtn.disabled = true;
+                cancelBtn.disabled = true;
+                saveBtn.innerHTML = '⏳ Saving...';
+                saveBtn.style.opacity = '0.6';
                 const lessonId = document.getElementById('dialogueLessonSelect').value;
                 const dialogueId = document.getElementById('editingDialogueId').value;
 
@@ -855,17 +931,55 @@
                 if (!lessonId) {
                     messageEl.innerHTML = '<div class="message error">Please select a lesson</div>';
                     setTimeout(() => messageEl.innerHTML = '', 3000);
+                    saveBtn.disabled = false;
+                    cancelBtn.disabled = false;
+                    saveBtn.innerHTML = originalBtnText;
+                    saveBtn.style.opacity = '1';
                     return;
                 }
 
-                // Validate all lines have required fields
+                // Validate and sanitize all lines
                 for (let i = 0; i < dialogueLines.length; i++) {
                     const line = dialogueLines[i];
+
+                    // Trim all fields
+                    line.chinese = line.chinese?.trim() || '';
+                    line.pinyin = line.pinyin?.trim() || '';
+                    line.translation_en = line.translation_en?.trim() || '';
+                    line.translation_ru = line.translation_ru?.trim() || '';
+                    line.translation_uz = line.translation_uz?.trim() || '';
+
+                    // Check required fields are not empty after trimming
                     if (!line.chinese || !line.pinyin || !line.translation_en || !line.translation_ru || !line.translation_uz) {
                         messageEl.innerHTML = `<div class="message error">Line ${i + 1}: All fields are required</div>`;
                         setTimeout(() => messageEl.innerHTML = '', 3000);
+                        saveBtn.disabled = false;
+                        cancelBtn.disabled = false;
+                        saveBtn.innerHTML = originalBtnText;
+                        saveBtn.style.opacity = '1';
                         return;
                     }
+
+                    // Validate field lengths (reasonable limits)
+                    if (line.chinese.length > 500 || line.pinyin.length > 500 ||
+                        line.translation_en.length > 1000 || line.translation_ru.length > 1000 ||
+                        line.translation_uz.length > 1000) {
+                        messageEl.innerHTML = `<div class="message error">Line ${i + 1}: Field is too long (max 500 chars for Chinese/Pinyin, 1000 for translations)</div>`;
+                        setTimeout(() => messageEl.innerHTML = '', 3000);
+                        saveBtn.disabled = false;
+                        cancelBtn.disabled = false;
+                        saveBtn.innerHTML = originalBtnText;
+                        saveBtn.style.opacity = '1';
+                        return;
+                    }
+
+                    // Strip HTML tags to prevent stored XSS
+                    const stripHtml = (str) => str.replace(/<[^>]*>/g, '');
+                    line.chinese = stripHtml(line.chinese);
+                    line.pinyin = stripHtml(line.pinyin);
+                    line.translation_en = stripHtml(line.translation_en);
+                    line.translation_ru = stripHtml(line.translation_ru);
+                    line.translation_uz = stripHtml(line.translation_uz);
                 }
 
                 // Get current max display_order for this lesson
@@ -954,9 +1068,21 @@
                 setTimeout(() => messageEl.innerHTML = '', 3000);
                 hideDialogueEditor();
                 await loadMultiLineDialogues();
+
+                // Restore button state
+                saveBtn.disabled = false;
+                cancelBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnText;
+                saveBtn.style.opacity = '1';
             } catch (error) {
                 messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
                 setTimeout(() => messageEl.innerHTML = '', 3000);
+
+                // Restore button state on error
+                saveBtn.disabled = false;
+                cancelBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnText;
+                saveBtn.style.opacity = '1';
             }
         }
 
@@ -1010,7 +1136,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
                         <div style="flex: 1;">
                             <h3 style="margin: 0 0 5px 0;">
-                                ${dialogue.lessons ? `HSK ${dialogue.lessons.hsk_level} - Lesson ${dialogue.lessons.lesson_number}: ${dialogue.lessons.title}` : 'Dialogue #' + dialogue.id}
+                                ${dialogue.lessons ? `HSK ${escapeHtml(String(dialogue.lessons.hsk_level || ''))} - Lesson ${escapeHtml(String(dialogue.lessons.lesson_number || ''))}: ${escapeHtml(dialogue.lessons.title || 'Untitled')}` : 'Dialogue #' + dialogue.id}
                             </h3>
                             <p style="margin: 0; color: #666; font-size: 14px;">
                                 ${dialogue.lines.length} line${dialogue.lines.length !== 1 ? 's' : ''} •
@@ -1037,7 +1163,7 @@
                     <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; font-size: 14px;">
                         ${dialogue.lines.slice(0, 2).map(line => `
                             <div style="margin-bottom: 5px;">
-                                ${line.chinese}
+                                ${escapeHtml(line.chinese)}
                             </div>
                         `).join('')}
                         ${dialogue.lines.length > 2 ? `<div style="color: #666;">...and ${dialogue.lines.length - 2} more line${dialogue.lines.length - 2 !== 1 ? 's' : ''}</div>` : ''}
@@ -1051,7 +1177,15 @@
             try {
                 const { data: dialogue, error: e1 } = await supabase
                     .from('dialogues')
-                    .select('*')
+                    .select(`
+                        *,
+                        lessons (
+                            id,
+                            title,
+                            hsk_level,
+                            lesson_number
+                        )
+                    `)
                     .eq('id', dialogueId)
                     .single();
 
@@ -1063,7 +1197,13 @@
                     .eq('dialogue_id', dialogueId)
                     .order('line_order', { ascending: true});
 
-                dialogue.lines = lines || [];
+                if (e2) {
+                    console.error('Error loading dialogue lines:', e2);
+                    dialogue.lines = [];
+                } else {
+                    dialogue.lines = lines || [];
+                }
+
                 showDialogueEditor(dialogue);
             } catch (error) {
                 alert('Error loading dialogue: ' + error.message);
@@ -1276,13 +1416,19 @@
         });
 
         // Tab switching
-        function showTab(tabName) {
+        function showTab(event, tabName) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
-            
-            event.target.classList.add('active');
+
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // Fallback: find the tab element by data attribute or id
+                const tabElement = document.querySelector(`[onclick*="showTab"][onclick*="${tabName}"]`);
+                if (tabElement) tabElement.classList.add('active');
+            }
             document.getElementById(tabName + 'Panel').classList.add('active');
-            
+
             if (tabName === 'analytics') loadAnalytics();
             if (tabName === 'vocabulary') { loadVocabulary(); loadLessonsForVocab(); }
             if (tabName === 'lessons') loadLessons();
