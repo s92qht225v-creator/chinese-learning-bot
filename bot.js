@@ -268,6 +268,155 @@ app.get('/api/user/progress', async (req, res) => {
 
 // ========== ADMIN API ENDPOINTS ==========
 
+// ========== FAVORITES & REVIEW QUEUE API ==========
+// Get user favorites
+app.get('/api/favorites', async (req, res) => {
+  try {
+    const { user_id, vocabulary_id } = req.query;
+    const { data, error } = await supabase
+      .from('user_favorites')
+      .select('*')
+      .eq('user_id', user_id)
+      .eq('vocabulary_id', vocabulary_id);
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    res.status(500).json({ error: 'Failed to fetch favorites' });
+  }
+});
+
+// Get all user favorites with vocabulary details
+app.get('/api/favorites/list', async (req, res) => {
+  try {
+    const { user_id } = req.query;
+    const { data, error } = await supabase
+      .from('user_favorites')
+      .select(`
+        id,
+        created_at,
+        vocabulary:vocabulary_id (
+          id,
+          chinese,
+          pinyin,
+          english,
+          uzbek,
+          russian,
+          difficulty,
+          audio_url
+        )
+      `)
+      .eq('user_id', user_id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data.map(item => ({ ...item.vocabulary, favorite_id: item.id })));
+  } catch (error) {
+    console.error('Error fetching favorites list:', error);
+    res.status(500).json({ error: 'Failed to fetch favorites list' });
+  }
+});
+
+// Add to favorites
+app.post('/api/favorites', async (req, res) => {
+  try {
+    const { user_id, vocabulary_id } = req.body;
+    const { data, error } = await supabase
+      .from('user_favorites')
+      .insert([{ user_id, vocabulary_id }])
+      .select();
+
+    if (error) throw error;
+    res.json(data[0]);
+  } catch (error) {
+    console.error('Error adding to favorites:', error);
+    res.status(500).json({ error: 'Failed to add to favorites', message: error.message });
+  }
+});
+
+// Remove from favorites
+app.delete('/api/favorites/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase
+      .from('user_favorites')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error removing from favorites:', error);
+    res.status(500).json({ error: 'Failed to remove from favorites' });
+  }
+});
+
+// Add to review queue
+app.post('/api/review-queue', async (req, res) => {
+  try {
+    const { user_id, vocabulary_id } = req.body;
+    const { data, error } = await supabase
+      .from('user_review_queue')
+      .insert([{ user_id, vocabulary_id }])
+      .select();
+
+    if (error) throw error;
+    res.json(data[0]);
+  } catch (error) {
+    console.error('Error adding to review queue:', error);
+    res.status(500).json({ error: 'Failed to add to review queue', message: error.message });
+  }
+});
+
+// Get review queue
+app.get('/api/review-queue', async (req, res) => {
+  try {
+    const { user_id } = req.query;
+    const { data, error } = await supabase
+      .from('user_review_queue')
+      .select(`
+        id,
+        created_at,
+        vocabulary:vocabulary_id (
+          id,
+          chinese,
+          pinyin,
+          english,
+          uzbek,
+          russian,
+          difficulty,
+          audio_url
+        )
+      `)
+      .eq('user_id', user_id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data.map(item => ({ ...item.vocabulary, queue_id: item.id })));
+  } catch (error) {
+    console.error('Error fetching review queue:', error);
+    res.status(500).json({ error: 'Failed to fetch review queue' });
+  }
+});
+
+// Remove from review queue
+app.delete('/api/review-queue/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase
+      .from('user_review_queue')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error removing from review queue:', error);
+    res.status(500).json({ error: 'Failed to remove from review queue' });
+  }
+});
+
 // Simple admin authentication middleware
 const adminAuth = (req, res, next) => {
   const adminPassword = req.headers['x-admin-password'];

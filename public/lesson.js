@@ -388,15 +388,82 @@ function playTextToSpeech(text) {
   }
 }
 
-function addToReview(wordId) {
+async function addToReview(wordId) {
   tg.HapticFeedback.impactOccurred('medium');
-  console.log('Added to review:', wordId);
+
+  try {
+    const userId = tg.initDataUnsafe?.user?.id;
+    if (!userId) {
+      tg.showAlert('User not authenticated');
+      return;
+    }
+
+    const response = await fetch('/api/review-queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, vocabulary_id: wordId })
+    });
+
+    if (response.ok) {
+      tg.showPopup({ message: '✓ Added to review queue!' });
+    } else {
+      const data = await response.json();
+      if (data.message?.includes('duplicate')) {
+        tg.showPopup({ message: 'Already in review queue' });
+      } else {
+        throw new Error(data.message);
+      }
+    }
+  } catch (error) {
+    console.error('Error adding to review:', error);
+    tg.showAlert('Failed to add to review queue');
+  }
 }
 
-function toggleFavorite(wordId) {
+async function toggleFavorite(wordId) {
   tg.HapticFeedback.impactOccurred('light');
-  console.log('Toggled favorite:', wordId);
-  // TODO: Update localStorage or database
+
+  try {
+    const userId = tg.initDataUnsafe?.user?.id;
+    if (!userId) {
+      tg.showAlert('User not authenticated');
+      return;
+    }
+
+    // Check if already favorited
+    const checkResponse = await fetch(`/api/favorites?user_id=${userId}&vocabulary_id=${wordId}`);
+    const favorites = await checkResponse.json();
+    const isFavorited = favorites.length > 0;
+
+    if (isFavorited) {
+      // Remove from favorites
+      const response = await fetch(`/api/favorites/${favorites[0].id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        tg.showPopup({ message: '♡ Removed from favorites' });
+        // Update button visual
+        const btn = event.target.closest('button');
+        if (btn) btn.querySelector('.material-symbols-outlined').textContent = 'favorite_border';
+      }
+    } else {
+      // Add to favorites
+      const response = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, vocabulary_id: wordId })
+      });
+      if (response.ok) {
+        tg.showPopup({ message: '❤️ Added to favorites!' });
+        // Update button visual
+        const btn = event.target.closest('button');
+        if (btn) btn.querySelector('.material-symbols-outlined').textContent = 'favorite';
+      }
+    }
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+    tg.showAlert('Failed to update favorites');
+  }
 }
 
 function saveGrammar(grammarId) {

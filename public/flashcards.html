@@ -273,14 +273,34 @@
     // Load vocabulary from API
     async function loadVocabulary() {
       try {
-        const response = await fetch(API_CONFIG.url(API_CONFIG.endpoints.vocabulary));
-        const data = await response.json();
-        flashcards = data.map(word => ({
-          chinese: word.chinese,
-          pinyin: word.pinyin,
-          english: word.english
-        }));
-        
+        const userId = tg.initDataUnsafe?.user?.id;
+
+        // Try to load from review queue first
+        let response;
+        if (userId) {
+          response = await fetch(`/api/review-queue?user_id=${userId}`);
+          const reviewQueue = await response.json();
+
+          if (reviewQueue.length > 0) {
+            flashcards = reviewQueue.map(word => ({
+              chinese: word.chinese,
+              pinyin: word.pinyin,
+              english: word.english
+            }));
+          }
+        }
+
+        // If no review queue, load all vocabulary
+        if (flashcards.length === 0) {
+          response = await fetch(API_CONFIG.url(API_CONFIG.endpoints.vocabulary));
+          const data = await response.json();
+          flashcards = data.map(word => ({
+            chinese: word.chinese,
+            pinyin: word.pinyin,
+            english: word.english
+          }));
+        }
+
         if (flashcards.length > 0) {
           loadCard(0);
         } else {

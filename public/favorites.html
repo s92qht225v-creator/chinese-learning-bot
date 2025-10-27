@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>Favorites - Chinese Learning</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" media="print" onload="this.media='all'"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4A90E2",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "background-light": "#F8F9FA",
+            "background-dark": "#101c22",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+      <div class="max-w-screen-xl mx-auto px-4 py-3">
+        <div class="flex items-center justify-between">
+          <button id="backBtn" class="flex items-center gap-2 text-text-light dark:text-text-dark">
+            <span class="material-symbols-outlined">arrow_back</span>
+            <span class="font-medium">Back</span>
+          </button>
+          <h1 class="text-lg font-bold">Favorites</h1>
+          <div class="w-20"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 px-4 py-6 max-w-screen-xl mx-auto w-full">
+      <div id="emptyState" class="hidden text-center py-12">
+        <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">favorite_border</span>
+        <h2 class="text-xl font-bold mb-2">No Favorites Yet</h2>
+        <p class="text-gray-500 mb-6">Tap the heart icon on vocabulary words to add them here</p>
+        <a href="/lessons.html" class="inline-block bg-primary text-white px-6 py-3 rounded-lg font-medium hover:opacity-90">
+          Browse Lessons
+        </a>
+      </div>
+
+      <div id="favoritesList" class="grid gap-4">
+        <!-- Favorites will be loaded here -->
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    const userId = tg.initDataUnsafe?.user?.id;
+    let favorites = [];
+
+    // Elements
+    const backBtn = document.getElementById('backBtn');
+    const favoritesList = document.getElementById('favoritesList');
+    const emptyState = document.getElementById('emptyState');
+
+    // Back button
+    backBtn.addEventListener('click', () => {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      window.history.back();
+    });
+
+    // Load favorites
+    async function loadFavorites() {
+      if (!userId) {
+        tg.showAlert('User not authenticated');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/favorites/list?user_id=${userId}`);
+        favorites = await response.json();
+
+        if (favorites.length === 0) {
+          emptyState.classList.remove('hidden');
+          favoritesList.classList.add('hidden');
+        } else {
+          emptyState.classList.add('hidden');
+          favoritesList.classList.remove('hidden');
+          renderFavorites();
+        }
+      } catch (error) {
+        console.error('Error loading favorites:', error);
+        tg.showAlert('Failed to load favorites');
+      }
+    }
+
+    // Render favorites
+    function renderFavorites() {
+      favoritesList.innerHTML = favorites.map(word => `
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <p class="text-3xl font-medium">${word.chinese}</p>
+                <button onclick="playAudio(${word.id})" class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
+                  <span class="material-symbols-outlined">volume_up</span>
+                </button>
+              </div>
+              <p class="text-lg text-gray-600 dark:text-gray-400 mb-1">${word.pinyin}</p>
+              <p class="text-base text-gray-700 dark:text-gray-300">${word.english}</p>
+              ${word.uzbek ? `<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">🇺🇿 ${word.uzbek}</p>` : ''}
+              ${word.russian ? `<p class="text-sm text-gray-500 dark:text-gray-400">🇷🇺 ${word.russian}</p>` : ''}
+            </div>
+            <button onclick="removeFavorite(${word.id}, ${word.favorite_id})" class="flex h-10 w-10 items-center justify-center rounded-full text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Remove from favorites
+    async function removeFavorite(wordId, favoriteId) {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+
+      try {
+        const response = await fetch(`/api/favorites/${favoriteId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          tg.showPopup({ message: '♡ Removed from favorites' });
+          // Remove from array and re-render
+          favorites = favorites.filter(f => f.id !== wordId);
+          if (favorites.length === 0) {
+            emptyState.classList.remove('hidden');
+            favoritesList.classList.add('hidden');
+          } else {
+            renderFavorites();
+          }
+        }
+      } catch (error) {
+        console.error('Error removing favorite:', error);
+        tg.showAlert('Failed to remove favorite');
+      }
+    }
+
+    // Play audio
+    let currentAudio = null;
+    function playAudio(wordId) {
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+
+      const word = favorites.find(w => w.id === wordId);
+      if (!word) return;
+
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      if (word.audio_url) {
+        currentAudio = new Audio(word.audio_url);
+        currentAudio.play().catch(err => {
+          console.error('Error playing audio:', err);
+          playTextToSpeech(word.chinese);
+        });
+      } else {
+        playTextToSpeech(word.chinese);
+      }
+    }
+
+    // Text-to-speech fallback
+    function playTextToSpeech(text) {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-CN';
+        utterance.rate = 0.8;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Load favorites on page load
+    loadFavorites();
+  </script>
+</body>
+</html>
