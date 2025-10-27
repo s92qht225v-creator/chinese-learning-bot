@@ -56,25 +56,42 @@ async function loadDialogues(lessonId) {
 
 function renderDialogues(dialogues) {
   const container = document.getElementById('dialogueContainer');
-  
+
   if (!dialogues || dialogues.length === 0) {
     container.innerHTML = '<p class="text-center text-text-secondary-light">No dialogues available</p>';
     return;
   }
 
-  const sorted = dialogues.sort((a, b) => (a.dialogue_order || 0) - (b.dialogue_order || 0));
-  
-  container.innerHTML = sorted.map(dialogue => `
-    <div class="flex flex-col gap-1 dialogue-item">
-      ${dialogue.speaker ? `<p class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">${dialogue.speaker}</p>` : ''}
-      <p class="text-lg font-medium" data-tab="characters">${dialogue.chinese}</p>
-      <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="pinyin" style="display: none;">${dialogue.pinyin}</p>
-      <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="english">${dialogue.english}</p>
-      <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="uzbek">${dialogue.uzbek || ''}</p>
-      <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="russian">${dialogue.russian || ''}</p>
-    </div>
-  `).join('');
-  
+  const sorted = dialogues.sort((a, b) => (a.display_order || a.dialogue_order || 0) - (b.display_order || b.dialogue_order || 0));
+
+  container.innerHTML = sorted.map(dialogue => {
+    // Handle multi-line dialogue structure
+    if (dialogue.lines && dialogue.lines.length > 0) {
+      return dialogue.lines.map((line, index) => `
+        <div class="flex flex-col gap-1 dialogue-item" style="margin-bottom: ${index === dialogue.lines.length - 1 ? '20px' : '10px'};">
+          ${line.speaker ? `<p class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">${line.speaker}</p>` : ''}
+          <p class="text-lg font-medium" data-tab="characters">${line.chinese || ''}</p>
+          <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="pinyin" style="display: none;">${line.pinyin || ''}</p>
+          <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="english">${line.translation_en || line.english || ''}</p>
+          <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="uzbek">${line.translation_uz || line.uzbek || ''}</p>
+          <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="russian">${line.translation_ru || line.russian || ''}</p>
+        </div>
+      `).join('');
+    }
+
+    // Fallback for old flat structure
+    return `
+      <div class="flex flex-col gap-1 dialogue-item">
+        ${dialogue.speaker ? `<p class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">${dialogue.speaker}</p>` : ''}
+        <p class="text-lg font-medium" data-tab="characters">${dialogue.chinese || ''}</p>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="pinyin" style="display: none;">${dialogue.pinyin || ''}</p>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="english">${dialogue.english || ''}</p>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="uzbek">${dialogue.uzbek || ''}</p>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="russian">${dialogue.russian || ''}</p>
+      </div>
+    `;
+  }).join('');
+
   updateDialogueDisplay();
 }
 
