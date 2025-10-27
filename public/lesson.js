@@ -3,6 +3,7 @@ const tg = window.Telegram.WebApp;
 let currentLesson = null;
 let currentDialogueTab = 'pinyin';
 let lessons = [];
+let currentVocabulary = [];
 
 async function initializePage() {
   tg.expand();
@@ -82,8 +83,8 @@ async function loadVocabulary(lessonId) {
     const response = await fetch(`/api/vocabulary?lesson_id=${lessonId}`);
     if (!response.ok) throw new Error('Failed to load vocabulary');
 
-    const vocabulary = await response.json();
-    renderVocabulary(vocabulary);
+    currentVocabulary = await response.json();
+    renderVocabulary(currentVocabulary);
   } catch (error) {
     console.error('Error loading vocabulary:', error);
     document.getElementById('vocabularyContainer').innerHTML = '<p class="text-center text-text-secondary-light">No vocabulary available</p>';
@@ -261,9 +262,49 @@ function updateDialogueDisplay() {
   });
 }
 
+let audioPlayer = null;
+
 function playAudio(wordId) {
   tg.HapticFeedback.impactOccurred('light');
-  console.log('Playing audio for word:', wordId);
+
+  // Find the word in the current vocabulary
+  const word = currentVocabulary.find(w => w.id == wordId);
+
+  if (!word) {
+    console.error('Word not found:', wordId);
+    return;
+  }
+
+  // If there's an audio URL, play it
+  if (word.audio_url) {
+    // Stop any currently playing audio
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+    }
+
+    // Create and play new audio
+    audioPlayer = new Audio(word.audio_url);
+    audioPlayer.play().catch(err => {
+      console.error('Error playing audio:', err);
+      tg.showAlert('Audio playback failed');
+    });
+  } else {
+    // Fallback to text-to-speech if no audio URL
+    playTextToSpeech(word.chinese);
+  }
+}
+
+function playTextToSpeech(text) {
+  // Use Web Speech API as fallback
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-CN';
+    utterance.rate = 0.8;
+    window.speechSynthesis.speak(utterance);
+  } else {
+    console.log('Text to speech not supported and no audio URL available');
+  }
 }
 
 function addToReview(wordId) {
