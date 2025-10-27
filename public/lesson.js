@@ -458,15 +458,20 @@ async function toggleFavorite(wordId, event) {
 
   try {
     const userId = tg.initDataUnsafe?.user?.id;
+    console.log('Toggle favorite - User ID:', userId, 'Word ID:', wordId);
+
     if (!userId) {
-      tg.showAlert('User not authenticated');
+      console.error('No user ID available. initDataUnsafe:', tg.initDataUnsafe);
+      tg.showAlert('User not authenticated. Please restart the bot.');
       return;
     }
 
     // Check if already favorited
+    console.log('Checking if word is favorited...');
     const checkResponse = await fetch(`/api/favorites?user_id=${userId}&vocabulary_id=${wordId}`);
     const favorites = await checkResponse.json();
     const isFavorited = favorites.length > 0;
+    console.log('Is favorited:', isFavorited, 'Favorites:', favorites);
 
     // Find the button - either from event or by word id
     let btn;
