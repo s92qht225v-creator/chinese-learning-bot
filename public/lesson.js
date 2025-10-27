@@ -79,9 +79,9 @@ function renderDialogues(dialogues) {
 
 async function loadVocabulary(lessonId) {
   try {
-    const response = await fetch(`/api/lessons/${lessonId}/vocabulary`);
+    const response = await fetch(`/api/vocabulary?lesson_id=${lessonId}`);
     if (!response.ok) throw new Error('Failed to load vocabulary');
-    
+
     const vocabulary = await response.json();
     renderVocabulary(vocabulary);
   } catch (error) {
