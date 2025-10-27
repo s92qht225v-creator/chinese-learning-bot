@@ -414,9 +414,14 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Audio URL (optional)</label>
-                    <input type="url" id="vocabAudioUrl" placeholder="https://example.com/audio.mp3">
-                    <small style="color: #666; font-size: 12px;">Upload audio to Google Drive, Dropbox, or any CDN and paste the direct link here</small>
+                    <label>Audio (optional)</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="file" id="vocabAudioFile" accept="audio/*" style="flex: 1;">
+                        <button type="button" class="btn btn-small" onclick="uploadVocabAudio()" style="white-space: nowrap;">📤 Upload</button>
+                    </div>
+                    <input type="url" id="vocabAudioUrl" placeholder="Or paste audio URL" style="margin-top: 10px;">
+                    <div id="audioUploadProgress" style="margin-top: 5px; color: #666; font-size: 12px;"></div>
+                    <audio id="audioPreview" controls style="width: 100%; margin-top: 10px; display: none;"></audio>
                 </div>
                 <button type="submit" class="btn">Add Vocabulary</button>
             </form>
@@ -435,6 +440,7 @@
                             <th onclick="sortVocabularyTable(4)" style="cursor: pointer;">Uzbek ↕</th>
                             <th onclick="sortVocabularyTable(5)" style="cursor: pointer;">Russian ↕</th>
                             <th onclick="sortVocabularyTable(6)" style="cursor: pointer;">HSK ↕</th>
+                            <th>Audio</th>
                             <th>Lesson</th>
                             <th>Actions</th>
                         </tr>
@@ -809,6 +815,9 @@
                     const uzbek = word.uzbek || '';
                     const russian = word.russian || '';
                     const pos = word.part_of_speech || '';
+                    const audioHtml = word.audio_url ? 
+                        `<audio controls style="height:30px;width:120px;"><source src="${word.audio_url}" type="audio/mpeg"></audio>` : 
+                        '<span style="color:#999">-</span>';
                     return `
                     <tr>
                         <td>${word.chinese}</td>
@@ -818,9 +827,10 @@
                         <td>${uzbek || '<span style="color:#999">-</span>'}</td>
                         <td>${russian || '<span style="color:#999">-</span>'}</td>
                         <td>HSK ${word.hsk_level}</td>
+                        <td>${audioHtml}</td>
                         <td>${word.lessons ? `L${word.lessons.lesson_number}: ${word.lessons.title}` : '<span style="color:#999">None</span>'}</td>
                         <td class="actions">
-                            <button class="btn btn-small" onclick='editVocabulary(${word.id}, ${JSON.stringify(word.chinese)}, ${JSON.stringify(word.pinyin)}, ${JSON.stringify(pos)}, ${JSON.stringify(word.english)}, ${JSON.stringify(uzbek)}, ${JSON.stringify(russian)}, ${word.hsk_level}, ${word.lesson_id || 'null'})'>Edit</button>
+                            <button class="btn btn-small" onclick='editVocabulary(${word.id}, ${JSON.stringify(word.chinese)}, ${JSON.stringify(word.pinyin)}, ${JSON.stringify(pos)}, ${JSON.stringify(word.english)}, ${JSON.stringify(uzbek)}, ${JSON.stringify(russian)}, ${word.hsk_level}, ${word.lesson_id || 'null'}, ${JSON.stringify(word.audio_url || '')})'>Edit</button>
                             <button class="btn btn-danger btn-small" onclick="deleteVocabulary(${word.id})">Delete</button>
                         </td>
                     </tr>
@@ -894,7 +904,7 @@
         }
 
         // Edit vocabulary
-        async function editVocabulary(id, chinese, pinyin, partOfSpeech, english, uzbek, russian, hskLevel, lessonId) {
+        async function editVocabulary(id, chinese, pinyin, partOfSpeech, english, uzbek, russian, hskLevel, lessonId, audioUrl) {
             document.getElementById('chinese').value = chinese;
             document.getElementById('pinyin').value = pinyin;
             document.getElementById('partOfSpeech').value = partOfSpeech || '';
@@ -903,6 +913,17 @@
             document.getElementById('russian').value = russian || '';
             document.getElementById('hskLevel').value = hskLevel;
             document.getElementById('vocabLesson').value = lessonId || '';
+            document.getElementById('vocabAudioUrl').value = audioUrl || '';
+            
+            // Show audio preview if URL exists
+            const audioPreview = document.getElementById('audioPreview');
+            if (audioUrl) {
+                audioPreview.src = audioUrl;
+                audioPreview.style.display = 'block';
+            } else {
+                audioPreview.style.display = 'none';
+            }
+            
             filterLessonsByHSK();
             
             // Change form to edit mode
@@ -1609,6 +1630,61 @@
                 const messageEl = document.getElementById('vocabMessage');
                 messageEl.innerHTML = `<div class="message error">Export failed: ${error.message}</div>`;
                 setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+        
+        // ========== AUDIO UPLOAD ==========
+        async function uploadVocabAudio() {
+            const fileInput = document.getElementById('vocabAudioFile');
+            const progressEl = document.getElementById('audioUploadProgress');
+            const audioUrlInput = document.getElementById('vocabAudioUrl');
+            const audioPreview = document.getElementById('audioPreview');
+            
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select an audio file first');
+                return;
+            }
+            
+            try {
+                progressEl.textContent = 'Uploading...';
+                progressEl.style.color = '#3b82f6';
+                
+                // Generate unique filename
+                const timestamp = Date.now();
+                const filename = `vocab_${timestamp}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+                
+                // Upload to Supabase Storage
+                const { data, error } = await supabase.storage
+                    .from('audio')
+                    .upload(filename, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+                
+                if (error) throw error;
+                
+                // Get public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('audio')
+                    .getPublicUrl(filename);
+                
+                // Set URL and show preview
+                audioUrlInput.value = publicUrl;
+                audioPreview.src = publicUrl;
+                audioPreview.style.display = 'block';
+                
+                progressEl.textContent = '✅ Upload successful!';
+                progressEl.style.color = '#059669';
+                setTimeout(() => progressEl.textContent = '', 3000);
+                
+                // Clear file input
+                fileInput.value = '';
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                progressEl.textContent = `❌ Upload failed: ${error.message}`;
+                progressEl.style.color = '#dc2626';
             }
         }
         
