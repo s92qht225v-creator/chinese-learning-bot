@@ -566,6 +566,7 @@
             <div id="lessonMessage"></div>
             
             <form id="lessonForm" onsubmit="saveLesson(event)">
+                <input type="hidden" id="editLessonId" value="">
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
                     <div class="form-group">
                         <label>Title</label>
@@ -1747,6 +1748,7 @@
                         <td>${lesson.lesson_number}</td>
                         <td><span style="padding:4px 8px;border-radius:4px;background:${lesson.status === 'published' ? '#d1fae5' : '#fee2e2'};color:${lesson.status === 'published' ? '#065f46' : '#991b1b'}">${lesson.status}</span></td>
                         <td class="actions">
+                            <button class="btn btn-primary btn-small" onclick="editLesson(${lesson.id})">Edit</button>
                             <button class="btn btn-danger btn-small" onclick="deleteLesson(${lesson.id})">Delete</button>
                         </td>
                     </tr>
@@ -1759,24 +1761,44 @@
         async function saveLesson(event) {
             event.preventDefault();
             const messageEl = document.getElementById('lessonMessage');
-            
+            const editLessonId = document.getElementById('editLessonId').value;
+
             try {
-                const { error } = await supabase
-                    .from('lessons')
-                    .insert([{
-                        title: document.getElementById('lessonTitle').value,
-                        hsk_level: parseInt(document.getElementById('lessonHskLevel').value),
-                        lesson_number: parseInt(document.getElementById('lessonNumber').value),
-                        description: document.getElementById('lessonDescription').value,
-                        status: document.getElementById('lessonStatus').value
-                    }]);
+                const lessonData = {
+                    title: document.getElementById('lessonTitle').value,
+                    hsk_level: parseInt(document.getElementById('lessonHskLevel').value),
+                    lesson_number: parseInt(document.getElementById('lessonNumber').value),
+                    description: document.getElementById('lessonDescription').value,
+                    status: document.getElementById('lessonStatus').value
+                };
+
+                let error;
+                if (editLessonId) {
+                    // Update existing lesson
+                    ({ error } = await supabase
+                        .from('lessons')
+                        .update(lessonData)
+                        .eq('id', editLessonId));
+
+                    messageEl.innerHTML = '<div class="message success">Lesson updated successfully!</div>';
+                } else {
+                    // Insert new lesson
+                    ({ error } = await supabase
+                        .from('lessons')
+                        .insert([lessonData]));
+
+                    messageEl.innerHTML = '<div class="message success">Lesson added successfully!</div>';
+                }
 
                 if (error) throw error;
 
-                messageEl.innerHTML = '<div class="message success">Lesson added successfully!</div>';
                 setTimeout(() => messageEl.innerHTML = '', 3000);
-                
+
+                // Reset form
                 event.target.reset();
+                document.getElementById('editLessonId').value = '';
+                document.querySelector('#lessonForm button[type="submit"]').textContent = 'Add Lesson';
+
                 await loadLessons();
             } catch (error) {
                 messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
@@ -1786,11 +1808,39 @@
 
         async function deleteLesson(id) {
             if (!confirm('Are you sure? This will delete all dialogues, grammar, and quizzes for this lesson.')) return;
-            
+
             try {
                 const { error } = await supabase.from('lessons').delete().eq('id', id);
                 if (error) throw error;
                 await loadLessons();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function editLesson(id) {
+            try {
+                const { data: lesson, error } = await supabase
+                    .from('lessons')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+
+                // Populate form fields
+                document.getElementById('editLessonId').value = lesson.id;
+                document.getElementById('lessonTitle').value = lesson.title;
+                document.getElementById('lessonHskLevel').value = lesson.hsk_level;
+                document.getElementById('lessonNumber').value = lesson.lesson_number;
+                document.getElementById('lessonDescription').value = lesson.description || '';
+                document.getElementById('lessonStatus').value = lesson.status;
+
+                // Change submit button text
+                document.querySelector('#lessonForm button[type="submit"]').textContent = 'Update Lesson';
+
+                // Scroll to form
+                document.getElementById('lessonForm').scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
                 alert('Error: ' + error.message);
             }
