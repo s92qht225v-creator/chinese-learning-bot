@@ -310,15 +310,28 @@
             <div id="vocabMessage"></div>
             
             <!-- Toolbar -->
-            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <button onclick="exportVocabularyCSV()" class="btn" type="button" style="white-space: nowrap;">
                     📥 Export CSV
                 </button>
+                <select 
+                    id="hskFilterDropdown" 
+                    onchange="filterVocabularyTable()" 
+                    style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"
+                >
+                    <option value="">All HSK Levels</option>
+                    <option value="1">HSK 1</option>
+                    <option value="2">HSK 2</option>
+                    <option value="3">HSK 3</option>
+                    <option value="4">HSK 4</option>
+                    <option value="5">HSK 5</option>
+                    <option value="6">HSK 6</option>
+                </select>
                 <input 
                     type="text" 
                     id="vocabularySearch" 
                     placeholder="🔍 Search vocabulary..." 
-                    style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"
+                    style="flex: 1; min-width: 200px; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"
                     oninput="filterVocabularyTable()"
                 >
             </div>
@@ -1271,10 +1284,12 @@
             }
         }
         
-        // ========== VOCABULARY SEARCH ==========
+        // ========== VOCABULARY SEARCH & FILTER ==========
         function filterVocabularyTable() {
             const searchInput = document.getElementById('vocabularySearch');
+            const hskFilter = document.getElementById('hskFilterDropdown');
             const query = searchInput.value.toLowerCase();
+            const selectedHSK = hskFilter.value;
             const tbody = document.getElementById('vocabularyTable');
             const rows = tbody.getElementsByTagName('tr');
             
@@ -1282,23 +1297,27 @@
                 const cells = row.getElementsByTagName('td');
                 if (cells.length === 0) continue;
                 
-                // Get text from cells: Chinese, Pinyin, English, Uzbek, Russian
+                // Get text from cells
                 const chinese = cells[0]?.textContent.toLowerCase() || '';
                 const pinyin = cells[1]?.textContent.toLowerCase() || '';
                 const english = cells[3]?.textContent.toLowerCase() || '';
                 const uzbek = cells[4]?.textContent.toLowerCase() || '';
                 const russian = cells[5]?.textContent.toLowerCase() || '';
+                const hskText = cells[6]?.textContent || ''; // e.g., "HSK 1"
                 
-                // Show/hide row based on search
-                if (chinese.includes(query) || 
+                // Check search query match
+                const matchesSearch = !query || 
+                    chinese.includes(query) || 
                     pinyin.includes(query) || 
                     english.includes(query) || 
                     uzbek.includes(query) || 
-                    russian.includes(query)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                    russian.includes(query);
+                
+                // Check HSK filter match
+                const matchesHSK = !selectedHSK || hskText.includes(`HSK ${selectedHSK}`);
+                
+                // Show/hide row based on both filters
+                row.style.display = (matchesSearch && matchesHSK) ? '' : 'none';
             }
         }
         
