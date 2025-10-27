@@ -388,13 +388,13 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Chinese</th>
-                            <th>Pinyin</th>
-                            <th>POS</th>
-                            <th>English</th>
-                            <th>Uzbek</th>
-                            <th>Russian</th>
-                            <th>HSK</th>
+                            <th onclick="sortVocabularyTable(0)" style="cursor: pointer;">Chinese ↕</th>
+                            <th onclick="sortVocabularyTable(1)" style="cursor: pointer;">Pinyin ↕</th>
+                            <th onclick="sortVocabularyTable(2)" style="cursor: pointer;">POS ↕</th>
+                            <th onclick="sortVocabularyTable(3)" style="cursor: pointer;">English ↕</th>
+                            <th onclick="sortVocabularyTable(4)" style="cursor: pointer;">Uzbek ↕</th>
+                            <th onclick="sortVocabularyTable(5)" style="cursor: pointer;">Russian ↕</th>
+                            <th onclick="sortVocabularyTable(6)" style="cursor: pointer;">HSK ↕</th>
                             <th>Lesson</th>
                             <th>Actions</th>
                         </tr>
@@ -1307,6 +1307,47 @@
                     row.style.display = 'none';
                 }
             }
+        }
+        
+        // ========== VOCABULARY SORT ==========
+        let sortDirection = {}; // Track sort direction for each column
+        
+        function sortVocabularyTable(columnIndex) {
+            const tbody = document.getElementById('vocabularyTable');
+            const rows = Array.from(tbody.getElementsByTagName('tr'));
+            
+            // Toggle sort direction
+            sortDirection[columnIndex] = sortDirection[columnIndex] === 'asc' ? 'desc' : 'asc';
+            const direction = sortDirection[columnIndex];
+            
+            rows.sort((a, b) => {
+                const aCell = a.getElementsByTagName('td')[columnIndex];
+                const bCell = b.getElementsByTagName('td')[columnIndex];
+                
+                if (!aCell || !bCell) return 0;
+                
+                let aValue = aCell.textContent.trim();
+                let bValue = bCell.textContent.trim();
+                
+                // Handle HSK column (extract number)
+                if (columnIndex === 6) {
+                    aValue = parseInt(aValue.replace('HSK ', '')) || 0;
+                    bValue = parseInt(bValue.replace('HSK ', '')) || 0;
+                }
+                
+                // Compare values
+                let comparison = 0;
+                if (typeof aValue === 'number' && typeof bValue === 'number') {
+                    comparison = aValue - bValue;
+                } else {
+                    comparison = aValue.localeCompare(bValue, undefined, { numeric: true });
+                }
+                
+                return direction === 'asc' ? comparison : -comparison;
+            });
+            
+            // Re-append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
         }
     </script>
 </body>
