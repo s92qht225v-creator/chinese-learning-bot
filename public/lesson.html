@@ -119,16 +119,16 @@
 <div id="vocabularyContainer" class="flex flex-col gap-2 p-4">
 </div>
 </div>
-<div class="flex flex-col rounded-xl bg-surface-light dark:bg-surface-dark shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
-<div class="flex items-center justify-between gap-4 p-4">
-<h2 class="text-lg font-bold">Grammar</h2>
-<button aria-label="More information about grammar points" class="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary-light transition-colors hover:bg-gray-100 dark:text-text-secondary-dark dark:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-<span class="material-symbols-outlined text-xl">info</span>
-</button>
+<details class="flex flex-col rounded-lg bg-surface-light dark:bg-surface-dark shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.1)] group">
+<summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
+<p class="text-base font-medium leading-normal">Grammar</p>
+<span class="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
+</summary>
+<div class="border-t border-border-light dark:border-border-dark px-4 pt-4 pb-4">
+<div id="grammarContainer" class="flex flex-col gap-4 md:grid md:grid-cols-2">
 </div>
-<div id="grammarContainer" class="flex flex-col gap-4 border-t border-border-light dark:border-border-dark p-4 md:grid md:grid-cols-2">
 </div>
-</div>
+</details>
 <details class="flex flex-col rounded-lg bg-surface-light dark:bg-surface-dark shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.1)] group">
 <summary class="flex cursor-pointer items-center justify-between gap-6 p-4">
 <p class="text-base font-medium leading-normal">Exercises</p>
