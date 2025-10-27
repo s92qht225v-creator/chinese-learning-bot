@@ -448,4 +448,7 @@ const db = {
 };
 
 module.exports = db;
-module.exports.supabase = supabase;
+// Export a getter for supabase to ensure it's initialized
+Object.defineProperty(module.exports, 'supabase', {
+  get: function() { return supabase; }
+});

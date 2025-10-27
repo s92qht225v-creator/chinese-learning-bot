@@ -2,7 +2,6 @@ const config = require('./config');
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
 const db = require('./database');
-const { supabase } = require('./database');
 
 const bot = new TelegramBot(config.telegramBotToken, { 
   polling: {
@@ -274,7 +273,7 @@ app.get('/api/user/progress', async (req, res) => {
 app.get('/api/favorites', async (req, res) => {
   try {
     const { user_id, vocabulary_id } = req.query;
-    const { data, error } = await supabase
+    const { data, error } = await db.supabase
       .from('user_favorites')
       .select('*')
       .eq('user_id', user_id)
@@ -292,7 +291,7 @@ app.get('/api/favorites', async (req, res) => {
 app.get('/api/favorites/list', async (req, res) => {
   try {
     const { user_id } = req.query;
-    const { data, error } = await supabase
+    const { data, error } = await db.supabase
       .from('user_favorites')
       .select(`
         id,
@@ -323,7 +322,7 @@ app.get('/api/favorites/list', async (req, res) => {
 app.post('/api/favorites', async (req, res) => {
   try {
     const { user_id, vocabulary_id } = req.body;
-    const { data, error } = await supabase
+    const { data, error } = await db.supabase
       .from('user_favorites')
       .insert([{ user_id, vocabulary_id }])
       .select();
@@ -340,7 +339,7 @@ app.post('/api/favorites', async (req, res) => {
 app.delete('/api/favorites/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { error } = await supabase
+    const { error } = await db.supabase
       .from('user_favorites')
       .delete()
       .eq('id', id);
@@ -357,7 +356,7 @@ app.delete('/api/favorites/:id', async (req, res) => {
 app.post('/api/review-queue', async (req, res) => {
   try {
     const { user_id, vocabulary_id } = req.body;
-    const { data, error } = await supabase
+    const { data, error } = await db.supabase
       .from('user_review_queue')
       .insert([{ user_id, vocabulary_id }])
       .select();
@@ -374,7 +373,7 @@ app.post('/api/review-queue', async (req, res) => {
 app.get('/api/review-queue', async (req, res) => {
   try {
     const { user_id } = req.query;
-    const { data, error } = await supabase
+    const { data, error } = await db.supabase
       .from('user_review_queue')
       .select(`
         id,
@@ -405,7 +404,7 @@ app.get('/api/review-queue', async (req, res) => {
 app.delete('/api/review-queue/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { error } = await supabase
+    const { error } = await db.supabase
       .from('user_review_queue')
       .delete()
       .eq('id', id);
