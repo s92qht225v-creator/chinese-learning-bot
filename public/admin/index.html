@@ -578,11 +578,6 @@
                         <input type="hidden" id="editingDialogueId" value="">
 
                         <div class="form-group">
-                            <label>Dialogue Title *</label>
-                            <input type="text" id="dialogueTitleInput" placeholder="e.g., Daily Conversation - At the Store" required>
-                        </div>
-
-                        <div class="form-group">
                             <label>HSK Level *</label>
                             <select id="dialogueHskLevelSelect" required onchange="filterLessonsByHskLevel()">
                                 <option value="">Select HSK level...</option>
@@ -678,7 +673,6 @@
                 // Edit mode
                 document.getElementById('editorTitle').textContent = 'Edit Dialogue';
                 document.getElementById('editingDialogueId').value = dialogue.id;
-                document.getElementById('dialogueTitleInput').value = dialogue.title;
                 editingDialogueId = dialogue.id;
 
                 // Set HSK level and lesson if available
@@ -698,7 +692,6 @@
                 // Add mode
                 document.getElementById('editorTitle').textContent = 'Add New Dialogue';
                 document.getElementById('editingDialogueId').value = '';
-                document.getElementById('dialogueTitleInput').value = '';
                 document.getElementById('dialogueHskLevelSelect').value = '';
                 document.getElementById('dialogueLessonSelect').innerHTML = '<option value="">Select HSK level first...</option>';
                 document.getElementById('dialogueLessonSelect').disabled = true;
@@ -846,7 +839,6 @@
             const messageEl = document.getElementById('dialogueMessage');
 
             try {
-                const title = document.getElementById('dialogueTitleInput').value;
                 const lessonId = document.getElementById('dialogueLessonSelect').value;
                 const dialogueId = document.getElementById('editingDialogueId').value;
 
@@ -867,13 +859,17 @@
                     }
                 }
 
-                const dialogueData = {
-                    title,
-                    lesson_id: parseInt(lessonId),
-                    visible: true,
-                    display_order: Date.now(), // Use timestamp for ordering
-                    lines: dialogueLines
-                };
+                // Get current max display_order for this lesson
+                const { data: existingDialogues } = await supabase
+                    .from('dialogues')
+                    .select('display_order')
+                    .eq('lesson_id', parseInt(lessonId))
+                    .order('display_order', { ascending: false })
+                    .limit(1);
+
+                const displayOrder = existingDialogues && existingDialogues.length > 0
+                    ? existingDialogues[0].display_order + 1
+                    : 1;
 
                 let error;
                 if (dialogueId) {
@@ -882,10 +878,8 @@
                     const { error: e1 } = await supabase
                         .from('dialogues')
                         .update({
-                            title,
                             lesson_id: parseInt(lessonId),
-                            visible: true,
-                            display_order: dialogueData.display_order
+                            visible: true
                         })
                         .eq('id', parseInt(dialogueId));
 
@@ -914,10 +908,9 @@
                     const { data: newDialogue, error: e1 } = await supabase
                         .from('dialogues')
                         .insert([{
-                            title,
                             lesson_id: parseInt(lessonId),
                             visible: true,
-                            display_order: dialogueData.display_order
+                            display_order: displayOrder
                         }])
                         .select()
                         .single();
@@ -998,9 +991,10 @@
                 <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: white;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
                         <div style="flex: 1;">
-                            <h3 style="margin: 0 0 5px 0;">${dialogue.title}</h3>
+                            <h3 style="margin: 0 0 5px 0;">
+                                ${dialogue.lessons ? `HSK ${dialogue.lessons.hsk_level} - Lesson ${dialogue.lessons.lesson_number}: ${dialogue.lessons.title}` : 'Dialogue #' + dialogue.id}
+                            </h3>
                             <p style="margin: 0; color: #666; font-size: 14px;">
-                                ${dialogue.lessons ? `<strong>HSK ${dialogue.lessons.hsk_level}</strong> - Lesson ${dialogue.lessons.lesson_number}: ${dialogue.lessons.title} • ` : ''}
                                 ${dialogue.lines.length} line${dialogue.lines.length !== 1 ? 's' : ''} •
                                 ${dialogue.visible ? '<span style="color: green;">✅ Visible</span>' : '<span style="color: gray;">❌ Hidden</span>'}
                             </p>
