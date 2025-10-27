@@ -583,9 +583,22 @@
                         </div>
 
                         <div class="form-group">
+                            <label>HSK Level *</label>
+                            <select id="dialogueHskLevelSelect" required onchange="filterLessonsByHskLevel()">
+                                <option value="">Select HSK level...</option>
+                                <option value="1">HSK 1</option>
+                                <option value="2">HSK 2</option>
+                                <option value="3">HSK 3</option>
+                                <option value="4">HSK 4</option>
+                                <option value="5">HSK 5</option>
+                                <option value="6">HSK 6</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
                             <label>Assign to Lesson *</label>
                             <select id="dialogueLessonSelect" required>
-                                <option value="">Select a lesson...</option>
+                                <option value="">Select HSK level first...</option>
                             </select>
                         </div>
 
@@ -611,11 +624,55 @@
         // Dialogue Management State
         let dialogueLines = [];
         let editingDialogueId = null;
+        let allLessonsForDialogue = [];
+
+        // Load lessons for dialogue management
+        async function loadLessonsForDialogue() {
+            try {
+                const { data, error } = await supabase
+                    .from('lessons')
+                    .select('id, title, hsk_level, lesson_number')
+                    .order('hsk_level', { ascending: true })
+                    .order('lesson_number', { ascending: true });
+
+                if (error) throw error;
+                allLessonsForDialogue = data || [];
+            } catch (error) {
+                console.error('Error loading lessons for dialogue:', error);
+                allLessonsForDialogue = [];
+            }
+        }
+
+        // Filter lessons by HSK level
+        function filterLessonsByHskLevel() {
+            const hskLevel = document.getElementById('dialogueHskLevelSelect').value;
+            const lessonSelect = document.getElementById('dialogueLessonSelect');
+
+            if (!hskLevel) {
+                lessonSelect.innerHTML = '<option value="">Select HSK level first...</option>';
+                lessonSelect.disabled = true;
+                return;
+            }
+
+            const filteredLessons = allLessonsForDialogue.filter(l => l.hsk_level == hskLevel);
+
+            if (filteredLessons.length === 0) {
+                lessonSelect.innerHTML = '<option value="">No lessons available for this HSK level</option>';
+                lessonSelect.disabled = true;
+            } else {
+                lessonSelect.innerHTML = '<option value="">Select a lesson...</option>' +
+                    filteredLessons.map(l => `<option value="${l.id}">Lesson ${l.lesson_number}: ${l.title}</option>`).join('');
+                lessonSelect.disabled = false;
+            }
+        }
 
         // Show editor view
-        function showDialogueEditor(dialogue) {
+        async function showDialogueEditor(dialogue) {
             document.getElementById('dialogueListView').style.display = 'none';
             document.getElementById('dialogueEditorView').style.display = 'block';
+
+            // Load lessons first
+            await loadLessonsForDialogue();
 
             if (dialogue) {
                 // Edit mode
@@ -624,6 +681,17 @@
                 document.getElementById('dialogueTitleInput').value = dialogue.title;
                 editingDialogueId = dialogue.id;
 
+                // Set HSK level and lesson if available
+                if (dialogue.lesson_id && dialogue.lessons) {
+                    document.getElementById('dialogueHskLevelSelect').value = dialogue.lessons.hsk_level;
+                    filterLessonsByHskLevel();
+                    document.getElementById('dialogueLessonSelect').value = dialogue.lesson_id;
+                } else {
+                    document.getElementById('dialogueHskLevelSelect').value = '';
+                    document.getElementById('dialogueLessonSelect').innerHTML = '<option value="">Select HSK level first...</option>';
+                    document.getElementById('dialogueLessonSelect').disabled = true;
+                }
+
                 // Load existing lines
                 dialogueLines = dialogue.lines || [];
             } else {
@@ -631,6 +699,9 @@
                 document.getElementById('editorTitle').textContent = 'Add New Dialogue';
                 document.getElementById('editingDialogueId').value = '';
                 document.getElementById('dialogueTitleInput').value = '';
+                document.getElementById('dialogueHskLevelSelect').value = '';
+                document.getElementById('dialogueLessonSelect').innerHTML = '<option value="">Select HSK level first...</option>';
+                document.getElementById('dialogueLessonSelect').disabled = true;
                 editingDialogueId = null;
 
                 // Start with one empty line
@@ -776,7 +847,15 @@
 
             try {
                 const title = document.getElementById('dialogueTitleInput').value;
+                const lessonId = document.getElementById('dialogueLessonSelect').value;
                 const dialogueId = document.getElementById('editingDialogueId').value;
+
+                // Validate lesson is selected
+                if (!lessonId) {
+                    messageEl.innerHTML = '<div class="message error">Please select a lesson</div>';
+                    setTimeout(() => messageEl.innerHTML = '', 3000);
+                    return;
+                }
 
                 // Validate all lines have required fields
                 for (let i = 0; i < dialogueLines.length; i++) {
@@ -790,6 +869,7 @@
 
                 const dialogueData = {
                     title,
+                    lesson_id: parseInt(lessonId),
                     visible: true,
                     display_order: Date.now(), // Use timestamp for ordering
                     lines: dialogueLines
@@ -801,7 +881,12 @@
                     // First update dialogue
                     const { error: e1 } = await supabase
                         .from('dialogues')
-                        .update({ title, visible: true, display_order: dialogueData.display_order })
+                        .update({
+                            title,
+                            lesson_id: parseInt(lessonId),
+                            visible: true,
+                            display_order: dialogueData.display_order
+                        })
                         .eq('id', parseInt(dialogueId));
 
                     if (e1) throw e1;
@@ -828,7 +913,12 @@
                     // Create new dialogue
                     const { data: newDialogue, error: e1 } = await supabase
                         .from('dialogues')
-                        .insert([{ title, visible: true, display_order: dialogueData.display_order }])
+                        .insert([{
+                            title,
+                            lesson_id: parseInt(lessonId),
+                            visible: true,
+                            display_order: dialogueData.display_order
+                        }])
                         .select()
                         .single();
 
@@ -862,10 +952,18 @@
         // Load dialogues with lines
         async function loadMultiLineDialogues() {
             try {
-                // Get all dialogues
+                // Get all dialogues with lesson info
                 const { data: dialogues, error: e1 } = await supabase
                     .from('dialogues')
-                    .select('*')
+                    .select(`
+                        *,
+                        lessons (
+                            id,
+                            title,
+                            hsk_level,
+                            lesson_number
+                        )
+                    `)
                     .order('display_order', { ascending: true });
 
                 if (e1) throw e1;
@@ -902,6 +1000,7 @@
                         <div style="flex: 1;">
                             <h3 style="margin: 0 0 5px 0;">${dialogue.title}</h3>
                             <p style="margin: 0; color: #666; font-size: 14px;">
+                                ${dialogue.lessons ? `<strong>HSK ${dialogue.lessons.hsk_level}</strong> - Lesson ${dialogue.lessons.lesson_number}: ${dialogue.lessons.title} • ` : ''}
                                 ${dialogue.lines.length} line${dialogue.lines.length !== 1 ? 's' : ''} •
                                 ${dialogue.visible ? '<span style="color: green;">✅ Visible</span>' : '<span style="color: gray;">❌ Hidden</span>'}
                             </p>
