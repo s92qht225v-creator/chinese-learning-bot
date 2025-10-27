@@ -314,6 +314,10 @@
                 <button onclick="exportVocabularyCSV()" class="btn" type="button" style="white-space: nowrap;">
                     📥 Export CSV
                 </button>
+                <button onclick="document.getElementById('csvFileInput').click()" class="btn" type="button" style="white-space: nowrap;">
+                    📤 Import CSV
+                </button>
+                <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importVocabularyCSV(event)">
                 <select 
                     id="hskFilterDropdown" 
                     onchange="filterVocabularyTable()" 
@@ -1441,6 +1445,120 @@
             
             // Scroll to top of table
             document.getElementById('vocabularyPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // ========== CSV IMPORT ==========
+        async function importVocabularyCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const messageEl = document.getElementById('vocabMessage');
+            
+            try {
+                messageEl.innerHTML = '<div class="message">Reading CSV file...</div>';
+                
+                // Read file
+                const text = await file.text();
+                const lines = text.split('\n').filter(line => line.trim());
+                
+                if (lines.length < 2) {
+                    throw new Error('CSV file is empty or has no data rows');
+                }
+                
+                // Parse CSV (simple parser)
+                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                const rows = lines.slice(1);
+                
+                // Expected headers
+                const expectedHeaders = ['Chinese', 'Pinyin', 'POS', 'English', 'Uzbek', 'Russian', 'HSK Level', 'Audio URL'];
+                
+                // Validate required columns exist
+                const hasRequired = ['Chinese', 'Pinyin', 'English', 'HSK Level'].every(req => 
+                    headers.some(h => h.toLowerCase().includes(req.toLowerCase()))
+                );
+                
+                if (!hasRequired) {
+                    throw new Error('CSV must have columns: Chinese, Pinyin, English, HSK Level');
+                }
+                
+                // Parse rows
+                const vocabularyData = [];
+                const errors = [];
+                
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (!row.trim()) continue;
+                    
+                    // Simple CSV parsing (handles quoted fields)
+                    const values = row.match(/(?:"([^"]*)"|([^,]+)|,)/g)
+                        .map(v => v === ',' ? '' : v.replace(/^,|,$/g, '').replace(/^"|"$/g, '').trim());
+                    
+                    const rowData = {};
+                    headers.forEach((header, index) => {
+                        rowData[header.toLowerCase()] = values[index] || '';
+                    });
+                    
+                    // Validate required fields
+                    const chinese = rowData.chinese || rowData['chinese'];
+                    const pinyin = rowData.pinyin || rowData['pinyin'];
+                    const english = rowData.english || rowData['english'];
+                    const hskLevel = parseInt(rowData['hsk level'] || rowData['hsk_level'] || rowData['hsk']);
+                    
+                    if (!chinese || !pinyin || !english || !hskLevel) {
+                        errors.push(`Row ${i + 2}: Missing required fields`);
+                        continue;
+                    }
+                    
+                    vocabularyData.push({
+                        chinese,
+                        pinyin,
+                        part_of_speech: rowData.pos || rowData['part of speech'] || null,
+                        english,
+                        uzbek: rowData.uzbek || null,
+                        russian: rowData.russian || null,
+                        hsk_level: hskLevel,
+                        audio_url: rowData['audio url'] || rowData.audio_url || null
+                    });
+                }
+                
+                if (vocabularyData.length === 0) {
+                    throw new Error('No valid vocabulary rows found in CSV');
+                }
+                
+                // Show confirmation
+                const confirmed = confirm(`Import ${vocabularyData.length} words?${errors.length > 0 ? '\n\nSkipping ' + errors.length + ' invalid rows.' : ''}`);
+                
+                if (!confirmed) {
+                    messageEl.innerHTML = '';
+                    event.target.value = ''; // Reset file input
+                    return;
+                }
+                
+                // Insert into database
+                messageEl.innerHTML = `<div class="message">Importing ${vocabularyData.length} words...</div>`;
+                
+                const { data, error } = await supabase
+                    .from('vocabulary')
+                    .insert(vocabularyData)
+                    .select();
+                
+                if (error) throw error;
+                
+                messageEl.innerHTML = `<div class="message success">Successfully imported ${data.length} words!</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 5000);
+                
+                // Reload vocabulary
+                await loadVocabulary();
+                await loadAnalytics();
+                
+            } catch (error) {
+                console.error('Import error:', error);
+                messageEl.innerHTML = `<div class="message error">Import failed: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 5000);
+            }
+            
+            // Reset file input
+            event.target.value = '';
         }
         
         // ========== CSV EXPORT ==========
