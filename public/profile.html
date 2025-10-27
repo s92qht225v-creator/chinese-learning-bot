@@ -323,6 +323,34 @@
     tg.expand();
     tg.ready();
 
+    // Load user profile from Telegram
+    function loadUserProfile() {
+      const user = tg.initDataUnsafe?.user;
+
+      if (user) {
+        // Update user name
+        const nameElement = document.querySelector('header h1');
+        if (nameElement) {
+          const displayName = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+          nameElement.textContent = displayName || user.username || 'Learning User';
+        }
+
+        // Update profile image if photo_url is available
+        const profileImageContainer = document.querySelector('.w-24.h-24');
+        if (user.photo_url && profileImageContainer) {
+          profileImageContainer.innerHTML = `<img src="${user.photo_url}" class="w-full h-full rounded-full object-cover" alt="Profile">`;
+        }
+
+        // Log for debugging
+        console.log('Telegram User:', user);
+      } else {
+        console.log('No Telegram user data available');
+      }
+    }
+
+    // Load profile data on page load
+    loadUserProfile();
+
     // Dark mode toggle
     const darkModeBtn = document.getElementById('darkModeBtn');
     const themeStatus = document.getElementById('themeStatus');
