@@ -32,10 +32,15 @@ async function loadLesson(lessonId) {
   try {
     const response = await fetch(`/api/lessons/${lessonId}`);
     if (!response.ok) throw new Error('Failed to load lesson');
-    
+
     currentLesson = await response.json();
     document.getElementById('lessonTitle').textContent = `HSK ${currentLesson.hsk_level}: Lesson ${currentLesson.lesson_number}`;
     document.getElementById('audioTitle').textContent = `${currentLesson.title} Audio`;
+
+    // Initialize audio player if lesson has audio
+    if (currentLesson.audio_url) {
+      initializeAudioPlayer(currentLesson.audio_url, currentLesson.thumbnail_url);
+    }
   } catch (error) {
     console.error('Error loading lesson:', error);
   }
@@ -280,6 +285,65 @@ function updateDialogueDisplay() {
 }
 
 let audioPlayer = null;
+let lessonAudio = null;
+
+function initializeAudioPlayer(audioUrl, thumbnailUrl) {
+  if (!audioUrl) return;
+
+  // Create audio element
+  lessonAudio = new Audio(audioUrl);
+
+  // Update thumbnail if available
+  if (thumbnailUrl) {
+    const thumbnailEl = document.querySelector('.w-20.h-20');
+    if (thumbnailEl) {
+      thumbnailEl.style.backgroundImage = `url(${thumbnailUrl})`;
+      thumbnailEl.style.backgroundColor = 'transparent';
+    }
+  }
+
+  const playBtn = document.getElementById('audioPlayBtn');
+  const progressBar = document.getElementById('audioProgress');
+  const currentTimeEl = document.getElementById('audioTime');
+  const durationEl = document.getElementById('audioDuration');
+
+  // Format time helper
+  function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // Play/Pause button handler
+  playBtn.addEventListener('click', () => {
+    if (lessonAudio.paused) {
+      lessonAudio.play();
+      playBtn.querySelector('.material-symbols-outlined').textContent = 'pause';
+    } else {
+      lessonAudio.pause();
+      playBtn.querySelector('.material-symbols-outlined').textContent = 'play_arrow';
+    }
+  });
+
+  // Update progress and time
+  lessonAudio.addEventListener('timeupdate', () => {
+    const progress = (lessonAudio.currentTime / lessonAudio.duration) * 100;
+    progressBar.style.width = `${progress}%`;
+    currentTimeEl.textContent = formatTime(lessonAudio.currentTime);
+  });
+
+  // Set duration when loaded
+  lessonAudio.addEventListener('loadedmetadata', () => {
+    durationEl.textContent = formatTime(lessonAudio.duration);
+  });
+
+  // Reset button when audio ends
+  lessonAudio.addEventListener('ended', () => {
+    playBtn.querySelector('.material-symbols-outlined').textContent = 'play_arrow';
+    progressBar.style.width = '0%';
+    currentTimeEl.textContent = '00:00';
+  });
+}
 
 function playAudio(wordId) {
   tg.HapticFeedback.impactOccurred('light');
