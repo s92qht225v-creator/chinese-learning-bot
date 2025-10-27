@@ -125,6 +125,9 @@ function renderVocabulary(vocabulary) {
         <button onclick="playAudio('${word.id}')" aria-label="Play audio for ${word.chinese}" class="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white transition-transform active:scale-95">
           <span class="material-symbols-outlined">volume_up</span>
         </button>
+        <button onclick="toggleFavorite('${word.id}')" aria-label="Add ${word.chinese} to favorites" class="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary-light transition-colors hover:bg-red-500/10 hover:text-red-500 focus-visible:text-red-500 dark:text-text-secondary-dark dark:hover:bg-red-400/10 dark:hover:text-red-400">
+          <span class="material-symbols-outlined text-xl">favorite</span>
+        </button>
         <button onclick="addToReview('${word.id}')" aria-label="Add ${word.chinese} to review queue" class="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary-light transition-colors hover:bg-primary/10 hover:text-primary focus-visible:text-primary dark:text-text-secondary-dark dark:hover:bg-primary/20 dark:hover:text-primary">
           <span class="material-symbols-outlined text-xl">add_circle</span>
         </button>
@@ -266,6 +269,12 @@ function playAudio(wordId) {
 function addToReview(wordId) {
   tg.HapticFeedback.impactOccurred('medium');
   console.log('Added to review:', wordId);
+}
+
+function toggleFavorite(wordId) {
+  tg.HapticFeedback.impactOccurred('light');
+  console.log('Toggled favorite:', wordId);
+  // TODO: Update localStorage or database
 }
 
 function saveGrammar(grammarId) {
