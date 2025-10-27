@@ -318,7 +318,44 @@
                     📤 Import CSV
                 </button>
                 <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importVocabularyCSV(event)">
-                <select 
+                <button onclick="toggleBatchMode()" id="batchModeBtn" class="btn" type="button" style="white-space: nowrap;">
+                    ✏️ Batch Edit
+                </button>
+                <div id="batchActions" style="display: none; gap: 10px; align-items: center;">
+                    <select id="batchAction" style="padding: 12px; border: 1px solid #ddd; border-radius: 5px;">
+                        <option value="">Select action...</option>
+                        <option value="hsk">Change HSK Level</option>
+                        <option value="pos">Change POS</option>
+                        <option value="lesson">Assign to Lesson</option>
+                        <option value="delete">Delete Selected</option>
+                    </select>
+                    <select id="batchHSK" style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; display: none;">
+                        <option value="1">HSK 1</option>
+                        <option value="2">HSK 2</option>
+                        <option value="3">HSK 3</option>
+                        <option value="4">HSK 4</option>
+                        <option value="5">HSK 5</option>
+                        <option value="6">HSK 6</option>
+                    </select>
+                    <select id="batchPOS" style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; display: none;">
+                        <option value="n">Noun</option>
+                        <option value="v">Verb</option>
+                        <option value="adj">Adjective</option>
+                        <option value="adv">Adverb</option>
+                        <option value="pron">Pronoun</option>
+                        <option value="prep">Preposition</option>
+                        <option value="conj">Conjunction</option>
+                        <option value="interj">Interjection</option>
+                        <option value="mw">Measure Word</option>
+                        <option value="particle">Particle</option>
+                    </select>
+                    <select id="batchLesson" style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; display: none;">
+                        <option value="">Loading...</option>
+                    </select>
+                    <button onclick="applyBatchAction()" class="btn btn-warning" type="button">Apply to <span id="selectedCount">0</span> selected</button>
+                    <button onclick="toggleBatchMode()" class="btn" type="button">Cancel</button>
+                </div>
+                <select
                     id="hskFilterDropdown" 
                     onchange="filterVocabularyTable()" 
                     style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"
@@ -433,6 +470,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th id="checkboxHeader" style="width: 40px; display: none;"><input type="checkbox" onchange="toggleSelectAll(this)"></th>
                             <th onclick="sortVocabularyTable(0)" style="cursor: pointer;">Chinese ↕</th>
                             <th onclick="sortVocabularyTable(1)" style="cursor: pointer;">Pinyin ↕</th>
                             <th onclick="sortVocabularyTable(2)" style="cursor: pointer;">POS ↕</th>
@@ -819,7 +857,8 @@
                         `<audio controls style="height:30px;width:120px;"><source src="${word.audio_url}" type="audio/mpeg"></audio>` : 
                         '<span style="color:#999">-</span>';
                     return `
-                    <tr>
+                    <tr data-id="${word.id}">
+                        <td class="checkbox-cell" style="display: none;"><input type="checkbox" class="row-checkbox" value="${word.id}" onchange="updateSelectedCount()"></td>
                         <td>${word.chinese}</td>
                         <td>${word.pinyin}</td>
                         <td>${pos ? `<span style="background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600">${pos}</span>` : '<span style="color:#999">-</span>'}</td>
@@ -830,6 +869,7 @@
                         <td>${audioHtml}</td>
                         <td>${word.lessons ? `L${word.lessons.lesson_number}: ${word.lessons.title}` : '<span style="color:#999">None</span>'}</td>
                         <td class="actions">
+                            <button class="btn btn-small" onclick='cloneVocabulary(${word.id})' title="Clone this word">🔁</button>
                             <button class="btn btn-small" onclick='editVocabulary(${word.id}, ${JSON.stringify(word.chinese)}, ${JSON.stringify(word.pinyin)}, ${JSON.stringify(pos)}, ${JSON.stringify(word.english)}, ${JSON.stringify(uzbek)}, ${JSON.stringify(russian)}, ${word.hsk_level}, ${word.lesson_id || 'null'}, ${JSON.stringify(word.audio_url || '')})'>Edit</button>
                             <button class="btn btn-danger btn-small" onclick="deleteVocabulary(${word.id})">Delete</button>
                         </td>
@@ -1734,6 +1774,185 @@
                 console.error('Upload error:', error);
                 progressEl.textContent = `❌ Upload failed: ${error.message}`;
                 progressEl.style.color = '#dc2626';
+            }
+        }
+        
+        // ========== CLONE VOCABULARY ==========
+        async function cloneVocabulary(id) {
+            try {
+                // Get the word to clone
+                const { data: word, error: fetchError } = await supabase
+                    .from('vocabulary')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (fetchError) throw fetchError;
+                
+                // Fill form with cloned data
+                document.getElementById('chinese').value = word.chinese;
+                document.getElementById('pinyin').value = word.pinyin;
+                document.getElementById('partOfSpeech').value = word.part_of_speech || '';
+                document.getElementById('english').value = word.english;
+                document.getElementById('uzbek').value = word.uzbek || '';
+                document.getElementById('russian').value = word.russian || '';
+                document.getElementById('hskLevel').value = word.hsk_level;
+                document.getElementById('vocabAudioUrl').value = word.audio_url || '';
+                
+                if (word.audio_url) {
+                    const audioPreview = document.getElementById('audioPreview');
+                    audioPreview.src = word.audio_url;
+                    audioPreview.style.display = 'block';
+                }
+                
+                filterLessonsByHSK();
+                document.getElementById('vocabLesson').value = word.lesson_id || '';
+                
+                // Scroll to form
+                document.getElementById('vocabularyForm').scrollIntoView({ behavior: 'smooth' });
+                
+                // Show message
+                const messageEl = document.getElementById('vocabMessage');
+                messageEl.innerHTML = '<div class="message">Cloned! Modify and save as new entry.</div>';
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            } catch (error) {
+                alert('Error cloning vocabulary: ' + error.message);
+            }
+        }
+        
+        // ========== BATCH EDIT ==========
+        let batchModeActive = false;
+        
+        function toggleBatchMode() {
+            batchModeActive = !batchModeActive;
+            const checkboxes = document.querySelectorAll('.checkbox-cell');
+            const checkboxHeader = document.getElementById('checkboxHeader');
+            const batchActions = document.getElementById('batchActions');
+            const batchModeBtn = document.getElementById('batchModeBtn');
+            
+            if (batchModeActive) {
+                checkboxHeader.style.display = 'table-cell';
+                checkboxes.forEach(cell => cell.style.display = 'table-cell');
+                batchActions.style.display = 'flex';
+                batchModeBtn.style.display = 'none';
+                
+                // Load lessons for batch assignment
+                populateBatchLessons();
+            } else {
+                checkboxHeader.style.display = 'none';
+                checkboxes.forEach(cell => cell.style.display = 'none');
+                batchActions.style.display = 'none';
+                batchModeBtn.style.display = 'block';
+                
+                // Uncheck all
+                document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+                updateSelectedCount();
+            }
+        }
+        
+        function updateSelectedCount() {
+            const checked = document.querySelectorAll('.row-checkbox:checked').length;
+            document.getElementById('selectedCount').textContent = checked;
+        }
+        
+        function toggleSelectAll(checkbox) {
+            const allCheckboxes = document.querySelectorAll('.row-checkbox');
+            allCheckboxes.forEach(cb => cb.checked = checkbox.checked);
+            updateSelectedCount();
+        }
+        
+        function updateBatchFields() {
+            const action = document.getElementById('batchAction').value;
+            document.getElementById('batchHSK').style.display = action === 'hsk' ? 'block' : 'none';
+            document.getElementById('batchPOS').style.display = action === 'pos' ? 'block' : 'none';
+            document.getElementById('batchLesson').style.display = action === 'lesson' ? 'block' : 'none';
+        }
+        
+        async function populateBatchLessons() {
+            try {
+                const { data, error } = await supabase
+                    .from('lessons')
+                    .select('*')
+                    .order('hsk_level', { ascending: true })
+                    .order('lesson_number', { ascending: true });
+                
+                if (error) throw error;
+                
+                const select = document.getElementById('batchLesson');
+                select.innerHTML = '<option value="">No lesson</option>' +
+                    data.map(lesson => `<option value="${lesson.id}">HSK ${lesson.hsk_level} - L${lesson.lesson_number}: ${lesson.title}</option>`).join('');
+            } catch (error) {
+                console.error('Error loading lessons:', error);
+            }
+        }
+        
+        async function applyBatchAction() {
+            const selected = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.value));
+            
+            if (selected.length === 0) {
+                alert('Please select at least one item');
+                return;
+            }
+            
+            const action = document.getElementById('batchAction').value;
+            
+            if (!action) {
+                alert('Please select an action');
+                return;
+            }
+            
+            if (action === 'delete') {
+                if (!confirm(`Delete ${selected.length} selected words?`)) return;
+                
+                try {
+                    const { error } = await supabase
+                        .from('vocabulary')
+                        .delete()
+                        .in('id', selected);
+                    
+                    if (error) throw error;
+                    
+                    const messageEl = document.getElementById('vocabMessage');
+                    messageEl.innerHTML = `<div class="message success">Deleted ${selected.length} words</div>`;
+                    setTimeout(() => messageEl.innerHTML = '', 3000);
+                    
+                    await loadVocabulary();
+                    await loadAnalytics();
+                    toggleBatchMode();
+                } catch (error) {
+                    alert('Error deleting: ' + error.message);
+                }
+                return;
+            }
+            
+            // Get the value to update
+            let updateData = {};
+            
+            if (action === 'hsk') {
+                updateData.hsk_level = parseInt(document.getElementById('batchHSK').value);
+            } else if (action === 'pos') {
+                updateData.part_of_speech = document.getElementById('batchPOS').value;
+            } else if (action === 'lesson') {
+                const lessonId = document.getElementById('batchLesson').value;
+                updateData.lesson_id = lessonId ? parseInt(lessonId) : null;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('vocabulary')
+                    .update(updateData)
+                    .in('id', selected);
+                
+                if (error) throw error;
+                
+                const messageEl = document.getElementById('vocabMessage');
+                messageEl.innerHTML = `<div class="message success">Updated ${selected.length} words</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                
+                await loadVocabulary();
+                toggleBatchMode();
+            } catch (error) {
+                alert('Error updating: ' + error.message);
             }
         }
         
