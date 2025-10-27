@@ -548,101 +548,444 @@
             </div>
         </div>
 
-        <!-- Dialogues Tab -->
-        <div id="dialoguesPanel" class="panel">
-            <h2 style="margin-bottom: 20px;">Dialogue Management</h2>
-            <div id="dialogueMessage"></div>
-            
-            <!-- Search and Filter Bar -->
-            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: flex-end;">
-                <div class="form-group" style="flex: 1; margin: 0;">
-                    <label>Search</label>
-                    <input type="text" id="dialogueSearch" placeholder="Search by title or chinese text..." onkeyup="searchDialogues()">
-                </div>
-                <div class="form-group" style="width: 200px; margin: 0;">
-                    <label>Filter by Lesson</label>
-                    <select id="dialogueFilterLesson" onchange="searchDialogues()">
-                        <option value="">All Lessons</option>
-                    </select>
-                </div>
-                <div class="form-group" style="width: 150px; margin: 0;">
-                    <label>Visibility</label>
-                    <select id="dialogueFilterVisible" onchange="searchDialogues()">
-                        <option value="">All</option>
-                        <option value="true">Visible</option>
-                        <option value="false">Hidden</option>
-                    </select>
-                </div>
-            </div>
-            
-            <form id="dialogueForm" onsubmit="saveDialogue(event)">
-                <input type="hidden" id="dialogueId" value="">
-                <div class="form-group">
-                    <label>Select Lesson</label>
-                    <select id="dialogueLesson" required>
-                        <option value="">Loading...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Dialogue Title</label>
-                    <input type="text" id="dialogueTitle" required>
-                </div>
-                <div class="form-group">
-                    <label>Speaker</label>
-                    <input type="text" id="dialogueSpeaker" placeholder="e.g., Person A, Person B, Narrator" required>
-                </div>
-                <div class="form-group">
-                    <label>Chinese Text</label>
-                    <input type="text" id="dialogueChinese" placeholder="e.g., 你好" required>
-                </div>
-                <div class="form-group">
-                    <label>Pinyin</label>
-                    <input type="text" id="dialoguePinyin" placeholder="e.g., Nǐ hǎo" required>
-                </div>
-                <div class="form-group">
-                    <label>English Translation</label>
-                    <input type="text" id="dialogueEnglish" placeholder="e.g., Hello" required>
-                </div>
-                <div class="form-group">
-                    <label>Uzbek Translation</label>
-                    <input type="text" id="dialogueUzbek" placeholder="e.g., Salom">
-                </div>
-                <div class="form-group">
-                    <label>Russian Translation</label>
-                    <input type="text" id="dialogueRussian" placeholder="e.g., Привет">
-                </div>
-                <div class="form-group">
-                    <label>Dialogue Line Number (order)</label>
-                    <input type="number" id="dialogueOrder" min="1" value="1">
-                </div>
-                <button type="submit" class="btn" id="dialogueSubmitBtn">Add Dialogue</button>
-                <button type="button" class="btn btn-secondary" id="dialogueCancelBtn" onclick="cancelEditDialogue()" style="display:none;margin-left:10px;">Cancel</button>
-            </form>
+        <!-- NEW DIALOGUE MANAGEMENT SECTION -->
+        <!-- This replaces the old dialogues section with multi-line support -->
 
-            <!-- Bulk Operations -->
-            <div id="bulkOperations" style="margin-bottom: 10px; display: none; gap: 10px;">
-                <button type="button" class="btn btn-primary btn-small" onclick="bulkShowDialogues()">Show Selected</button>
-                <button type="button" class="btn btn-secondary btn-small" onclick="bulkHideDialogues()">Hide Selected</button>
-                <span id="selectedCount" style="margin-left: 10px; color: #666;"></span>
+        <div id="dialoguesPanel" class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">Dialogue Management</h2>
+                <button class="btn btn-primary" onclick="showDialogueEditor(null)">+ Add New Dialogue</button>
             </div>
-            
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="selectAllDialogues" onchange="toggleSelectAll()"></th>
-                            <th>Title</th>
-                            <th>Speaker</th>
-                            <th>Lesson</th>
-                            <th>Order</th>
-                            <th>Visible</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dialoguesTable"></tbody>
-                </table>
+
+            <div id="dialogueMessage"></div>
+
+            <!-- List View -->
+            <div id="dialogueListView">
+                <div id="dialogueCards" style="display: grid; gap: 15px;">
+                    <!-- Cards will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Editor View (hidden by default) -->
+            <div id="dialogueEditorView" style="display: none;">
+                <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 id="editorTitle" style="margin: 0;">Add New Dialogue</h3>
+                        <button class="btn btn-secondary btn-small" onclick="hideDialogueEditor()">✕ Close</button>
+                    </div>
+
+                    <form id="multiLineDialogueForm" onsubmit="saveMultiLineDialogue(event)">
+                        <input type="hidden" id="editingDialogueId" value="">
+
+                        <div class="form-group">
+                            <label>Dialogue Title *</label>
+                            <input type="text" id="dialogueTitleInput" placeholder="e.g., Daily Conversation - At the Store" required>
+                        </div>
+
+                        <!-- Lines Container -->
+                        <div id="dialogueLinesContainer">
+                            <!-- Lines will be dynamically inserted here -->
+                        </div>
+
+                        <button type="button" class="btn btn-secondary" onclick="addDialogueLine()" style="margin-bottom: 20px;">
+                            + Add Another Line
+                        </button>
+
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" class="btn btn-primary">💾 Save Dialogue</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideDialogueEditor()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
+
+        <script>
+        // Dialogue Management State
+        let dialogueLines = [];
+        let editingDialogueId = null;
+
+        // Show editor view
+        function showDialogueEditor(dialogue) {
+            document.getElementById('dialogueListView').style.display = 'none';
+            document.getElementById('dialogueEditorView').style.display = 'block';
+
+            if (dialogue) {
+                // Edit mode
+                document.getElementById('editorTitle').textContent = 'Edit Dialogue';
+                document.getElementById('editingDialogueId').value = dialogue.id;
+                document.getElementById('dialogueTitleInput').value = dialogue.title;
+                editingDialogueId = dialogue.id;
+
+                // Load existing lines
+                dialogueLines = dialogue.lines || [];
+            } else {
+                // Add mode
+                document.getElementById('editorTitle').textContent = 'Add New Dialogue';
+                document.getElementById('editingDialogueId').value = '';
+                document.getElementById('dialogueTitleInput').value = '';
+                editingDialogueId = null;
+
+                // Start with one empty line
+                dialogueLines = [{
+                    chinese: '',
+                    pinyin: '',
+                    translation_en: '',
+                    translation_ru: '',
+                    translation_uz: '',
+                    line_order: 1
+                }];
+            }
+
+            renderDialogueLines();
+        }
+
+        // Hide editor view
+        function hideDialogueEditor() {
+            document.getElementById('dialogueListView').style.display = 'block';
+            document.getElementById('dialogueEditorView').style.display = 'none';
+            document.getElementById('multiLineDialogueForm').reset();
+            dialogueLines = [];
+            editingDialogueId = null;
+        }
+
+        // Render dialogue lines in editor
+        function renderDialogueLines() {
+            const container = document.getElementById('dialogueLinesContainer');
+
+            container.innerHTML = dialogueLines.map((line, index) => `
+                <div class="dialogue-line-editor" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <strong>Line ${index + 1}</strong>
+                        <div style="display: flex; gap: 5px;">
+                            <button type="button" class="btn btn-secondary btn-small"
+                                    onclick="moveLineUp(${index})"
+                                    ${index === 0 ? 'disabled' : ''}>⬆️</button>
+                            <button type="button" class="btn btn-secondary btn-small"
+                                    onclick="moveLineDown(${index})"
+                                    ${index === dialogueLines.length - 1 ? 'disabled' : ''}>⬇️</button>
+                            <button type="button" class="btn btn-danger btn-small"
+                                    onclick="removeLine(${index})"
+                                    ${dialogueLines.length === 1 ? 'disabled' : ''}>🗑️</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Chinese Characters *</label>
+                        <textarea id="line${index}_chinese" rows="2" required
+                                  style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
+                                  onchange="updateLine(${index}, 'chinese', this.value)">${line.chinese || ''}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pinyin *</label>
+                        <textarea id="line${index}_pinyin" rows="2" required
+                                  style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
+                                  onchange="updateLine(${index}, 'pinyin', this.value)">${line.pinyin || ''}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🇬🇧 English Translation *</label>
+                        <textarea id="line${index}_translation_en" rows="2" required
+                                  style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
+                                  onchange="updateLine(${index}, 'translation_en', this.value)">${line.translation_en || ''}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🇷🇺 Russian Translation (Русский) *</label>
+                        <textarea id="line${index}_translation_ru" rows="2" required
+                                  style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
+                                  onchange="updateLine(${index}, 'translation_ru', this.value)">${line.translation_ru || ''}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🇺🇿 Uzbek Translation (O'zbek) *</label>
+                        <textarea id="line${index}_translation_uz" rows="2" required
+                                  style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
+                                  onchange="updateLine(${index}, 'translation_uz', this.value)">${line.translation_uz || ''}</textarea>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update line data
+        function updateLine(index, field, value) {
+            dialogueLines[index][field] = value;
+        }
+
+        // Add new line
+        function addDialogueLine() {
+            dialogueLines.push({
+                chinese: '',
+                pinyin: '',
+                translation_en: '',
+                translation_ru: '',
+                translation_uz: '',
+                line_order: dialogueLines.length + 1
+            });
+            renderDialogueLines();
+        }
+
+        // Remove line
+        function removeLine(index) {
+            if (dialogueLines.length > 1) {
+                dialogueLines.splice(index, 1);
+                // Update line_order
+                dialogueLines.forEach((line, i) => {
+                    line.line_order = i + 1;
+                });
+                renderDialogueLines();
+            }
+        }
+
+        // Move line up
+        function moveLineUp(index) {
+            if (index > 0) {
+                [dialogueLines[index], dialogueLines[index - 1]] = [dialogueLines[index - 1], dialogueLines[index]];
+                // Update line_order
+                dialogueLines.forEach((line, i) => {
+                    line.line_order = i + 1;
+                });
+                renderDialogueLines();
+            }
+        }
+
+        // Move line down
+        function moveLineDown(index) {
+            if (index < dialogueLines.length - 1) {
+                [dialogueLines[index], dialogueLines[index + 1]] = [dialogueLines[index + 1], dialogueLines[index]];
+                // Update line_order
+                dialogueLines.forEach((line, i) => {
+                    line.line_order = i + 1;
+                });
+                renderDialogueLines();
+            }
+        }
+
+        // Save multi-line dialogue
+        async function saveMultiLineDialogue(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('dialogueMessage');
+
+            try {
+                const title = document.getElementById('dialogueTitleInput').value;
+                const dialogueId = document.getElementById('editingDialogueId').value;
+
+                // Validate all lines have required fields
+                for (let i = 0; i < dialogueLines.length; i++) {
+                    const line = dialogueLines[i];
+                    if (!line.chinese || !line.pinyin || !line.translation_en || !line.translation_ru || !line.translation_uz) {
+                        messageEl.innerHTML = `<div class="message error">Line ${i + 1}: All fields are required</div>`;
+                        setTimeout(() => messageEl.innerHTML = '', 3000);
+                        return;
+                    }
+                }
+
+                const dialogueData = {
+                    title,
+                    visible: true,
+                    display_order: Date.now(), // Use timestamp for ordering
+                    lines: dialogueLines
+                };
+
+                let error;
+                if (dialogueId) {
+                    // Update existing dialogue
+                    // First update dialogue
+                    const { error: e1 } = await supabase
+                        .from('dialogues')
+                        .update({ title, visible: true, display_order: dialogueData.display_order })
+                        .eq('id', parseInt(dialogueId));
+
+                    if (e1) throw e1;
+
+                    // Delete old lines
+                    const { error: e2 } = await supabase
+                        .from('dialogue_lines')
+                        .delete()
+                        .eq('dialogue_id', parseInt(dialogueId));
+
+                    // Insert new lines
+                    const linesToInsert = dialogueLines.map(line => ({
+                        dialogue_id: parseInt(dialogueId),
+                        ...line
+                    }));
+
+                    const { error: e3 } = await supabase
+                        .from('dialogue_lines')
+                        .insert(linesToInsert);
+
+                    error = e3;
+                    messageEl.innerHTML = '<div class="message success">Dialogue updated!</div>';
+                } else {
+                    // Create new dialogue
+                    const { data: newDialogue, error: e1 } = await supabase
+                        .from('dialogues')
+                        .insert([{ title, visible: true, display_order: dialogueData.display_order }])
+                        .select()
+                        .single();
+
+                    if (e1) throw e1;
+
+                    // Insert lines
+                    const linesToInsert = dialogueLines.map(line => ({
+                        dialogue_id: newDialogue.id,
+                        ...line
+                    }));
+
+                    const { error: e2 } = await supabase
+                        .from('dialogue_lines')
+                        .insert(linesToInsert);
+
+                    error = e2;
+                    messageEl.innerHTML = '<div class="message success">Dialogue created!</div>';
+                }
+
+                if (error) throw error;
+
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+                hideDialogueEditor();
+                await loadMultiLineDialogues();
+            } catch (error) {
+                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+                setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        // Load dialogues with lines
+        async function loadMultiLineDialogues() {
+            try {
+                // Get all dialogues
+                const { data: dialogues, error: e1 } = await supabase
+                    .from('dialogues')
+                    .select('*')
+                    .order('display_order', { ascending: true });
+
+                if (e1) throw e1;
+
+                // Get all lines for each dialogue
+                for (let dialogue of dialogues) {
+                    const { data: lines, error: e2 } = await supabase
+                        .from('dialogue_lines')
+                        .select('*')
+                        .eq('dialogue_id', dialogue.id)
+                        .order('line_order', { ascending: true });
+
+                    dialogue.lines = lines || [];
+                }
+
+                renderDialogueCards(dialogues);
+            } catch (error) {
+                console.error('Error loading dialogues:', error);
+            }
+        }
+
+        // Render dialogue cards
+        function renderDialogueCards(dialogues) {
+            const container = document.getElementById('dialogueCards');
+
+            if (!dialogues || dialogues.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#666;padding:40px;">No dialogues yet. Click "+ Add New Dialogue" to create one.</p>';
+                return;
+            }
+
+            container.innerHTML = dialogues.map(dialogue => `
+                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0 0 5px 0;">${dialogue.title}</h3>
+                            <p style="margin: 0; color: #666; font-size: 14px;">
+                                ${dialogue.lines.length} line${dialogue.lines.length !== 1 ? 's' : ''} •
+                                ${dialogue.visible ? '<span style="color: green;">✅ Visible</span>' : '<span style="color: gray;">❌ Hidden</span>'}
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button class="btn btn-secondary btn-small"
+                                    onclick='toggleDialogueVisibility(${dialogue.id}, ${dialogue.visible})'
+                                    title="Toggle visibility">
+                                ${dialogue.visible ? '👁️' : '👁️‍🗨️'}
+                            </button>
+                            <button class="btn btn-primary btn-small"
+                                    onclick='editMultiLineDialogue(${dialogue.id})'>
+                                ✏️ Edit
+                            </button>
+                            <button class="btn btn-danger btn-small"
+                                    onclick='deleteMultiLineDialogue(${dialogue.id})'>
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; font-size: 14px;">
+                        ${dialogue.lines.slice(0, 2).map(line => `
+                            <div style="margin-bottom: 5px;">
+                                ${line.chinese}
+                            </div>
+                        `).join('')}
+                        ${dialogue.lines.length > 2 ? `<div style="color: #666;">...and ${dialogue.lines.length - 2} more line${dialogue.lines.length - 2 !== 1 ? 's' : ''}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Edit dialogue
+        async function editMultiLineDialogue(dialogueId) {
+            try {
+                const { data: dialogue, error: e1 } = await supabase
+                    .from('dialogues')
+                    .select('*')
+                    .eq('id', dialogueId)
+                    .single();
+
+                if (e1) throw e1;
+
+                const { data: lines, error: e2 } = await supabase
+                    .from('dialogue_lines')
+                    .select('*')
+                    .eq('dialogue_id', dialogueId)
+                    .order('line_order', { ascending: true});
+
+                dialogue.lines = lines || [];
+                showDialogueEditor(dialogue);
+            } catch (error) {
+                alert('Error loading dialogue: ' + error.message);
+            }
+        }
+
+        // Delete dialogue
+        async function deleteMultiLineDialogue(dialogueId) {
+            if (!confirm('Delete this dialogue and all its lines?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('dialogues')
+                    .delete()
+                    .eq('id', dialogueId);
+
+                if (error) throw error;
+
+                await loadMultiLineDialogues();
+            } catch (error) {
+                alert('Error deleting dialogue: ' + error.message);
+            }
+        }
+
+        // Toggle visibility
+        async function toggleDialogueVisibility(id, currentVisibility) {
+            try {
+                const { error } = await supabase
+                    .from('dialogues')
+                    .update({ visible: !currentVisibility })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                await loadMultiLineDialogues();
+            } catch (error) {
+                alert('Error toggling visibility: ' + error.message);
+            }
+        }
+        </script>
 
         <!-- Grammar Tab -->
         <div id="grammarPanel" class="panel">
@@ -825,7 +1168,7 @@
             if (tabName === 'analytics') loadAnalytics();
             if (tabName === 'vocabulary') { loadVocabulary(); loadLessonsForVocab(); }
             if (tabName === 'lessons') loadLessons();
-            if (tabName === 'dialogues') { loadLessonsForSelect(); loadDialogues(); }
+            if (tabName === 'dialogues') { loadMultiLineDialogues(); }
             if (tabName === 'grammar') { loadLessonsForSelect(); loadGrammar(); }
             if (tabName === 'quizzes') { loadLessonsForSelect(); loadQuizzes(); }
             if (tabName === 'users') loadUsers();
