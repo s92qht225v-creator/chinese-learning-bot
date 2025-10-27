@@ -579,7 +579,7 @@
 
                         <div class="form-group">
                             <label>HSK Level *</label>
-                            <select id="dialogueHskLevelSelect" required onchange="filterLessonsByHskLevel()">
+                            <select id="dialogueHskLevelSelect" required onchange="filterLessonsByHskLevel()" style="font-size: 14px;">
                                 <option value="">Select HSK level...</option>
                                 <option value="1">HSK 1</option>
                                 <option value="2">HSK 2</option>
@@ -592,7 +592,7 @@
 
                         <div class="form-group">
                             <label>Assign to Lesson *</label>
-                            <select id="dialogueLessonSelect" required>
+                            <select id="dialogueLessonSelect" required style="font-size: 14px;">
                                 <option value="">Select HSK level first...</option>
                             </select>
                         </div>
@@ -872,12 +872,18 @@
                     : 1;
 
                 let error;
+                // Generate default title from lesson info
+                const lessonSelect = document.getElementById('dialogueLessonSelect');
+                const selectedOption = lessonSelect.options[lessonSelect.selectedIndex];
+                const defaultTitle = selectedOption ? selectedOption.text : 'Dialogue';
+
                 if (dialogueId) {
                     // Update existing dialogue
                     // First update dialogue
                     const { error: e1 } = await supabase
                         .from('dialogues')
                         .update({
+                            title: defaultTitle,
                             lesson_id: parseInt(lessonId),
                             visible: true
                         })
@@ -908,6 +914,7 @@
                     const { data: newDialogue, error: e1 } = await supabase
                         .from('dialogues')
                         .insert([{
+                            title: defaultTitle,
                             lesson_id: parseInt(lessonId),
                             visible: true,
                             display_order: displayOrder
