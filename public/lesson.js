@@ -454,15 +454,20 @@ async function addToReview(wordId) {
 }
 
 async function toggleFavorite(wordId, event) {
-  tg.HapticFeedback.impactOccurred('light');
+  // Haptic feedback (safe to call even if not supported)
+  try {
+    tg.HapticFeedback?.impactOccurred('light');
+  } catch (e) {}
 
   try {
     const userId = tg.initDataUnsafe?.user?.id;
     console.log('Toggle favorite - User ID:', userId, 'Word ID:', wordId);
+    console.log('Full initDataUnsafe:', tg.initDataUnsafe);
+    console.log('Telegram WebApp version:', tg.version);
 
     if (!userId) {
-      console.error('No user ID available. initDataUnsafe:', tg.initDataUnsafe);
-      tg.showAlert('User not authenticated. Please restart the bot.');
+      console.error('No user ID available. This feature only works inside Telegram bot.');
+      alert('Please open this page through the Telegram bot to use favorites.');
       return;
     }
 
@@ -487,7 +492,7 @@ async function toggleFavorite(wordId, event) {
         method: 'DELETE'
       });
       if (response.ok) {
-        tg.showPopup({ message: '♡ Removed from favorites' });
+        console.log('Successfully removed from favorites');
         // Update button visual
         if (btn) {
           const icon = btn.querySelector('.material-symbols-outlined');
@@ -503,7 +508,7 @@ async function toggleFavorite(wordId, event) {
         body: JSON.stringify({ user_id: userId, vocabulary_id: wordId })
       });
       if (response.ok) {
-        tg.showPopup({ message: '❤️ Added to favorites!' });
+        console.log('Successfully added to favorites');
         // Update button visual
         if (btn) {
           const icon = btn.querySelector('.material-symbols-outlined');
@@ -514,7 +519,7 @@ async function toggleFavorite(wordId, event) {
     }
   } catch (error) {
     console.error('Error toggling favorite:', error);
-    tg.showAlert('Failed to update favorites');
+    alert('Failed to update favorites: ' + error.message);
   }
 }
 
