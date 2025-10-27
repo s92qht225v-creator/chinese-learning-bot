@@ -222,17 +222,50 @@ const db = {
   },
 
   // ========== DIALOGUES ==========
-  async getDialogues() {
+  async getDialogues(options = {}) {
     if (!supabase) return [];
+    
+    let query = supabase
+      .from('dialogues')
+      .select(`
+        *,
+        lessons (id, title, hsk_level, lesson_number)
+      `);
+    
+    // Search filter
+    if (options.search) {
+      query = query.or(`title.ilike.%${options.search}%,chinese.ilike.%${options.search}%`);
+    }
+    
+    // Lesson filter
+    if (options.lessonId) {
+      query = query.eq('lesson_id', options.lessonId);
+    }
+    
+    // Visibility filter
+    if (options.visible !== undefined) {
+      query = query.eq('visible', options.visible);
+    }
+    
+    query = query.order('dialogue_order', { ascending: true });
+    
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getDialogue(id) {
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('dialogues')
       .select(`
         *,
         lessons (id, title, hsk_level, lesson_number)
       `)
-      .order('id', { ascending: false });
+      .eq('id', id)
+      .single();
     if (error) throw error;
-    return data || [];
+    return data;
   },
 
   async addDialogue(dialogue) {
@@ -265,6 +298,17 @@ const db = {
       .delete()
       .eq('id', id);
     if (error) throw error;
+  },
+
+  async bulkUpdateDialogues(ids, updates) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('dialogues')
+      .update(updates)
+      .in('id', ids)
+      .select();
+    if (error) throw error;
+    return data;
   },
 
   async getDialoguesByLesson(lessonId) {

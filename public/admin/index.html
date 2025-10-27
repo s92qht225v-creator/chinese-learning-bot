@@ -553,6 +553,28 @@
             <h2 style="margin-bottom: 20px;">Dialogue Management</h2>
             <div id="dialogueMessage"></div>
             
+            <!-- Search and Filter Bar -->
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: flex-end;">
+                <div class="form-group" style="flex: 1; margin: 0;">
+                    <label>Search</label>
+                    <input type="text" id="dialogueSearch" placeholder="Search by title or chinese text..." onkeyup="searchDialogues()">
+                </div>
+                <div class="form-group" style="width: 200px; margin: 0;">
+                    <label>Filter by Lesson</label>
+                    <select id="dialogueFilterLesson" onchange="searchDialogues()">
+                        <option value="">All Lessons</option>
+                    </select>
+                </div>
+                <div class="form-group" style="width: 150px; margin: 0;">
+                    <label>Visibility</label>
+                    <select id="dialogueFilterVisible" onchange="searchDialogues()">
+                        <option value="">All</option>
+                        <option value="true">Visible</option>
+                        <option value="false">Hidden</option>
+                    </select>
+                </div>
+            </div>
+            
             <form id="dialogueForm" onsubmit="saveDialogue(event)">
                 <input type="hidden" id="dialogueId" value="">
                 <div class="form-group">
@@ -597,13 +619,23 @@
                 <button type="button" class="btn btn-secondary" id="dialogueCancelBtn" onclick="cancelEditDialogue()" style="display:none;margin-left:10px;">Cancel</button>
             </form>
 
+            <!-- Bulk Operations -->
+            <div id="bulkOperations" style="margin-bottom: 10px; display: none; gap: 10px;">
+                <button type="button" class="btn btn-primary btn-small" onclick="bulkShowDialogues()">Show Selected</button>
+                <button type="button" class="btn btn-secondary btn-small" onclick="bulkHideDialogues()">Hide Selected</button>
+                <span id="selectedCount" style="margin-left: 10px; color: #666;"></span>
+            </div>
+            
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
+                            <th><input type="checkbox" id="selectAllDialogues" onchange="toggleSelectAll()"></th>
                             <th>Title</th>
+                            <th>Speaker</th>
                             <th>Lesson</th>
-                            <th>Lines</th>
+                            <th>Order</th>
+                            <th>Visible</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -1180,6 +1212,8 @@
             }
         }
 
+        let allDialogues = [];
+
         async function loadDialogues() {
             try {
                 const { data, error } = await supabase
@@ -1188,24 +1222,127 @@
                         *,
                         lessons (title)
                     `)
-                    .order('id', { ascending: false });
+                    .order('display_order', { ascending: true });
 
                 if (error) throw error;
 
-                const tbody = document.getElementById('dialoguesTable');
-                tbody.innerHTML = data?.map(dialogue => `
-                    <tr>
-                        <td>${dialogue.title}</td>
-                        <td>${dialogue.lessons?.title || 'N/A'}</td>
-                        <td>0</td>
-                        <td class="actions">
-                            <button class="btn btn-primary btn-small" onclick='editDialogue(${JSON.stringify(dialogue)})'>Edit</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteDialogue(${dialogue.id})">Delete</button>
-                        </td>
-                    </tr>
-                `).join('') || '<tr><td colspan="4">No dialogues yet</td></tr>';
+                allDialogues = data || [];
+                renderDialogues(allDialogues);
+
+                // Populate filter dropdown
+                const filterLesson = document.getElementById('dialogueFilterLesson');
+                if (filterLesson) {
+                    const lessons = [...new Set(data.map(d => d.lessons).filter(Boolean))];
+                    filterLesson.innerHTML = '<option value="">All Lessons</option>' +
+                        lessons.map(l => `<option value="${l.title}">${l.title}</option>`).join('');
+                }
             } catch (error) {
                 console.error('Error loading dialogues:', error);
+            }
+        }
+
+        function renderDialogues(dialogues) {
+            const tbody = document.getElementById('dialoguesTable');
+            tbody.innerHTML = dialogues?.map(dialogue => `
+                <tr>
+                    <td><input type="checkbox" class="dialogue-checkbox" value="${dialogue.id}" onchange="updateBulkOperations()"></td>
+                    <td>${dialogue.title}</td>
+                    <td>${dialogue.speaker || '-'}</td>
+                    <td>${dialogue.lessons?.title || 'N/A'}</td>
+                    <td>${dialogue.display_order || dialogue.dialogue_order || '-'}</td>
+                    <td>
+                        <button class="btn ${dialogue.visible !== false ? 'btn-success' : 'btn-secondary'} btn-small"
+                                onclick="toggleDialogueVisibility(${dialogue.id}, ${dialogue.visible !== false})"
+                                title="Click to ${dialogue.visible !== false ? 'hide' : 'show'}">
+                            ${dialogue.visible !== false ? '✅ Visible' : '❌ Hidden'}
+                        </button>
+                    </td>
+                    <td class="actions">
+                        <button class="btn btn-primary btn-small" onclick='editDialogue(${JSON.stringify(dialogue)})'>Edit</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteDialogue(${dialogue.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="7">No dialogues yet</td></tr>';
+        }
+
+        function searchDialogues() {
+            const searchTerm = document.getElementById('dialogueSearch').value.toLowerCase();
+            const lessonFilter = document.getElementById('dialogueFilterLesson').value;
+            const visibleFilter = document.getElementById('dialogueFilterVisible').value;
+
+            let filtered = allDialogues.filter(dialogue => {
+                const matchesSearch = !searchTerm || 
+                    dialogue.title.toLowerCase().includes(searchTerm) || 
+                    dialogue.chinese?.toLowerCase().includes(searchTerm);
+                
+                const matchesLesson = !lessonFilter || dialogue.lessons?.title === lessonFilter;
+                
+                const matchesVisible = !visibleFilter || 
+                    (visibleFilter === 'true' && dialogue.visible !== false) ||
+                    (visibleFilter === 'false' && dialogue.visible === false);
+
+                return matchesSearch && matchesLesson && matchesVisible;
+            });
+
+            renderDialogues(filtered);
+        }
+
+        function toggleSelectAll() {
+            const checked = document.getElementById('selectAllDialogues').checked;
+            document.querySelectorAll('.dialogue-checkbox').forEach(cb => cb.checked = checked);
+            updateBulkOperations();
+        }
+
+        function updateBulkOperations() {
+            const selected = document.querySelectorAll('.dialogue-checkbox:checked');
+            const bulkOps = document.getElementById('bulkOperations');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (selected.length > 0) {
+                bulkOps.style.display = 'flex';
+                selectedCount.textContent = `${selected.length} selected`;
+            } else {
+                bulkOps.style.display = 'none';
+            }
+        }
+
+        async function bulkShowDialogues() {
+            const selected = Array.from(document.querySelectorAll('.dialogue-checkbox:checked')).map(cb => parseInt(cb.value));
+            if (selected.length === 0) return;
+
+            try {
+                const { error } = await supabase
+                    .from('dialogues')
+                    .update({ visible: true })
+                    .in('id', selected);
+
+                if (error) throw error;
+
+                await loadDialogues();
+                document.getElementById('dialogueMessage').innerHTML = '<div class="message success">Dialogues set to visible!</div>';
+                setTimeout(() => document.getElementById('dialogueMessage').innerHTML = '', 3000);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function bulkHideDialogues() {
+            const selected = Array.from(document.querySelectorAll('.dialogue-checkbox:checked')).map(cb => parseInt(cb.value));
+            if (selected.length === 0) return;
+
+            try {
+                const { error } = await supabase
+                    .from('dialogues')
+                    .update({ visible: false })
+                    .in('id', selected);
+
+                if (error) throw error;
+
+                await loadDialogues();
+                document.getElementById('dialogueMessage').innerHTML = '<div class="message success">Dialogues hidden!</div>';
+                setTimeout(() => document.getElementById('dialogueMessage').innerHTML = '', 3000);
+            } catch (error) {
+                alert('Error: ' + error.message);
             }
         }
 
@@ -1224,7 +1361,9 @@
                     english: document.getElementById('dialogueEnglish').value,
                     uzbek: document.getElementById('dialogueUzbek').value || null,
                     russian: document.getElementById('dialogueRussian').value || null,
-                    dialogue_order: parseInt(document.getElementById('dialogueOrder').value)
+                    dialogue_order: parseInt(document.getElementById('dialogueOrder').value),
+                    display_order: parseInt(document.getElementById('dialogueOrder').value),
+                    visible: true
                 };
 
                 let error;
@@ -1254,6 +1393,22 @@
             } catch (error) {
                 messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
                 setTimeout(() => messageEl.innerHTML = '', 3000);
+            }
+        }
+
+        async function toggleDialogueVisibility(id, currentVisibility) {
+            try {
+                const newVisibility = !currentVisibility;
+                const { error } = await supabase
+                    .from('dialogues')
+                    .update({ visible: newVisibility })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                await loadDialogues();
+            } catch (error) {
+                alert('Error toggling visibility: ' + error.message);
             }
         }
 

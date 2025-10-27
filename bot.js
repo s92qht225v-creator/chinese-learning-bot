@@ -396,9 +396,15 @@ app.delete('/api/admin/lessons/:id', adminAuth, async (req, res) => {
 });
 
 // ========== DIALOGUES API ==========
+// Get all dialogues with optional filters (Admin)
 app.get('/api/admin/dialogues', adminAuth, async (req, res) => {
   try {
-    const dialogues = await db.getDialogues();
+    const options = {
+      search: req.query.search,
+      lessonId: req.query.lesson_id,
+      visible: req.query.visible === 'true' ? true : req.query.visible === 'false' ? false : undefined
+    };
+    const dialogues = await db.getDialogues(options);
     res.json(dialogues);
   } catch (error) {
     console.error('Error fetching dialogues:', error);
@@ -406,8 +412,31 @@ app.get('/api/admin/dialogues', adminAuth, async (req, res) => {
   }
 });
 
+// Get single dialogue (Admin)
+app.get('/api/admin/dialogues/:id', adminAuth, async (req, res) => {
+  try {
+    const dialogue = await db.getDialogue(req.params.id);
+    if (!dialogue) {
+      return res.status(404).json({ error: 'Dialogue not found' });
+    }
+    res.json(dialogue);
+  } catch (error) {
+    console.error('Error fetching dialogue:', error);
+    res.status(500).json({ error: 'Failed to fetch dialogue' });
+  }
+});
+
 app.post('/api/admin/dialogues', adminAuth, async (req, res) => {
   try {
+    // Validation
+    const { title, chinese, pinyin, english, lesson_id } = req.body;
+    if (!title || !chinese || !pinyin || !english) {
+      return res.status(400).json({ 
+        error: 'Validation failed', 
+        details: 'Title, Chinese, Pinyin, and English are required' 
+      });
+    }
+    
     const dialogue = await db.addDialogue(req.body);
     res.json(dialogue);
   } catch (error) {
@@ -433,6 +462,27 @@ app.delete('/api/admin/dialogues/:id', adminAuth, async (req, res) => {
   } catch (error) {
     console.error('Error deleting dialogue:', error);
     res.status(500).json({ error: 'Failed to delete dialogue' });
+  }
+});
+
+// Bulk update dialogues (Admin)
+app.patch('/api/admin/dialogues/bulk', adminAuth, async (req, res) => {
+  try {
+    const { ids, updates } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'ids array is required' });
+    }
+    
+    if (!updates || typeof updates !== 'object') {
+      return res.status(400).json({ error: 'updates object is required' });
+    }
+    
+    const result = await db.bulkUpdateDialogues(ids, updates);
+    res.json({ success: true, updated: result.length });
+  } catch (error) {
+    console.error('Error bulk updating dialogues:', error);
+    res.status(500).json({ error: 'Failed to bulk update dialogues' });
   }
 });
 
