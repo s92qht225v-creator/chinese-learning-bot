@@ -582,13 +582,6 @@
                             <input type="text" id="dialogueTitleInput" placeholder="e.g., Daily Conversation - At the Store" required>
                         </div>
 
-                        <div class="form-group">
-                            <label>Assign to Lesson *</label>
-                            <select id="dialogueLessonSelect" required>
-                                <option value="">Select a lesson...</option>
-                            </select>
-                        </div>
-
                         <!-- Lines Container -->
                         <div id="dialogueLinesContainer">
                             <!-- Lines will be dynamically inserted here -->
@@ -1175,7 +1168,7 @@
             if (tabName === 'analytics') loadAnalytics();
             if (tabName === 'vocabulary') { loadVocabulary(); loadLessonsForVocab(); }
             if (tabName === 'lessons') loadLessons();
-            if (tabName === 'dialogues') { loadMultiLineDialogues(); }
+            if (tabName === 'dialogues') { loadLessonsForSelect(); loadDialogues(); }
             if (tabName === 'grammar') { loadLessonsForSelect(); loadGrammar(); }
             if (tabName === 'quizzes') { loadLessonsForSelect(); loadQuizzes(); }
             if (tabName === 'users') loadUsers();

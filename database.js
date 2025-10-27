@@ -314,18 +314,40 @@ const db = {
   async getDialoguesByLesson(lessonId) {
     if (!supabase) return [];
     try {
-      const { data, error } = await supabase
+      // Get dialogues for the lesson
+      const { data: dialogues, error: dialogueError } = await supabase
         .from('dialogues')
         .select('*')
         .eq('lesson_id', lessonId)
-        .order('dialogue_order', { ascending: true });
-      
-      if (error) {
-        console.error('[DB] Error fetching dialogues:', error);
+        .eq('visible', true)
+        .order('display_order', { ascending: true });
+
+      if (dialogueError) {
+        console.error('[DB] Error fetching dialogues:', dialogueError);
         return [];
       }
-      
-      return data || [];
+
+      if (!dialogues || dialogues.length === 0) {
+        return [];
+      }
+
+      // Get all dialogue lines for each dialogue
+      for (let dialogue of dialogues) {
+        const { data: lines, error: linesError } = await supabase
+          .from('dialogue_lines')
+          .select('*')
+          .eq('dialogue_id', dialogue.id)
+          .order('line_order', { ascending: true });
+
+        if (linesError) {
+          console.error('[DB] Error fetching dialogue lines:', linesError);
+          dialogue.lines = [];
+        } else {
+          dialogue.lines = lines || [];
+        }
+      }
+
+      return dialogues;
     } catch (err) {
       console.error('[DB] Exception in getDialoguesByLesson:', err);
       return [];
