@@ -428,17 +428,24 @@
     const toggleIcon = document.getElementById('toggleIcon');
 
     function updateThemeUI() {
+      // Wait for settings to be available
+      if (typeof settings === 'undefined') {
+        setTimeout(updateThemeUI, 50);
+        return;
+      }
       const isDark = settings.isDarkMode();
       themeStatus.textContent = isDark ? 'Dark Mode' : 'Light Mode';
       toggleIcon.textContent = isDark ? 'toggle_on' : 'toggle_off';
     }
 
     darkModeBtn.addEventListener('click', () => {
-      settings.toggleDarkMode();
-      updateThemeUI();
+      if (typeof settings !== 'undefined') {
+        settings.toggleDarkMode();
+        updateThemeUI();
+      }
     });
 
-    // Initialize theme UI
+    // Initialize theme UI (will wait for settings to load)
     updateThemeUI();
   </script>
 </body>
