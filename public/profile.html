@@ -423,10 +423,10 @@
     loadUserProfile();
     generateActivityCalendar();
 
-    // Dark mode toggle
-    const darkModeBtn = document.getElementById('darkModeBtn');
-    const themeStatus = document.getElementById('themeStatus');
-    const toggleIcon = document.getElementById('toggleIcon');
+    // Dark mode toggle (use var to allow reloading)
+    var darkModeBtn = document.getElementById('darkModeBtn');
+    var themeStatus = document.getElementById('themeStatus');
+    var toggleIcon = document.getElementById('toggleIcon');
 
     function updateThemeUI() {
       // Wait for settings to be available
@@ -434,17 +434,27 @@
         setTimeout(updateThemeUI, 50);
         return;
       }
-      const isDark = settings.isDarkMode();
+      var isDark = settings.isDarkMode();
       themeStatus.textContent = isDark ? 'Dark Mode' : 'Light Mode';
       toggleIcon.textContent = isDark ? 'toggle_on' : 'toggle_off';
     }
 
-    darkModeBtn.addEventListener('click', () => {
+    // Remove old event listener if exists
+    if (darkModeBtn && darkModeBtn._profileClickHandler) {
+      darkModeBtn.removeEventListener('click', darkModeBtn._profileClickHandler);
+    }
+
+    var darkModeHandler = () => {
       if (typeof settings !== 'undefined') {
         settings.toggleDarkMode();
         updateThemeUI();
       }
-    });
+    };
+
+    if (darkModeBtn) {
+      darkModeBtn._profileClickHandler = darkModeHandler;
+      darkModeBtn.addEventListener('click', darkModeHandler);
+    }
 
     // Initialize theme UI (will wait for settings to load)
     updateThemeUI();
