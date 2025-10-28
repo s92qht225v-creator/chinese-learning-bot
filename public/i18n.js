@@ -1,7 +1,12 @@
 // Internationalization (i18n) - Translation system
-// Wrap in IIFE to prevent duplicate variable declarations when loaded multiple times
-if (typeof translations === 'undefined') {
-var translations = {
+// Prevent re-execution if already loaded
+if (window._i18nLoaded) {
+  console.log('📚 [i18n.js] Already loaded, skipping...');
+  // Exit early - this script has already been executed
+  throw new Error('SKIP_SCRIPT_EXECUTION');
+}
+
+const translations = {
   en: {
     // Part of speech
     pos: {
@@ -375,11 +380,9 @@ var translations = {
     noLessons: "Для этого уровня пока нет уроков"
   }
 };
-}
 
 // Language manager
-if (typeof i18n === 'undefined') {
-var i18n = {
+const i18n = {
   currentLanguage: localStorage.getItem('appLanguage') || 'en',
   
   // Set language
@@ -439,4 +442,7 @@ var i18n = {
 
 // Export for use in HTML files
 window.i18n = i18n;
-}
+
+// Mark as loaded to prevent re-execution
+window._i18nLoaded = true;
+console.log('✅ [i18n.js] Loaded and initialized');

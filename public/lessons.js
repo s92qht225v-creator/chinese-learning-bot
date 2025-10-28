@@ -1,8 +1,9 @@
-// Initialize Telegram WebApp (use existing if already declared)
+// Use the global tg from main-app.html (no need to declare it again)
+// If running standalone (not in main-app), initialize it on window object
 if (typeof tg === 'undefined') {
-  var tg = window.Telegram.WebApp;
-  tg.expand();
-  tg.ready();
+  window.tg = window.Telegram.WebApp;
+  window.tg.expand();
+  window.tg.ready();
 }
 
 // Supabase config
