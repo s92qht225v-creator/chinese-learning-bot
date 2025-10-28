@@ -1,7 +1,9 @@
-// Initialize Telegram WebApp
-const tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
+// Initialize Telegram WebApp (use existing if already declared)
+if (typeof tg === 'undefined') {
+  var tg = window.Telegram.WebApp;
+  tg.expand();
+  tg.ready();
+}
 
 // Supabase config
 const SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';

@@ -1,5 +1,7 @@
 // Internationalization (i18n) - Translation system
-const translations = {
+// Wrap in IIFE to prevent duplicate variable declarations when loaded multiple times
+if (typeof translations === 'undefined') {
+var translations = {
   en: {
     // Part of speech
     pos: {
@@ -373,9 +375,11 @@ const translations = {
     noLessons: "Для этого уровня пока нет уроков"
   }
 };
+}
 
 // Language manager
-const i18n = {
+if (typeof i18n === 'undefined') {
+var i18n = {
   currentLanguage: localStorage.getItem('appLanguage') || 'en',
   
   // Set language
@@ -435,3 +439,4 @@ const i18n = {
 
 // Export for use in HTML files
 window.i18n = i18n;
+}
