@@ -5,17 +5,50 @@
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
   <title>Profile - Chinese Learning</title>
   
-  <!-- Critical inline styles for instant render -->
-  <link rel="stylesheet" href="/styles.css">
-  
-  <!-- Load fonts asynchronously (non-blocking) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" media="print" onload="this.media='all'">
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet">
   
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="/settings.js"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#448fe4",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "success": "#4CAF50",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#18222c",
+            "text-primary-light": "#111417",
+            "text-primary-dark": "#f0f4f8",
+            "text-secondary-light": "#647487",
+            "text-secondary-dark": "#a0aec0",
+            "border-light": "#dce0e5",
+            "border-dark": "#2d3748",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+  
   <style>
+    body {
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
     
     /* Loading indicator */
     #page-loader {
@@ -40,8 +73,8 @@
     .spinner {
       width: 40px;
       height: 40px;
-      border: 3px solid rgba(74, 144, 226, 0.1);
-      border-top-color: #4A90E2;
+      border: 3px solid rgba(68, 143, 228, 0.1);
+      border-top-color: #448fe4;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -49,119 +82,162 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    
+    /* Activity calendar dots */
+    .activity-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    
+    .activity-dot.active {
+      background: #4CAF50;
+    }
+    
+    .activity-dot.inactive {
+      background: #dce0e5;
+    }
+    
+    .dark .activity-dot.inactive {
+      background: #2d3748;
+    }
+    
+    .activity-dot:hover {
+      transform: scale(1.15);
+      box-shadow: 0 2px 8px rgba(68, 143, 228, 0.3);
+    }
+    
+    /* Material Icons */
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
   </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
+<body class="bg-background-light dark:bg-background-dark font-display text-text-primary-light dark:text-text-primary-dark">
+  
   <!-- Loading indicator -->
   <div id="page-loader">
     <div class="spinner"></div>
   </div>
-  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-20">
+  
+  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+    
     <!-- Profile Header -->
-    <header class="bg-gradient-to-br from-primary to-blue-600 text-white px-4 pt-8 pb-12">
+    <header class="bg-gradient-to-br from-primary to-blue-500 text-white px-4 pt-8 pb-20">
       <div class="max-w-screen-xl mx-auto">
         <div class="flex flex-col items-center">
-          <div class="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
-            <span class="material-symbols-outlined text-6xl">person</span>
+          <!-- Profile Photo -->
+          <div class="relative w-24 h-24 mb-4">
+            <div id="profilePhotoContainer" class="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center overflow-hidden">
+              <span class="material-symbols-outlined text-6xl">person</span>
+            </div>
+            <button class="absolute bottom-0 right-0 w-8 h-8 bg-white text-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined text-lg">edit</span>
+            </button>
           </div>
-          <h1 class="text-2xl font-bold mb-1">Learning User</h1>
-          <p class="text-blue-100 text-sm mb-4">Member since Oct 2025</p>
+          
+          <!-- User Info -->
+          <h1 id="userName" class="text-2xl font-bold mb-1">Learning User</h1>
+          <p id="userHandle" class="text-blue-100 text-sm mb-4">@username</p>
           
           <!-- Level Badge -->
           <div class="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 inline-flex items-center gap-2">
-            <span class="material-symbols-outlined text-accent">star</span>
-            <span class="font-semibold">HSK 1 · Beginner</span>
+            <span class="material-symbols-outlined text-accent filled">star</span>
+            <span id="userLevel" class="font-semibold">HSK 1 · Beginner</span>
           </div>
         </div>
       </div>
     </header>
 
-    <main class="flex-1 px-4 -mt-6 max-w-screen-xl mx-auto w-full">
-      <!-- Stats Overview -->
-      <section class="mb-6">
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
-          <div class="grid grid-cols-3 gap-4 divide-x divide-gray-200 dark:divide-gray-700">
-            <div class="text-center">
-              <p class="text-2xl font-bold text-primary">15</p>
-              <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">Lessons</p>
-            </div>
-            <div class="text-center">
-              <p class="text-2xl font-bold text-secondary">42</p>
-              <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">Words</p>
-            </div>
-            <div class="text-center">
-              <p class="text-2xl font-bold text-accent">5</p>
-              <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">Day Streak</p>
-            </div>
+    <main class="flex-1 px-4 -mt-4 max-w-screen-xl mx-auto w-full">
+      
+      <!-- Study Activity -->
+      <section class="mb-6 mt-4">
+        <h2 class="text-lg font-bold mb-3">Study Activity</h2>
+        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-border-light dark:border-border-dark">
+          <div class="flex items-center justify-between mb-4">
+            <p class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">LAST 7 DAYS</p>
+            <p id="activeDaysCount" class="text-sm font-bold text-primary">5 days active</p>
+          </div>
+          <div class="grid grid-cols-7 gap-2 mb-3 justify-items-center" id="activityCalendar">
+            <!-- Will be populated by JavaScript -->
+          </div>
+          <div class="grid grid-cols-7 gap-2 text-xs text-center text-text-secondary-light dark:text-text-secondary-dark">
+            <span>Mon</span>
+            <span>Tue</span>
+            <span>Wed</span>
+            <span>Thu</span>
+            <span>Fri</span>
+            <span>Sat</span>
+            <span>Sun</span>
           </div>
         </div>
       </section>
 
-      <!-- Achievements -->
+      <!-- Study Time This Week -->
       <section class="mb-6">
-        <h2 class="text-lg font-bold mb-3">Achievements</h2>
-        <div class="grid grid-cols-4 gap-3">
-          <div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex flex-col items-center">
-            <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-2">
-              <span class="material-symbols-outlined text-accent text-2xl">local_fire_department</span>
+        <h2 class="text-lg font-bold mb-3">Study Time This Week</h2>
+        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-border-light dark:border-border-dark">
+          <div class="space-y-3" id="studyTimeContainer">
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <span class="text-sm font-medium">Monday</span>
+                <span class="text-sm font-semibold text-primary">15 min</span>
+              </div>
+              <div class="h-2 bg-background-light dark:bg-background-dark rounded-full overflow-hidden">
+                <div class="h-full bg-primary rounded-full transition-all" style="width: 75%;"></div>
+              </div>
             </div>
-            <p class="text-xs font-medium text-center">5 Day Streak</p>
-          </div>
-
-          <div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex flex-col items-center">
-            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
-              <span class="material-symbols-outlined text-primary text-2xl">school</span>
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <span class="text-sm font-medium">Tuesday</span>
+                <span class="text-sm font-semibold text-primary">20 min</span>
+              </div>
+              <div class="h-2 bg-background-light dark:bg-background-dark rounded-full overflow-hidden">
+                <div class="h-full bg-primary rounded-full transition-all" style="width: 100%;"></div>
+              </div>
             </div>
-            <p class="text-xs font-medium text-center">First Lesson</p>
-          </div>
-
-          <div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex flex-col items-center">
-            <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-2">
-              <span class="material-symbols-outlined text-secondary text-2xl">book</span>
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <span class="text-sm font-medium">Wednesday</span>
+                <span class="text-sm font-semibold text-primary">10 min</span>
+              </div>
+              <div class="h-2 bg-background-light dark:bg-background-dark rounded-full overflow-hidden">
+                <div class="h-full bg-primary rounded-full transition-all" style="width: 50%;"></div>
+              </div>
             </div>
-            <p class="text-xs font-medium text-center">10 Words</p>
-          </div>
-
-          <div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm flex flex-col items-center opacity-50">
-            <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-2">
-              <span class="material-symbols-outlined text-gray-400 text-2xl">lock</span>
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <span class="text-sm font-medium">Thursday</span>
+                <span class="text-sm font-semibold text-primary">18 min</span>
+              </div>
+              <div class="h-2 bg-background-light dark:bg-background-dark rounded-full overflow-hidden">
+                <div class="h-full bg-primary rounded-full transition-all" style="width: 90%;"></div>
+              </div>
             </div>
-            <p class="text-xs font-medium text-center">50 Words</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Learning Progress -->
-      <section class="mb-6">
-        <h2 class="text-lg font-bold mb-3">Learning Progress</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm space-y-4">
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-sm font-medium">Vocabulary</span>
-              <span class="text-sm text-primary font-bold">42/150</span>
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <span class="text-sm font-medium">Friday</span>
+                <span class="text-sm font-semibold text-primary">22 min</span>
+              </div>
+              <div class="h-2 bg-background-light dark:bg-background-dark rounded-full overflow-hidden">
+                <div class="h-full bg-success rounded-full transition-all" style="width: 100%;"></div>
+              </div>
             </div>
-            <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div class="h-full bg-primary rounded-full" style="width: 28%;"></div>
-            </div>
-          </div>
-
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-sm font-medium">Grammar Points</span>
-              <span class="text-sm text-secondary font-bold">3/20</span>
-            </div>
-            <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div class="h-full bg-secondary rounded-full" style="width: 15%;"></div>
-            </div>
-          </div>
-
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-sm font-medium">Characters Mastered</span>
-              <span class="text-sm text-accent font-bold">15/200</span>
-            </div>
-            <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div class="h-full bg-accent rounded-full" style="width: 7.5%;"></div>
+            <div class="pt-2 border-t border-border-light dark:border-border-dark">
+              <div class="flex justify-between items-center mb-1.5">
+                <span class="text-sm font-bold">Today</span>
+                <span class="text-sm font-bold text-accent">0 min / 🎯 20 min</span>
+              </div>
+              <div class="h-2.5 bg-background-light dark:bg-background-dark rounded-full overflow-hidden">
+                <div class="h-full bg-accent rounded-full transition-all" style="width: 0%;"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -170,53 +246,62 @@
       <!-- Settings -->
       <section class="mb-6">
         <h2 class="text-lg font-bold mb-3">Settings</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm divide-y divide-gray-200 dark:divide-gray-700">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm divide-y divide-border-light dark:divide-border-dark border border-border-light dark:border-border-dark overflow-hidden">
+          
           <!-- HSK Level -->
-          <a href="/level-select.html" class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <a href="/level-select.html" class="flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-primary">school</span>
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-primary">school</span>
+              </div>
               <div>
                 <p class="font-medium text-sm">HSK Level</p>
-                <p class="text-xs text-text-muted-light dark:text-text-muted-dark">HSK 1 - Beginner</p>
+                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">HSK 1 - Beginner</p>
               </div>
             </div>
-            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
+            <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
           </a>
 
           <!-- Daily Goal -->
-          <button class="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <button class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-accent">flag</span>
+              <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-accent">flag</span>
+              </div>
               <div>
                 <p class="font-medium text-sm text-left">Daily Goal</p>
-                <p class="text-xs text-text-muted-light dark:text-text-muted-dark">20 minutes per day</p>
+                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">20 minutes per day</p>
               </div>
             </div>
-            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
+            <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
           </button>
 
-          <!-- Notifications -->
-          <button class="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <!-- Interface Language -->
+          <button class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-secondary">notifications</span>
+              <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-secondary">language</span>
+              </div>
               <div>
-                <p class="font-medium text-sm text-left">Notifications</p>
-                <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Enabled</p>
+                <p class="font-medium text-sm text-left">Interface Language</p>
+                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">English</p>
               </div>
             </div>
-            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
+            <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
           </button>
 
           <!-- Dark Mode -->
-          <button id="darkModeBtn" class="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <button id="darkModeBtn" class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-purple-600">dark_mode</span>
+              <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <span class="material-symbols-outlined text-purple-600">dark_mode</span>
+              </div>
               <div>
                 <p class="font-medium text-sm text-left">Theme</p>
-                <p id="themeStatus" class="text-xs text-text-muted-light dark:text-text-muted-dark">Light Mode</p>
+                <p id="themeStatus" class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Light Mode</p>
               </div>
             </div>
-            <span class="material-symbols-outlined text-gray-400">toggle_off</span>
+            <span id="toggleIcon" class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">toggle_off</span>
           </button>
         </div>
       </section>
@@ -224,40 +309,45 @@
       <!-- About -->
       <section class="mb-6">
         <h2 class="text-lg font-bold mb-3">About</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm divide-y divide-gray-200 dark:divide-gray-700">
-          <button class="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm divide-y divide-border-light dark:divide-border-dark border border-border-light dark:border-border-dark overflow-hidden">
+          
+          <button class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-primary">help</span>
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-primary">help</span>
+              </div>
               <p class="font-medium text-sm">Help & Support</p>
             </div>
-            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
+            <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
           </button>
 
-          <button class="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <button class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-secondary">info</span>
+              <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-secondary">info</span>
+              </div>
               <p class="font-medium text-sm">About</p>
             </div>
-            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
+            <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
           </button>
 
-          <button class="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <button class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-accent">share</span>
+              <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-accent">share</span>
+              </div>
               <p class="font-medium text-sm">Share with Friends</p>
             </div>
-            <span class="material-symbols-outlined text-gray-400">chevron_right</span>
+            <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
           </button>
         </div>
       </section>
 
       <!-- Version -->
-      <div class="text-center py-4">
-        <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Version 1.0.0</p>
+      <div class="text-center py-4 mb-4">
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Version 1.0.0</p>
       </div>
     </main>
-
-    <!-- Navigation is handled by main-app.html -->
   </div>
 
   <script>
@@ -279,32 +369,61 @@
 
       if (user) {
         // Update user name
-        const nameElement = document.querySelector('header h1');
-        if (nameElement) {
+        const userName = document.getElementById('userName');
+        if (userName) {
           const displayName = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-          nameElement.textContent = displayName || user.username || 'Learning User';
+          userName.textContent = displayName || user.username || 'Learning User';
+        }
+
+        // Update username handle
+        const userHandle = document.getElementById('userHandle');
+        if (userHandle && user.username) {
+          userHandle.textContent = '@' + user.username;
+        } else if (userHandle) {
+          userHandle.style.display = 'none';
         }
 
         // Update profile image if photo_url is available
-        const profileImageContainer = document.querySelector('.w-24.h-24');
-        if (user.photo_url && profileImageContainer) {
-          profileImageContainer.innerHTML = `<img src="${user.photo_url}" class="w-full h-full rounded-full object-cover" alt="Profile">`;
+        const profilePhotoContainer = document.getElementById('profilePhotoContainer');
+        if (user.photo_url && profilePhotoContainer) {
+          profilePhotoContainer.innerHTML = `<img src="${user.photo_url}" class="w-full h-full rounded-full object-cover" alt="Profile">`;
         }
 
-        // Log for debugging
         console.log('Telegram User:', user);
       } else {
         console.log('No Telegram user data available');
       }
     }
 
+    // Generate activity calendar
+    function generateActivityCalendar() {
+      const container = document.getElementById('activityCalendar');
+      // Mock data: last 7 days activity (Mon-Sun)
+      const activity = [true, true, true, true, true, false, false];
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      
+      let activeCount = 0;
+      activity.forEach((isActive, index) => {
+        if (isActive) activeCount++;
+        
+        const dot = document.createElement('div');
+        dot.className = `activity-dot ${isActive ? 'active' : 'inactive'}`;
+        dot.title = `${days[index]}: ${isActive ? 'Studied' : 'No study'}`;
+        container.appendChild(dot);
+      });
+      
+      // Update active days count
+      document.getElementById('activeDaysCount').textContent = `${activeCount} days active`;
+    }
+
     // Load profile data on page load
     loadUserProfile();
+    generateActivityCalendar();
 
     // Dark mode toggle
     const darkModeBtn = document.getElementById('darkModeBtn');
     const themeStatus = document.getElementById('themeStatus');
-    const toggleIcon = darkModeBtn.querySelector('.material-symbols-outlined:last-child');
+    const toggleIcon = document.getElementById('toggleIcon');
 
     function updateThemeUI() {
       const isDark = settings.isDarkMode();
@@ -313,24 +432,12 @@
     }
 
     darkModeBtn.addEventListener('click', () => {
-      if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('medium');
-      }
       settings.toggleDarkMode();
       updateThemeUI();
     });
 
     // Initialize theme UI
     updateThemeUI();
-
-    // Haptic feedback on other clicks
-    document.querySelectorAll('a, button:not(#darkModeBtn)').forEach(element => {
-      element.addEventListener('click', () => {
-        if (tg.HapticFeedback) {
-          tg.HapticFeedback.impactOccurred('light');
-        }
-      });
-    });
   </script>
 </body>
 </html>
