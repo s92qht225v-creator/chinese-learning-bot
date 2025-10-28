@@ -13,8 +13,30 @@ var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 // Initialize Supabase client (lazy initialization to handle async loading)
 var supabase;
 function getSupabaseClient() {
-  if (!supabase && window.supabase && window.supabase.createClient) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  if (!supabase) {
+    // Check if Supabase library is loaded
+    if (!window.supabase) {
+      console.error('❌ window.supabase is not available');
+      return null;
+    }
+
+    // The Supabase library can export createClient at different levels
+    const createClient = window.supabase.createClient || window.supabase;
+
+    if (typeof createClient !== 'function') {
+      console.error('❌ createClient is not a function:', typeof createClient);
+      console.log('window.supabase:', window.supabase);
+      console.log('window.supabase.createClient:', window.supabase.createClient);
+      return null;
+    }
+
+    try {
+      supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log('✅ Supabase client created successfully');
+    } catch (error) {
+      console.error('❌ Error creating Supabase client:', error);
+      return null;
+    }
   }
   return supabase;
 }
