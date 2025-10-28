@@ -351,12 +351,13 @@
   </div>
 
   <script>
-    // Hide loader when page is ready
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        document.getElementById('page-loader').classList.add('hidden');
-      }, 100);
-    });
+    // Hide loader when script executes (works for both standalone and dynamic loading)
+    setTimeout(() => {
+      const loader = document.getElementById('page-loader');
+      if (loader) {
+        loader.classList.add('hidden');
+      }
+    }, 100);
 
     // Initialize Telegram WebApp (use existing if already declared)
     if (typeof tg === 'undefined') {
