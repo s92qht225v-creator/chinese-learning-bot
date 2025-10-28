@@ -65,6 +65,7 @@ levelRadios.forEach(radio => {
 // Load lessons from Supabase
 async function loadLessons(hskLevel = 1) {
   try {
+    console.log('🔄 Loading lessons for HSK level:', hskLevel);
     lessonsContainer.innerHTML = '<div class="text-center py-8"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div></div>';
 
     const { data: lessons, error } = await supabase
@@ -74,11 +75,17 @@ async function loadLessons(hskLevel = 1) {
       .eq('status', 'published')
       .order('lesson_number', { ascending: true });
 
-    if (error) throw error;
+    console.log('📦 Supabase response:', { lessons, error, count: lessons?.length });
+
+    if (error) {
+      console.error('❌ Supabase error:', error);
+      throw error;
+    }
 
     lessonsContainer.innerHTML = '';
 
     if (!lessons || lessons.length === 0) {
+      console.log('⚠️ No lessons found for HSK', hskLevel);
       // Update progress section to show 0/0
       progressText.textContent = '0/0';
       progressBar.style.width = '0%';
@@ -107,6 +114,8 @@ async function loadLessons(hskLevel = 1) {
       return;
     }
 
+    console.log('✅ Found', lessons.length, 'lessons:', lessons.map(l => l.title));
+
     // Load lesson progress
     await loadProgress(lessons);
 
@@ -119,8 +128,10 @@ async function loadLessons(hskLevel = 1) {
       lessonsContainer.appendChild(card);
     });
 
+    console.log('✅ Lessons rendered successfully');
+
   } catch (error) {
-    console.error('Error loading lessons:', error);
+    console.error('❌ Error loading lessons:', error);
     lessonsContainer.innerHTML = `
       <div class="text-center py-12">
         <span class="material-symbols-outlined text-6xl text-red-500 mb-3">error</span>
@@ -148,8 +159,9 @@ async function loadProgress(lessons) {
 function updateOverallProgress(lessons) {
   const completed = lessons.filter(l => lessonProgress[l.lesson_number]?.completed).length;
   const total = lessons.length;
-  const percentage = Math.round((completed / total) * 100);
+  const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
+  console.log('📊 Progress update:', { completed, total, percentage });
   progressText.textContent = `${completed}/${total}`;
   progressBar.style.width = `${percentage}%`;
 
