@@ -33,11 +33,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files with caching
+// Serve static files with no caching for HTML
 app.use(express.static('public', {
-  maxAge: '1d', // Cache static files for 1 day
-  etag: true,
-  lastModified: true
+  maxAge: 0, // No caching
+  etag: false,
+  lastModified: true,
+  setHeaders: (res, path) => {
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
 }));
 app.use(express.json());
 
