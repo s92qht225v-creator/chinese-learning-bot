@@ -283,9 +283,12 @@ window.switchToHSK1 = function() {
 
 // Initialize tab styling on page load
 function initializeTabStyling() {
-  levelRadios.forEach(r => {
+  console.log('Initializing tab styling, found radios:', levelRadios.length);
+  levelRadios.forEach((r, index) => {
     const tabContent = r.nextElementSibling;
-    if (r.checked) {
+    console.log(`Radio ${index}: checked=${r.checked}, hasNextElement=${!!tabContent}`);
+    if (r.checked && tabContent) {
+      console.log('Applying active styling to tab', index);
       tabContent.style.background = '#448fe4';
       tabContent.style.color = 'white';
       tabContent.style.borderColor = '#448fe4';
@@ -295,9 +298,11 @@ function initializeTabStyling() {
   });
 }
 
-// Initialize on page load
-initializeTabStyling();
-loadLessons(currentHskLevel);
+// Initialize on page load with slight delay to ensure DOM is ready
+setTimeout(() => {
+  initializeTabStyling();
+  loadLessons(currentHskLevel);
+}, 100);
 
 // Apply i18n if available
 if (window.i18n) {
