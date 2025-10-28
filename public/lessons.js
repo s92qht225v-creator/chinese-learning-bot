@@ -10,35 +10,29 @@ if (typeof tg === 'undefined') {
 var SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2ZW9xZWRza3piYmdjYXpwc2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0Nzk1MjYsImV4cCI6MjA3NzA1NTUyNn0.NfTfTWKNDmsmiLF_MX5XGGq48xbX8OOUWhVmb5U-VXM';
 
-// Initialize Supabase client (lazy initialization to handle async loading)
-var supabase;
+// Initialize Supabase client (wait for library to load)
+var supabaseClient;
 function getSupabaseClient() {
-  if (!supabase) {
-    // Check if Supabase library is loaded
-    if (!window.supabase) {
-      console.error('❌ window.supabase is not available');
-      return null;
-    }
-
-    // The Supabase library can export createClient at different levels
-    const createClient = window.supabase.createClient || window.supabase;
-
-    if (typeof createClient !== 'function') {
-      console.error('❌ createClient is not a function:', typeof createClient);
-      console.log('window.supabase:', window.supabase);
-      console.log('window.supabase.createClient:', window.supabase.createClient);
-      return null;
-    }
-
-    try {
-      supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      console.log('✅ Supabase client created successfully');
-    } catch (error) {
-      console.error('❌ Error creating Supabase client:', error);
-      return null;
-    }
+  if (supabaseClient) {
+    return supabaseClient;
   }
-  return supabase;
+
+  // Wait for Supabase library to be available
+  if (!window.supabase) {
+    console.warn('⏳ Waiting for Supabase library to load...');
+    return null;
+  }
+
+  try {
+    // Supabase v2 UMD build exports the whole library to window.supabase
+    // createClient is a function on that object
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✅ Supabase client initialized');
+    return supabaseClient;
+  } catch (error) {
+    console.error('❌ Failed to create Supabase client:', error);
+    return null;
+  }
 }
 
 // Elements
@@ -119,9 +113,17 @@ async function loadLessons(hskLevel = 1) {
     console.log('🔄 Loading lessons for HSK level:', hskLevel);
     lessonsContainer.innerHTML = '<div class="text-center py-8"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div></div>';
 
-    const client = getSupabaseClient();
+    // Wait for Supabase client with retry
+    let client = getSupabaseClient();
+    let retries = 0;
+    while (!client && retries < 20) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      client = getSupabaseClient();
+      retries++;
+    }
+
     if (!client) {
-      throw new Error('Supabase client not available');
+      throw new Error('Supabase client not available after waiting');
     }
 
     const { data: lessons, error } = await client
