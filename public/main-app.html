@@ -340,10 +340,8 @@
         // Inject new content
         contentArea.innerHTML = content.bodyContent;
 
-        // Execute scripts (only once, not from cache)
-        if (!contentCache[tabName] || tabName === currentTab) {
-          executeScripts(content.scripts);
-        }
+        // Execute scripts every time (needed for dynamic styling)
+        executeScripts(content.scripts);
 
         // Update current tab
         currentTab = tabName;
