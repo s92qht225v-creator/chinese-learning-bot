@@ -263,8 +263,8 @@
         currentTab = tabName;
 
         // Update i18n if available
-        if (window.i18n && window.i18n.updatePage) {
-          window.i18n.updatePage();
+        if (window.i18n && window.i18n.init) {
+          window.i18n.init();
         }
 
         // Hide loading
