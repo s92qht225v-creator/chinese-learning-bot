@@ -1,11 +1,4 @@
 // Internationalization (i18n) - Translation system
-// Prevent re-execution if already loaded
-if (window._i18nLoaded) {
-  console.log('📚 [i18n.js] Already loaded, skipping...');
-  // Exit early - this script has already been executed
-  throw new Error('SKIP_SCRIPT_EXECUTION');
-}
-
 const translations = {
   en: {
     // Part of speech
@@ -442,7 +435,3 @@ const i18n = {
 
 // Export for use in HTML files
 window.i18n = i18n;
-
-// Mark as loaded to prevent re-execution
-window._i18nLoaded = true;
-console.log('✅ [i18n.js] Loaded and initialized');

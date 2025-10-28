@@ -8,6 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <title>Chinese Learning App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet"/>
@@ -249,7 +250,7 @@
   </nav>
 
   <!-- Scripts -->
-  <script src="/i18n.js?v=20251028-final"></script>
+  <script src="/i18n.js?v=20251028-skipload"></script>
   <script>
     console.log('🚀 [main-app.html] Script starting...');
     const tg = window.Telegram.WebApp;
@@ -322,6 +323,31 @@
         const srcAttr = script.getAttribute('src');
 
         if (srcAttr) {
+          // Skip scripts that are already loaded (check without query params)
+          const scriptPath = srcAttr.split('?')[0];
+          if (scriptPath.includes('i18n.js')) {
+            console.log(`  ⏭️ Skipping i18n.js (already loaded in main-app.html)`);
+            return;
+          }
+
+          // Skip Telegram WebApp script if already loaded
+          if (scriptPath.includes('telegram-web-app.js')) {
+            console.log(`  ⏭️ Skipping telegram-web-app.js (already loaded)`);
+            return;
+          }
+
+          // Skip Supabase if already loaded
+          if (scriptPath.includes('supabase') && window.supabase) {
+            console.log(`  ⏭️ Skipping supabase (already loaded)`);
+            return;
+          }
+
+          // Skip Tailwind if already loaded
+          if (scriptPath.includes('tailwindcss') && window.tailwind) {
+            console.log(`  ⏭️ Skipping tailwind (already loaded)`);
+            return;
+          }
+
           // External script
           console.log(`  📦 External script: ${srcAttr}`);
           const newScript = document.createElement('script');
