@@ -18,8 +18,7 @@ function getSupabaseClient() {
   }
 
   // Wait for Supabase library to be available
-  if (!window.supabase) {
-    console.warn('⏳ Waiting for Supabase library to load...');
+  if (!window.supabase || !window.supabase.createClient) {
     return null;
   }
 
@@ -113,17 +112,17 @@ async function loadLessons(hskLevel = 1) {
     console.log('🔄 Loading lessons for HSK level:', hskLevel);
     lessonsContainer.innerHTML = '<div class="text-center py-8"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div></div>';
 
-    // Wait for Supabase client with retry
+    // Wait for Supabase client with retry (max 500ms)
     let client = getSupabaseClient();
     let retries = 0;
-    while (!client && retries < 20) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+    while (!client && retries < 5) {
+      await new Promise(resolve => setTimeout(resolve, 50));
       client = getSupabaseClient();
       retries++;
     }
 
     if (!client) {
-      throw new Error('Supabase client not available after waiting');
+      throw new Error('Supabase client not available after 500ms');
     }
 
     const { data: lessons, error } = await client
