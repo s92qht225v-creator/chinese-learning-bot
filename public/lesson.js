@@ -61,13 +61,18 @@ async function loadDialogues(lessonId) {
 
 function renderDialogues(dialogues) {
   const container = document.getElementById('dialogueContainer');
+  const countEl = document.getElementById('dialogueCount');
 
   if (!dialogues || dialogues.length === 0) {
     container.innerHTML = '<p class="text-center text-text-secondary-light">No dialogues available</p>';
+    if (countEl) countEl.textContent = 'No dialogues';
     return;
   }
 
   const sorted = dialogues.sort((a, b) => (a.display_order || a.dialogue_order || 0) - (b.display_order || b.dialogue_order || 0));
+
+  // Update count
+  if (countEl) countEl.textContent = `${sorted.length} line${sorted.length !== 1 ? 's' : ''}`;
 
   container.innerHTML = sorted.map(dialogue => {
     // Handle multi-line dialogue structure
@@ -148,11 +153,16 @@ async function loadFavoriteStates() {
 
 function renderVocabulary(vocabulary) {
   const container = document.getElementById('vocabularyContainer');
-  
+  const countEl = document.getElementById('vocabularyCount');
+
   if (!vocabulary || vocabulary.length === 0) {
     container.innerHTML = '<p class="text-center text-text-secondary-light">No vocabulary available</p>';
+    if (countEl) countEl.textContent = 'No words';
     return;
   }
+
+  // Update count
+  if (countEl) countEl.textContent = `${vocabulary.length} word${vocabulary.length !== 1 ? 's' : ''}`;
 
   const posColors = {
     'n': 'blue',
@@ -208,11 +218,16 @@ async function loadGrammar(lessonId) {
 
 function renderGrammar(grammar) {
   const container = document.getElementById('grammarContainer');
-  
+  const countEl = document.getElementById('grammarCount');
+
   if (!grammar || grammar.length === 0) {
     container.innerHTML = '<p class="text-center text-text-secondary-light">No grammar available</p>';
+    if (countEl) countEl.textContent = 'No grammar points';
     return;
   }
+
+  // Update count
+  if (countEl) countEl.textContent = `${grammar.length} point${grammar.length !== 1 ? 's' : ''}`;
 
   const colors = ['primary', 'warning', 'success'];
   
@@ -250,11 +265,16 @@ async function loadQuizzes(lessonId) {
 
 function renderQuizzes(quizzes) {
   const container = document.getElementById('quizzesContainer');
-  
+  const countEl = document.getElementById('exercisesCount');
+
   if (!quizzes || quizzes.length === 0) {
     container.innerHTML = '<p class="text-center text-text-secondary-light">No exercises available</p>';
+    if (countEl) countEl.textContent = 'No exercises';
     return;
   }
+
+  // Update count
+  if (countEl) countEl.textContent = `${quizzes.length} exercise${quizzes.length !== 1 ? 's' : ''}`;
 
   container.innerHTML = quizzes.map((quiz, index) => {
     const options = JSON.parse(quiz.options || '[]');
