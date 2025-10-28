@@ -7,7 +7,7 @@
 2. Verify tables are created
 
 ### Step 2: Access Admin Panel
-- URL: http://lingo.uz/admin/
+- URL: http://lokatsiya.online/admin/
 - Password: admin123 (change in admin/index.html line 369)
 
 ### Step 3: Add Content Tabs

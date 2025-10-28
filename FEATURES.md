@@ -42,11 +42,10 @@
 - ✅ All API endpoints working
 
 ### 7. Deployment
-- ✅ Backend on DigitalOcean droplet (159.65.11.158)
+- ✅ Backend on Google Cloud (34.17.122.31)
 - ✅ PM2 process manager configured
-- ✅ Frontend on Cloudflare Pages (lingo.uz)
-- ✅ Custom domain configured
-- ⏳ SSL pending DNS propagation
+- ✅ Custom domain configured (lokatsiya.online)
+- ✅ SSL configured
 
 ---
 

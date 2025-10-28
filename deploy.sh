@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Deployment script for DigitalOcean droplet
-# Run this on your droplet: bash deploy.sh
+# Deployment script for Google Cloud server
+# Run this on your server: bash deploy.sh
 
 echo "🚀 Starting deployment..."
 
@@ -42,5 +42,5 @@ pm2 logs chinese-learning-bot --lines 10
 
 echo ""
 echo "✅ Deployment complete!"
-echo "🌐 Your bot should be running at: http://159.65.11.158:3000"
-echo "📱 Update BotFather menu button to: http://159.65.11.158:3000"
+echo "🌐 Your bot should be running at: http://lokatsiya.online"
+echo "📱 Update BotFather menu button to: http://lokatsiya.online"

@@ -135,7 +135,7 @@ const dialogues = await response.json();
 ## Testing
 
 ### Test Dialogue Creation
-1. Open admin panel: `https://lingo.uz/admin/`
+1. Open admin panel: `https://lokatsiya.online/admin/`
 2. Enter password: `admin123`
 3. Go to "Dialogues" tab
 4. Fill in all fields with multi-language translations

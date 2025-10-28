@@ -29,10 +29,10 @@
 SSH into your server and pull the latest code:
 
 ```bash
-ssh root@159.65.11.158
+ssh root@34.17.122.31
 
 # Pull latest code
-cd /var/www/lingo.uz
+cd /var/www/lokatsiya.online
 git pull origin main
 
 # Verify admin panel exists
@@ -41,7 +41,7 @@ ls -la admin/index.html
 
 ## Step 3: Access Admin Panel
 
-1. **Open in browser**: http://lingo.uz/admin/
+1. **Open in browser**: http://lokatsiya.online/admin/
 2. **Login**: Password is `admin123`
 3. **You'll see these new tabs**:
    - 📊 Analytics
@@ -100,7 +100,7 @@ ls -la admin/index.html
 ### If admin panel doesn't load:
 ```bash
 # On server
-cd /var/www/lingo.uz
+cd /var/www/lokatsiya.online
 ls -la admin/index.html
 
 # If missing, pull again

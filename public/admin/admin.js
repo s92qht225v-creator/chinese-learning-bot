@@ -2,7 +2,7 @@
 const ADMIN_PASSWORD = 'admin123'; // Change this in production!
 const API_BASE = window.location.hostname === 'localhost'
   ? 'http://localhost:3000'
-  : 'https://lingo.uz';
+  : 'http://lokatsiya.online';
 
 // Supabase configuration
 const SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';

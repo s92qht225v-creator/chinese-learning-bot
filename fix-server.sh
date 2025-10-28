@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Server Troubleshooting and Fix Script
-# Run this ON YOUR SERVER: ssh root@159.65.11.158
+# Run this ON YOUR SERVER: ssh root@34.17.122.31
 # Then: bash fix-server.sh
 
 echo "🔍 Starting server diagnostics and fixes..."
@@ -25,15 +25,15 @@ echo ""
 
 # Check 2: Nginx Config
 echo "2️⃣ Checking Nginx configuration..."
-if [ ! -f "/etc/nginx/sites-available/lingo.uz" ]; then
+if [ ! -f "/etc/nginx/sites-available/lokatsiya.online" ]; then
     echo -e "${YELLOW}Creating Nginx config...${NC}"
-    
-    cat > /etc/nginx/sites-available/lingo.uz << 'EOF'
+
+    cat > /etc/nginx/sites-available/lokatsiya.online << 'EOF'
 server {
     listen 80;
-    server_name lingo.uz www.lingo.uz;
+    server_name lokatsiya.online www.lokatsiya.online;
 
-    root /var/www/lingo.uz/public;
+    root /var/www/chinese-learning-bot/public;
     index index.html;
 
     location / {
@@ -41,7 +41,7 @@ server {
     }
 
     location /admin {
-        alias /var/www/lingo.uz/admin;
+        alias /var/www/chinese-learning-bot/public/admin;
         try_files $uri $uri/ /admin/index.html;
     }
 
@@ -60,7 +60,7 @@ server {
 }
 EOF
     
-    ln -sf /etc/nginx/sites-available/lingo.uz /etc/nginx/sites-enabled/
+    ln -sf /etc/nginx/sites-available/lokatsiya.online /etc/nginx/sites-enabled/
     echo -e "${GREEN}✓ Config created${NC}"
 fi
 
@@ -73,7 +73,7 @@ echo "3️⃣ Checking Node.js app..."
 pm2 status
 if ! pm2 list | grep -q "chinese-learning-bot"; then
     echo -e "${YELLOW}Starting app...${NC}"
-    cd /var/www/lingo.uz
+    cd /var/www/chinese-learning-bot
     pm2 start ecosystem.config.js
     pm2 save
 fi
@@ -81,15 +81,15 @@ echo ""
 
 # Check 4: Pull latest code
 echo "4️⃣ Deploying latest code..."
-cd /var/www/lingo.uz
+cd /var/www/chinese-learning-bot
 git pull origin main
 echo ""
 
 # Check 5: Admin Panel
 echo "5️⃣ Checking admin panel..."
-if [ -f "/var/www/lingo.uz/admin/index.html" ]; then
+if [ -f "/var/www/chinese-learning-bot/public/admin/index.html" ]; then
     echo -e "${GREEN}✓ Admin panel exists${NC}"
-    ls -lh /var/www/lingo.uz/admin/
+    ls -lh /var/www/chinese-learning-bot/public/admin/
 else
     echo -e "${RED}✗ Admin panel missing!${NC}"
 fi
@@ -110,9 +110,8 @@ echo "📋 SUMMARY"
 echo "=========================================="
 echo ""
 echo "🌐 Access your site:"
-echo "   Main: http://lingo.uz"
-echo "   Admin: http://lingo.uz/admin"
-echo "   Direct IP: http://159.65.11.158:3000"
+echo "   Main: http://lokatsiya.online"
+echo "   Admin: http://lokatsiya.online/admin"
 echo ""
 echo "🔑 Admin credentials:"
 echo "   Password: admin123"
@@ -125,5 +124,5 @@ echo "   systemctl status nginx"
 echo "   pm2 restart chinese-learning-bot"
 echo ""
 echo "🔒 To set up HTTPS:"
-echo "   certbot --nginx -d lingo.uz -d www.lingo.uz"
+echo "   certbot --nginx -d lokatsiya.online -d www.lokatsiya.online"
 echo ""

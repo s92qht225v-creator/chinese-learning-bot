@@ -4,7 +4,7 @@ Your bot is running! Now add database and media storage:
 
 ## ✅ What's Working Now
 - Bot connected to Telegram
-- Mini app loads at http://159.65.11.158:3000
+- Mini app loads at http://34.17.122.31:3000
 - Basic vocabulary and quizzes work
 
 ## 🚀 Next: Add Database (5 minutes)
@@ -71,7 +71,7 @@ CREATE TABLE user_progress (
 SSH into your droplet:
 
 ```bash
-ssh root@159.65.11.158
+ssh root@34.17.122.31
 cd /var/www/chinese-learning-bot
 nano .env
 ```
@@ -157,7 +157,7 @@ Or bulk insert via SQL!
 
 Check logs:
 ```bash
-ssh root@159.65.11.158
+ssh root@34.17.122.31
 pm2 logs chinese-learning-bot
 ```
 
@@ -170,8 +170,8 @@ Update code:
 ```bash
 # On your Mac
 cd /Users/ali/chinese-learning-bot
-scp -r * root@159.65.11.158:/var/www/chinese-learning-bot/
+scp -r * root@34.17.122.31:/var/www/chinese-learning-bot/
 
 # Then restart
-ssh root@159.65.11.158 "cd /var/www/chinese-learning-bot && pm2 restart chinese-learning-bot"
+ssh root@34.17.122.31 "cd /var/www/chinese-learning-bot && pm2 restart chinese-learning-bot"
 ```

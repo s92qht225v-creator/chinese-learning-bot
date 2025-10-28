@@ -17,12 +17,12 @@ fi
 echo "📦 Uploading admin panel to $SERVER_IP..."
 
 # Upload admin folder to server
-scp -r admin/ root@$SERVER_IP:/var/www/lingo.uz/
+scp -r public/admin/ root@$SERVER_IP:/var/www/chinese-learning-bot/public/
 
 if [ $? -eq 0 ]; then
     echo "✅ Admin panel uploaded successfully!"
     echo ""
-    echo "🌐 Access your admin panel at: https://lingo.uz/admin/"
+    echo "🌐 Access your admin panel at: http://lokatsiya.online/admin/"
     echo "🔑 Default password: admin123"
     echo ""
     echo "⚠️  Important: Change the admin password in admin/index.html (line 369)"

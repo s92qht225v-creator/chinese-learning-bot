@@ -11,10 +11,10 @@ git commit -m "Add admin panel"
 git push origin main
 
 # 2. SSH into your server (you might need to do this via browser console or another method)
-ssh root@159.65.11.158
+ssh root@34.17.122.31
 
 # 3. On the server, pull the changes
-cd /var/www/lingo.uz
+cd /var/www/lokatsiya.online
 git pull origin main
 
 # 4. Verify the files
@@ -25,19 +25,19 @@ ls -la admin/
 
 Use an SFTP client like FileZilla or Cyberduck:
 
-1. **Host:** 159.65.11.158
+1. **Host:** 34.17.122.31
 2. **Username:** root
 3. **Port:** 22 (or your custom SSH port)
-4. **Upload the `admin` folder to:** `/var/www/lingo.uz/`
+4. **Upload the `admin` folder to:** `/var/www/lokatsiya.online/`
 
 ## Option 3: Create on Server Directly
 
 ```bash
 # SSH into server
-ssh root@159.65.11.158
+ssh root@34.17.122.31
 
 # Navigate to web directory
-cd /var/www/lingo.uz
+cd /var/www/lokatsiya.online
 
 # Create admin directory
 mkdir -p admin
@@ -50,13 +50,13 @@ nano admin/index.html
 ## After Deployment
 
 1. **Test the admin panel:**
-   - Visit: https://lingo.uz/admin/
+   - Visit: https://lokatsiya.online/admin/
    - Default password: `admin123`
 
 2. **Change the admin password:**
    ```bash
-   ssh root@159.65.11.158
-   nano /var/www/lingo.uz/admin/index.html
+   ssh root@34.17.122.31
+   nano /var/www/lokatsiya.online/admin/index.html
    # Find line 369: const ADMIN_PASSWORD = 'admin123';
    # Change to a secure password
    ```
@@ -73,8 +73,8 @@ If you get 404 errors:
 
 ```bash
 # Check if files exist
-ssh root@159.65.11.158
-ls -la /var/www/lingo.uz/admin/
+ssh root@34.17.122.31
+ls -la /var/www/lokatsiya.online/admin/
 
 # Check Nginx is serving static files
 sudo nginx -t
@@ -83,4 +83,4 @@ sudo systemctl restart nginx
 
 If CORS errors occur:
 - Check browser console
-- Update Supabase allowed origins to include `lingo.uz` and `*.lingo.uz`
+- Update Supabase allowed origins to include `lokatsiya.online` and `*.lokatsiya.online`

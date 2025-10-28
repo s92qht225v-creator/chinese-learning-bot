@@ -34,7 +34,7 @@ CREATE POLICY "Allow authenticated insert/update/delete" ON lessons FOR ALL USIN
 ## Step 4: Test Admin Panel
 
 After running the schema:
-1. Go to http://lingo.uz/admin/
+1. Go to http://lokatsiya.online/admin/
 2. You'll see new tabs: Lessons, Dialogues, Grammar, Quizzes
 3. Start adding content!
 

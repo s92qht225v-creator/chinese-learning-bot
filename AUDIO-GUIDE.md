@@ -31,7 +31,7 @@ Upload to Cloudflare R2, AWS S3, or any CDN and get the public URL
 ### Step 2: Add Audio URLs in Admin Panel
 
 #### **For Vocabulary:**
-1. Go to http://lingo.uz/admin/
+1. Go to http://lokatsiya.online/admin/
 2. Click **📚 Vocabulary** tab
 3. When adding/editing a word, you'll see an **"Audio URL"** field
 4. Paste your audio URL: `https://example.com/audio.mp3`

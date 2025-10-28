@@ -5,16 +5,16 @@
 ```
 Frontend (Cloudflare Pages)
     ↓ API Calls
-Backend (DigitalOcean Droplet)
+Backend (Google Cloud Droplet)
     ↓ Data
 Database (Supabase)
 Media → Cloudflare R2
 ```
 
-## 1. DigitalOcean Droplet Setup
+## 1. Google Cloud Droplet Setup
 
 ### Create Droplet
-1. Go to [DigitalOcean](https://digitalocean.com)
+1. Go to [Google Cloud](https://digitalocean.com)
 2. Create → Droplets
 3. Choose:
    - **Image:** Ubuntu 22.04 LTS
@@ -315,16 +315,16 @@ pm2 monit
 
 ### When you need more power:
 1. **Upgrade Droplet** ($12/month for 2GB RAM)
-2. **Add Load Balancer** (DigitalOcean Load Balancer)
+2. **Add Load Balancer** (Google Cloud Load Balancer)
 3. **Scale PM2** instances: `pm2 scale chinese-learning-bot 2`
-4. **Add Redis** for caching (DigitalOcean Managed Redis)
+4. **Add Redis** for caching (Google Cloud Managed Redis)
 5. **Upgrade Supabase** tier if needed
 
 ## Cost Summary
 
 | Service | Cost |
 |---------|------|
-| DigitalOcean Droplet | $6/month |
+| Google Cloud Droplet | $6/month |
 | Supabase Free Tier | $0 |
 | Cloudflare R2 (10GB) | $0 |
 | Cloudflare Pages | $0 |
