@@ -109,12 +109,12 @@ if (!supabase) {
 The app follows a progressive navigation sequence:
 
 1. **index.html** - Router that redirects based on localStorage state:
-   - First visit → onboarding.html
-   - Onboarding completed → level-select.html
-   - Setup completed → home.html (or lessons.html)
+   - First visit → language-selection.html
+   - Language selected → level-select.html
+   - Setup completed → main-app.html
 
-2. **onboarding.html** - 4-slide introduction with swipe/tap navigation
-   - Saves `onboardingCompleted` flag
+2. **language-selection.html** - Interface language selection (English/Uzbek/Russian)
+   - Saves `selectedLanguage` flag
 
 3. **level-select.html** - HSK level selection (1-6)
    - Saves `hskLevel` and `setupCompleted`
@@ -211,10 +211,9 @@ const headers = {
 - Audio file metadata
 
 **Frontend (localStorage keys):**
-- `onboardingCompleted`: Boolean
 - `setupCompleted`: Boolean
+- `selectedLanguage`: String ('en', 'ru', 'uz')
 - `hskLevel`: Integer (1-6)
-- `language`: String ('en', 'ru', 'uz')
 - `flashcards`: Array of saved flashcards
 - `grammar_bookmarks`: Array of bookmarked grammar points
 - `lesson{N}_completed`: Boolean per lesson

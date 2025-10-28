@@ -135,7 +135,7 @@ const response = await fetch(
 ### What Users Can Do RIGHT NOW:
 1. ✅ Start bot in Telegram
 2. ✅ Open Mini App
-3. ✅ Complete onboarding
+3. ✅ Select interface language
 4. ✅ Select HSK level
 5. ✅ Browse lessons
 6. ✅ Practice flashcards (8 words)
@@ -192,7 +192,7 @@ Update 3 files: flashcards.html, character-writing.html, quiz.html
 
 ### 3. Test Real User Flow (30 min)
 1. Fresh install on phone
-2. Complete onboarding
+2. Select language and HSK level
 3. Do quiz
 4. Check stats
 5. Document bugs

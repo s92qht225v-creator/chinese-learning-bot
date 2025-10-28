@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
   last_name TEXT,
   hsk_level INT DEFAULT 1,
   daily_goal INT DEFAULT 20,
-  onboarding_completed BOOLEAN DEFAULT FALSE,
+  interface_language TEXT DEFAULT 'en',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
