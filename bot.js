@@ -745,9 +745,62 @@ app.delete('/api/admin/quizzes/:id', adminAuth, async (req, res) => {
   }
 });
 
-// Start server
-app.listen(config.port, () => {
+// Start server with error handling
+const server = app.listen(config.port, () => {
   console.log(`✅ Bot is running...`);
   console.log(`🌐 Mini app server running on port ${config.port}`);
   console.log(`📱 Mini app URL: ${config.miniAppUrl}`);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${config.port} is already in use. Exiting...`);
+    process.exit(1);
+  } else {
+    console.error('Server error:', error);
+    process.exit(1);
+  }
+});
+
+// Graceful shutdown
+const gracefulShutdown = async () => {
+  console.log('🛑 Shutting down gracefully...');
+
+  // Stop accepting new connections
+  server.close(async () => {
+    console.log('✅ HTTP server closed');
+
+    // Stop Telegram bot polling
+    try {
+      await bot.stopPolling();
+      console.log('✅ Bot polling stopped');
+    } catch (error) {
+      console.error('Error stopping bot polling:', error);
+    }
+
+    console.log('✅ Shutdown complete');
+    process.exit(0);
+  });
+
+  // Force shutdown after 10 seconds
+  setTimeout(() => {
+    console.error('⚠️  Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+};
+
+// Handle shutdown signals
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+// Handle uncaught errors
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+  gracefulShutdown();
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled rejection at:', promise, 'reason:', reason);
+  gracefulShutdown();
 });
