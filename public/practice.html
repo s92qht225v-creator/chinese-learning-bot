@@ -239,8 +239,11 @@
     tg.expand();
     tg.ready();
 
+    // Haptic feedback on clicks
     document.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => {
+        if (tg.HapticFeedback) {
+          tg.HapticFeedback.impactOccurred('light');
         }
       });
     });

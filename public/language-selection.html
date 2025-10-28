@@ -170,6 +170,9 @@
       input.addEventListener('change', (e) => {
         selectedLanguage = e.target.value;
 
+        // Haptic feedback
+        if (tg.HapticFeedback) {
+          tg.HapticFeedback.impactOccurred('light');
         }
 
         // Save to localStorage
@@ -190,6 +193,9 @@
         localStorage.setItem('appLanguage', selectedLanguage);
       }
 
+      // Haptic feedback
+      if (tg.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred('success');
       }
 
       // Set language in i18n

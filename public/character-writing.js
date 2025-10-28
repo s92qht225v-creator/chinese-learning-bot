@@ -113,6 +113,7 @@ undoBtn.addEventListener('click', () => {
   if (strokes.length > 0) {
     strokes.pop();
     redrawStrokes();
+    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
   }
 });
 
@@ -121,6 +122,7 @@ clearBtn.addEventListener('click', () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   strokes = [];
   currentStroke = [];
+  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 });
 
 // Toggle guide
@@ -129,10 +131,12 @@ showGuideBtn.addEventListener('click', () => {
   guideCharacter.style.display = showGuide ? 'flex' : 'none';
   const icon = showGuideBtn.querySelector('.material-symbols-outlined');
   icon.textContent = showGuide ? 'visibility_off' : 'visibility';
+  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 });
 
 // Play audio
 playAudioBtn.addEventListener('click', () => {
+  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
   const char = characters[currentIndex];
   if (char) {
     // Try to play audio from URL first
@@ -173,6 +177,7 @@ function loadCharacter(index) {
 
 // Check answer (simplified - in real app, would use OCR or stroke order validation)
 checkBtn.addEventListener('click', () => {
+  if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
 
   // Simplified check - just count as correct if they drew something
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -193,12 +198,14 @@ checkBtn.addEventListener('click', () => {
       nextCharacter();
     }, 1000);
   } else {
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
     alert('Please draw the character first!');
   }
 });
 
 // Skip
 skipBtn.addEventListener('click', () => {
+  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
   nextCharacter();
 });
 
@@ -209,6 +216,7 @@ function nextCharacter() {
     loadCharacter(currentIndex);
   } else {
     // Finished
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
     const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
     alert(`Practice complete! 🎉\n\nCorrect: ${stats.correct}\nAttempts: ${stats.attempts}\nAccuracy: ${accuracy}%`);
     window.location.href = '/practice.html';
@@ -225,6 +233,7 @@ function updateStats() {
 
 // Back button
 backBtn.addEventListener('click', () => {
+  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
   window.location.href = '/practice.html';
 });
 
