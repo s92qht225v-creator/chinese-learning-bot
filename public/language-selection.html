@@ -46,25 +46,18 @@
       transition: all 0.2s ease;
     }
 
-    .language-option:active {
-      transform: scale(0.98);
+    .language-option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(68, 143, 228, 0.15);
     }
 
     .language-option input:checked ~ .option-content {
-      background: #448fe4;
-      color: white;
-    }
-
-    .language-option input:checked ~ .option-content .flag-icon {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .language-option input:checked ~ .option-content .language-subtitle {
-      color: rgba(255, 255, 255, 0.8);
+      background: rgba(68, 143, 228, 0.1);
+      border-color: #448fe4;
     }
 
     .language-option input:checked ~ .option-content .check-icon {
-      display: flex;
+      opacity: 1;
     }
   </style>
 </head>
@@ -87,7 +80,7 @@
       <!-- Uzbek -->
       <label class="language-option block cursor-pointer">
         <input type="radio" name="language" value="uz" class="peer hidden" />
-        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+        <div class="option-content relative flex items-center gap-4 rounded-2xl border-2 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all peer-checked:border-primary peer-checked:bg-primary/5">
 
           <div class="flag-icon flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-3xl transition-all">
             🇺🇿
@@ -98,8 +91,8 @@
             <p class="language-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors">Uzbek</p>
           </div>
 
-          <div class="check-icon hidden items-center justify-center">
-            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          <div class="check-icon flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-0 transition-opacity">
+            <span class="material-symbols-outlined text-sm">check</span>
           </div>
         </div>
       </label>
@@ -107,7 +100,7 @@
       <!-- Russian -->
       <label class="language-option block cursor-pointer">
         <input type="radio" name="language" value="ru" class="peer hidden" />
-        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+        <div class="option-content relative flex items-center gap-4 rounded-2xl border-2 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all peer-checked:border-primary peer-checked:bg-primary/5">
 
           <div class="flag-icon flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30 text-3xl transition-all">
             🇷🇺
@@ -118,8 +111,8 @@
             <p class="language-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors">Russian</p>
           </div>
 
-          <div class="check-icon hidden items-center justify-center">
-            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          <div class="check-icon flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-0 transition-opacity">
+            <span class="material-symbols-outlined text-sm">check</span>
           </div>
         </div>
       </label>
@@ -127,7 +120,7 @@
       <!-- English -->
       <label class="language-option block cursor-pointer">
         <input type="radio" name="language" value="en" class="peer hidden" />
-        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+        <div class="option-content relative flex items-center gap-4 rounded-2xl border-2 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all peer-checked:border-primary peer-checked:bg-primary/5">
 
           <div class="flag-icon flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-3xl transition-all">
             🇬🇧
@@ -138,8 +131,8 @@
             <p class="language-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors">English</p>
           </div>
 
-          <div class="check-icon hidden items-center justify-center">
-            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          <div class="check-icon flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-0 transition-opacity">
+            <span class="material-symbols-outlined text-sm">check</span>
           </div>
         </div>
       </label>
