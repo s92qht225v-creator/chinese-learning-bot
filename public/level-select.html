@@ -46,60 +46,81 @@
       transition: all 0.2s ease;
     }
 
-    .level-option:active {
-      transform: scale(0.98);
+    .level-option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(68, 143, 228, 0.15);
     }
 
     .level-option input:checked ~ .option-content {
-      background: #448fe4;
-      color: white;
-    }
-
-    .level-option input:checked ~ .option-content .level-badge {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .level-option input:checked ~ .option-content .level-subtitle {
-      color: rgba(255, 255, 255, 0.8);
+      background: rgba(68, 143, 228, 0.1);
+      border-color: #448fe4;
     }
 
     .level-option input:checked ~ .option-content .check-icon {
-      display: flex;
+      opacity: 1;
+    }
+
+    .difficulty-badge {
+      font-size: 0.625rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
     }
   </style>
 </head>
 <body class="font-display bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark">
 
-  <div class="flex min-h-screen flex-col p-6">
+  <div class="flex min-h-screen flex-col p-4">
 
-    <!-- Header -->
-    <div class="mb-12 text-center">
-      <div class="mx-auto mb-6 text-6xl">
-        📚
-      </div>
-      <h1 class="text-2xl font-bold mb-2" data-i18n="selectLevel">Select Your HSK Level</h1>
-      <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark" data-i18n="selectLevelDesc">Choose the level that matches your current ability</p>
+    <!-- Header with back button -->
+    <div class="mb-6 flex items-center">
+      <button onclick="window.history.back()" class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+    </div>
+
+    <!-- Title Area -->
+    <div class="mb-8 text-center">
+      <h1 class="text-3xl font-bold mb-2" data-i18n="selectLevel">Choose Your Level</h1>
+      <p class="text-text-secondary-light dark:text-text-secondary-dark" data-i18n="selectLevelDesc">Select your HSK proficiency level</p>
+      <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">You can change this later in settings</p>
     </div>
 
     <!-- Level Options -->
-    <div class="mx-auto w-full max-w-md space-y-3 flex-1">
+    <div class="mx-auto w-full max-w-2xl space-y-3 pb-32">
 
       <!-- HSK 1 -->
       <label class="level-option block cursor-pointer">
-        <input type="radio" name="hsk-level" value="1" class="peer hidden" />
-        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+        <input type="radio" name="hsk-level" value="1" class="peer hidden" checked />
+        <div class="option-content relative flex items-start gap-4 rounded-xl border-2 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-5 shadow-sm transition-all peer-checked:border-primary peer-checked:bg-primary/5">
 
-          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30 text-xl font-bold transition-all">
-            1
+          <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white">
+            <span class="text-2xl font-bold">1</span>
           </div>
 
           <div class="flex-1">
-            <p class="text-lg font-bold" data-i18n="beginner">Beginner</p>
-            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk1Desc">Know around 150 common words and basic phrases</p>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-xl font-bold">HSK 1</p>
+              <span class="difficulty-badge bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" data-i18n="beginner">Beginner</span>
+            </div>
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2" data-i18n="hsk1Desc">
+              150 words · Basic phrases · Greetings & introductions
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                👋 Greetings
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                👤 Self-intro
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                🔢 Numbers
+              </span>
+            </div>
           </div>
 
-          <div class="check-icon hidden items-center justify-center">
-            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          <div class="check-icon flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-0 transition-opacity">
+            <span class="material-symbols-outlined text-sm">check</span>
           </div>
         </div>
       </label>
@@ -107,19 +128,35 @@
       <!-- HSK 2 -->
       <label class="level-option block cursor-pointer">
         <input type="radio" name="hsk-level" value="2" class="peer hidden" />
-        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+        <div class="option-content relative flex items-start gap-4 rounded-xl border-2 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-5 shadow-sm transition-all peer-checked:border-primary peer-checked:bg-primary/5">
 
-          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-xl font-bold transition-all">
-            2
+          <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <span class="text-2xl font-bold">2</span>
           </div>
 
           <div class="flex-1">
-            <p class="text-lg font-bold" data-i18n="elementary">Elementary</p>
-            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk2Desc">Handle simple communication on familiar topics</p>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-xl font-bold">HSK 2</p>
+              <span class="difficulty-badge bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" data-i18n="elementary">Elementary</span>
+            </div>
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2" data-i18n="hsk2Desc">
+              300 words · Daily conversations · Basic exchanges
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                🏠 Daily life
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                🛒 Shopping
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                ⏰ Time
+              </span>
+            </div>
           </div>
 
-          <div class="check-icon hidden items-center justify-center">
-            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          <div class="check-icon flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-0 transition-opacity">
+            <span class="material-symbols-outlined text-sm">check</span>
           </div>
         </div>
       </label>
@@ -127,19 +164,35 @@
       <!-- HSK 3 -->
       <label class="level-option block cursor-pointer">
         <input type="radio" name="hsk-level" value="3" class="peer hidden" />
-        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+        <div class="option-content relative flex items-start gap-4 rounded-xl border-2 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-5 shadow-sm transition-all peer-checked:border-primary peer-checked:bg-primary/5">
 
-          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-yellow-100 dark:bg-yellow-900/30 text-xl font-bold transition-all">
-            3
+          <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 text-white">
+            <span class="text-2xl font-bold">3</span>
           </div>
 
           <div class="flex-1">
-            <p class="text-lg font-bold" data-i18n="intermediate">Intermediate</p>
-            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk3Desc">Communicate in everyday situations</p>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-xl font-bold">HSK 3</p>
+              <span class="difficulty-badge bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" data-i18n="intermediate">Intermediate</span>
+            </div>
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2" data-i18n="hsk3Desc">
+              600 words · Work & study topics · Complex sentences
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                💼 Work
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                📚 Study
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                🎯 Hobbies
+              </span>
+            </div>
           </div>
 
-          <div class="check-icon hidden items-center justify-center">
-            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          <div class="check-icon flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-0 transition-opacity">
+            <span class="material-symbols-outlined text-sm">check</span>
           </div>
         </div>
       </label>
@@ -147,19 +200,35 @@
       <!-- HSK 4 -->
       <label class="level-option block cursor-pointer">
         <input type="radio" name="hsk-level" value="4" class="peer hidden" />
-        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+        <div class="option-content relative flex items-start gap-4 rounded-xl border-2 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-5 shadow-sm transition-all peer-checked:border-primary peer-checked:bg-primary/5">
 
-          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-900/30 text-xl font-bold transition-all">
-            4
+          <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-white">
+            <span class="text-2xl font-bold">4</span>
           </div>
 
           <div class="flex-1">
-            <p class="text-lg font-bold" data-i18n="upperIntermediate">Upper Intermediate</p>
-            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk4Desc">Discuss a variety of topics fluently</p>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-xl font-bold">HSK 4</p>
+              <span class="difficulty-badge bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" data-i18n="upperIntermediate">Upper-Int.</span>
+            </div>
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2" data-i18n="hsk4Desc">
+              1200 words · Wide range of topics · Fluent communication
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                💬 Discussions
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                📰 News
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                🎭 Culture
+              </span>
+            </div>
           </div>
 
-          <div class="check-icon hidden items-center justify-center">
-            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          <div class="check-icon flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-0 transition-opacity">
+            <span class="material-symbols-outlined text-sm">check</span>
           </div>
         </div>
       </label>
@@ -167,19 +236,35 @@
       <!-- HSK 5 -->
       <label class="level-option block cursor-pointer">
         <input type="radio" name="hsk-level" value="5" class="peer hidden" />
-        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+        <div class="option-content relative flex items-start gap-4 rounded-xl border-2 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-5 shadow-sm transition-all peer-checked:border-primary peer-checked:bg-primary/5">
 
-          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30 text-xl font-bold transition-all">
-            5
+          <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+            <span class="text-2xl font-bold">5</span>
           </div>
 
           <div class="flex-1">
-            <p class="text-lg font-bold" data-i18n="advanced">Advanced</p>
-            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk5Desc">Understand complex texts</p>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-xl font-bold">HSK 5</p>
+              <span class="difficulty-badge bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" data-i18n="advanced">Advanced</span>
+            </div>
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2" data-i18n="hsk5Desc">
+              2500 words · Academic & professional · Chinese media
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                🎓 Academic
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                📺 Media
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                📖 Articles
+              </span>
+            </div>
           </div>
 
-          <div class="check-icon hidden items-center justify-center">
-            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          <div class="check-icon flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-0 transition-opacity">
+            <span class="material-symbols-outlined text-sm">check</span>
           </div>
         </div>
       </label>
@@ -187,36 +272,65 @@
       <!-- HSK 6 -->
       <label class="level-option block cursor-pointer">
         <input type="radio" name="hsk-level" value="6" class="peer hidden" />
-        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+        <div class="option-content relative flex items-start gap-4 rounded-xl border-2 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-5 shadow-sm transition-all peer-checked:border-primary peer-checked:bg-primary/5">
 
-          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30 text-xl font-bold transition-all">
-            6
+          <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-red-600 to-pink-600 text-white">
+            <span class="text-2xl font-bold">6</span>
           </div>
 
           <div class="flex-1">
-            <p class="text-lg font-bold" data-i18n="mastery">Mastery</p>
-            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk6Desc">Full mastery and comprehension</p>
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-xl font-bold">HSK 6</p>
+              <span class="difficulty-badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" data-i18n="mastery">Master</span>
+            </div>
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2" data-i18n="hsk6Desc">
+              5000+ words · Native-like fluency · Complex literature
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                📜 Literature
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                🎬 Movies
+              </span>
+              <span class="inline-flex items-center rounded-full bg-background-light dark:bg-background-dark px-2.5 py-1 text-xs font-medium">
+                🗣️ Native
+              </span>
+            </div>
           </div>
 
-          <div class="check-icon hidden items-center justify-center">
-            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          <div class="check-icon flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-0 transition-opacity">
+            <span class="material-symbols-outlined text-sm">check</span>
           </div>
         </div>
       </label>
 
     </div>
 
-    <!-- Continue Button (Fixed at bottom) -->
-    <div class="sticky bottom-0 mt-8 pb-6">
-      <button id="continueBtn" class="flex w-full max-w-md mx-auto items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-bold text-white shadow-lg transition-all active:scale-98">
-        <span data-i18n="startLearning">Start Learning</span>
-        <span class="material-symbols-outlined">arrow_forward</span>
-      </button>
+    <!-- Fixed Bottom Section -->
+    <div class="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark p-4 pt-8">
+      <div class="mx-auto w-full max-w-2xl">
+        <!-- Info Box -->
+        <div class="mb-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 text-sm">
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-lg">info</span>
+            <p class="text-blue-900 dark:text-blue-200">
+              <strong>Not sure?</strong> Start with HSK 1. You can change your level anytime in Profile settings.
+            </p>
+          </div>
+        </div>
 
-      <!-- Progress Indicator -->
-      <div class="mt-6 flex items-center justify-center gap-2">
-        <div class="h-2 w-8 rounded-full bg-border-light dark:bg-border-dark"></div>
-        <div class="h-2 w-8 rounded-full bg-primary"></div>
+        <!-- Continue Button -->
+        <button id="continueBtn" class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-4 font-bold text-white shadow-lg transition-all hover:bg-primary/90 active:scale-98">
+          <span>Start Learning</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+
+        <!-- Progress Indicator -->
+        <div class="mt-4 flex items-center justify-center gap-2">
+          <div class="h-2 w-8 rounded-full bg-primary"></div>
+          <div class="h-2 w-8 rounded-full bg-primary"></div>
+        </div>
       </div>
     </div>
 
