@@ -7,34 +7,49 @@ if (typeof tg === 'undefined') {
 }
 
 // Supabase config
-const SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2ZW9xZWRza3piYmdjYXpwc2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0Nzk1MjYsImV4cCI6MjA3NzA1NTUyNn0.NfTfTWKNDmsmiLF_MX5XGGq48xbX8OOUWhVmb5U-VXM';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2ZW9xZWRza3piYmdjYXpwc2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0Nzk1MjYsImV4cCI6MjA3NzA1NTUyNn0.NfTfTWKNDmsmiLF_MX5XGGq48xbX8OOUWhVmb5U-VXM';
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Elements
-const backBtn = document.getElementById('backBtn');
-const pageTitle = document.getElementById('pageTitle');
-const levelRadios = document.querySelectorAll('input[name="hsk_level"]');
-const lessonsContainer = document.getElementById('lessonsContainer');
-const progressBar = document.getElementById('progressBar');
-const progressText = document.getElementById('progressText');
-const continueSection = document.getElementById('continueSection');
-const continueTitle = document.getElementById('continueTitle');
+var backBtn = document.getElementById('backBtn');
+var pageTitle = document.getElementById('pageTitle');
+var levelRadios = document.querySelectorAll('input[name="hsk_level"]');
+var lessonsContainer = document.getElementById('lessonsContainer');
+var progressBar = document.getElementById('progressBar');
+var progressText = document.getElementById('progressText');
+var continueSection = document.getElementById('continueSection');
+var continueTitle = document.getElementById('continueTitle');
 
-let currentHskLevel = 1;
-let lessonProgress = {}; // Store lesson completion status
+var currentHskLevel = 1;
+var lessonProgress = {}; // Store lesson completion status
 
-// Back button handler
-backBtn.addEventListener('click', () => {
-  if (tg.HapticFeedback) {
-    tg.HapticFeedback.impactOccurred('light');
+// Back button handler (remove old listeners to prevent duplicates)
+if (backBtn) {
+  var backBtnHandler = () => {
+    if (tg.HapticFeedback) {
+      tg.HapticFeedback.impactOccurred('light');
+    }
+    window.history.back();
+  };
+
+  // Remove old listener if exists
+  if (backBtn._lessonsClickHandler) {
+    backBtn.removeEventListener('click', backBtn._lessonsClickHandler);
   }
-  window.history.back();
-});
+
+  backBtn._lessonsClickHandler = backBtnHandler;
+  backBtn.addEventListener('click', backBtnHandler);
+}
 
 // Level selector handler
 levelRadios.forEach(radio => {
-  radio.addEventListener('change', (e) => {
+  // Remove old listener if exists
+  if (radio._lessonsChangeHandler) {
+    radio.removeEventListener('change', radio._lessonsChangeHandler);
+  }
+
+  var changeHandler = (e) => {
     const level = parseInt(e.target.value);
     currentHskLevel = level;
 
@@ -62,7 +77,10 @@ levelRadios.forEach(radio => {
 
     pageTitle.textContent = `HSK ${level} Lessons`;
     loadLessons(level);
-  });
+  };
+
+  radio._lessonsChangeHandler = changeHandler;
+  radio.addEventListener('change', changeHandler);
 });
 
 // Load lessons from Supabase
