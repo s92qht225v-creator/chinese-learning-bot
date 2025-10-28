@@ -126,25 +126,48 @@
 
       <!-- Level Tabs -->
       <div class="flex gap-2 px-4 pb-4">
-        <label class="level-tab flex-1">
+        <label class="level-tab flex-1" onclick="window.switchTabLevel && window.switchTabLevel(1)">
           <input checked class="hidden" name="hsk_level" type="radio" value="1"/>
-          <div class="tab-content cursor-pointer rounded-xl bg-background-light dark:bg-background-dark p-3 text-center font-semibold border-2 border-border-light dark:border-border-dark">
+          <div class="tab-content cursor-pointer rounded-xl p-3 text-center font-semibold border-2" style="background: #448fe4; color: white; border-color: #448fe4; transform: scale(1.05); box-shadow: 0 4px 12px rgba(68, 143, 228, 0.3);">
             HSK 1
           </div>
         </label>
-        <label class="level-tab flex-1">
+        <label class="level-tab flex-1" onclick="window.switchTabLevel && window.switchTabLevel(2)">
           <input class="hidden" name="hsk_level" type="radio" value="2"/>
           <div class="tab-content cursor-pointer rounded-xl bg-background-light dark:bg-background-dark p-3 text-center font-semibold border-2 border-border-light dark:border-border-dark">
             HSK 2
           </div>
         </label>
-        <label class="level-tab flex-1">
+        <label class="level-tab flex-1" onclick="window.switchTabLevel && window.switchTabLevel(3)">
           <input class="hidden" name="hsk_level" type="radio" value="3"/>
           <div class="tab-content cursor-pointer rounded-xl bg-background-light dark:bg-background-dark p-3 text-center font-semibold border-2 border-border-light dark:border-border-dark">
             HSK 3
           </div>
         </label>
       </div>
+      <script>
+        window.switchTabLevel = function(level) {
+          document.querySelectorAll('.level-tab').forEach(tab => {
+            const content = tab.querySelector('.tab-content');
+            const radio = tab.querySelector('input');
+            if (parseInt(radio.value) === level) {
+              content.style.background = '#448fe4';
+              content.style.color = 'white';
+              content.style.borderColor = '#448fe4';
+              content.style.transform = 'scale(1.05)';
+              content.style.boxShadow = '0 4px 12px rgba(68, 143, 228, 0.3)';
+              radio.checked = true;
+            } else {
+              content.style.background = '';
+              content.style.color = '';
+              content.style.borderColor = '';
+              content.style.transform = '';
+              content.style.boxShadow = '';
+            }
+          });
+          if (window.loadLessons) window.loadLessons(level);
+        };
+      </script>
     </header>
 
     <main class="flex-1">
