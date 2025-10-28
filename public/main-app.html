@@ -291,8 +291,10 @@
       console.log('📜 [extractBodyContent] Found', scripts.length, 'script tags');
 
       scripts.forEach((script, index) => {
+        const srcAttr = script.getAttribute('src');
         console.log(`  Script ${index}:`, {
-          src: script.src || '(inline)',
+          srcAttribute: srcAttr || '(inline)',
+          srcProperty: script.src || '(none)',
           type: script.type || 'text/javascript',
           hasContent: !!script.textContent,
           contentLength: script.textContent?.length || 0
@@ -312,19 +314,24 @@
       scripts.forEach((script, index) => {
         console.log(`▶️ [executeScripts] Processing script ${index}...`);
 
-        if (script.src) {
+        // Get the src attribute directly from the element
+        const srcAttr = script.getAttribute('src');
+
+        if (srcAttr) {
           // External script
-          console.log(`  📦 External script: ${script.src}`);
+          console.log(`  📦 External script: ${srcAttr}`);
           const newScript = document.createElement('script');
-          newScript.src = script.src;
+
+          // Use the src attribute value directly (preserves relative paths and query params)
+          newScript.src = srcAttr;
           if (script.type) newScript.type = script.type;
 
           newScript.onload = () => {
-            console.log(`  ✅ Loaded successfully: ${script.src}`);
+            console.log(`  ✅ Loaded successfully: ${srcAttr}`);
           };
 
           newScript.onerror = (e) => {
-            console.error(`  ❌ Failed to load: ${script.src}`, e);
+            console.error(`  ❌ Failed to load: ${srcAttr}`, e);
           };
 
           document.head.appendChild(newScript);
