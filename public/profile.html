@@ -13,7 +13,36 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/settings.js"></script>
-  
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#448fe4",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "success": "#4CAF50",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#18222c",
+            "text-primary-light": "#111417",
+            "text-primary-dark": "#f0f4f8",
+            "text-secondary-light": "#647487",
+            "text-secondary-dark": "#a0aec0",
+            "border-light": "#dce0e5",
+            "border-dark": "#2d3748",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+
   <style>
     body {
       min-height: 100vh;
@@ -220,18 +249,18 @@
         <div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm divide-y divide-border-light dark:divide-border-dark border border-border-light dark:border-border-dark overflow-hidden">
           
           <!-- HSK Level -->
-          <a href="/level-select.html" class="flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
+          <button onclick="window.location.href='/profile-level-select.html';" class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors cursor-pointer">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                 <span class="material-symbols-outlined text-primary">school</span>
               </div>
               <div>
-                <p class="font-medium text-sm">HSK Level</p>
-                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">HSK 1 - Beginner</p>
+                <p class="font-medium text-sm text-left">HSK Level</p>
+                <p id="hskLevelText" class="text-xs text-text-secondary-light dark:text-text-secondary-dark text-left">HSK 1 - Beginner</p>
               </div>
             </div>
             <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
-          </a>
+          </button>
 
           <!-- Daily Goal -->
           <button class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
@@ -248,18 +277,18 @@
           </button>
 
           <!-- Interface Language -->
-          <button class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
+          <a href="/language-selection.html" class="flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
                 <span class="material-symbols-outlined text-secondary">language</span>
               </div>
               <div>
                 <p class="font-medium text-sm text-left">Interface Language</p>
-                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">English</p>
+                <p id="interfaceLanguageText" class="text-xs text-text-secondary-light dark:text-text-secondary-dark">English</p>
               </div>
             </div>
             <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
-          </button>
+          </a>
 
           <!-- Dark Mode -->
           <button id="darkModeBtn" class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
@@ -390,9 +419,69 @@
       document.getElementById('activeDaysCount').textContent = `${activeCount} days active`;
     }
 
+    // Load and display HSK level
+    function loadHSKLevel() {
+      if (typeof settings === 'undefined') {
+        setTimeout(loadHSKLevel, 50);
+        return;
+      }
+
+      const level = settings.getHSKLevel();
+      const levelNames = {
+        '1': 'HSK 1 - Beginner',
+        '2': 'HSK 2 - Elementary',
+        '3': 'HSK 3 - Intermediate',
+        '4': 'HSK 4 - Upper Intermediate',
+        '5': 'HSK 5 - Advanced',
+        '6': 'HSK 6 - Mastery'
+      };
+
+      const levelText = levelNames[level] || 'HSK 1 - Beginner';
+
+      // Update settings section
+      const hskLevelText = document.getElementById('hskLevelText');
+      if (hskLevelText) {
+        hskLevelText.textContent = levelText;
+      }
+
+      // Update profile badge
+      const userLevel = document.getElementById('userLevel');
+      if (userLevel) {
+        userLevel.textContent = levelText.replace(' - ', ' · ');
+      }
+    }
+
+    // Load and display interface language
+    function loadInterfaceLanguage() {
+      const languageCode = localStorage.getItem('appLanguage') || localStorage.getItem('selectedLanguage') || 'en';
+      const languageNames = {
+        'en': 'English',
+        'uz': "O'zbek tili",
+        'ru': 'Русский'
+      };
+
+      const languageText = languageNames[languageCode] || 'English';
+
+      // Update interface language text
+      const interfaceLanguageText = document.getElementById('interfaceLanguageText');
+      if (interfaceLanguageText) {
+        interfaceLanguageText.textContent = languageText;
+      }
+    }
+
     // Load profile data on page load
     loadUserProfile();
     generateActivityCalendar();
+    loadHSKLevel();
+    loadInterfaceLanguage();
+
+    // Reload settings when page becomes visible (user returns from settings pages)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        loadHSKLevel();
+        loadInterfaceLanguage();
+      }
+    });
 
     // Dark mode toggle (use var to allow reloading)
     var darkModeBtn = document.getElementById('darkModeBtn');
