@@ -318,21 +318,14 @@
         // Show loading
         loadingOverlay.classList.remove('hidden');
 
-        // Check cache first
-        let content;
-        if (contentCache[tabName]) {
-          content = contentCache[tabName];
-        } else {
-          // Fetch content
-          const response = await fetch(tabs[tabName].url);
-          if (!response.ok) throw new Error(`Failed to load ${tabName}`);
+        // Fetch content (caching disabled for now to ensure fresh JS execution)
+        const response = await fetch(tabs[tabName].url + '?v=' + Date.now());
+        if (!response.ok) throw new Error(`Failed to load ${tabName}`);
 
-          const html = await response.text();
-          const { bodyContent, scripts } = extractBodyContent(html);
+        const html = await response.text();
+        const { bodyContent, scripts } = extractBodyContent(html);
 
-          content = { bodyContent, scripts };
-          contentCache[tabName] = content;
-        }
+        const content = { bodyContent, scripts };
 
         // Clear current content
         contentArea.innerHTML = '';
