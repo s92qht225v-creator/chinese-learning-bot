@@ -357,6 +357,22 @@ const i18n = {
       { code: 'uz', name: 'Uzbek', nativeName: 'O\'zbekcha' },
       { code: 'ru', name: 'Russian', nativeName: 'Русский' }
     ];
+  },
+
+  // Initialize i18n and apply translations to page
+  init() {
+    // Load language from localStorage
+    const savedLang = localStorage.getItem('appLanguage') || localStorage.getItem('selectedLanguage') || 'en';
+    this.currentLanguage = savedLang;
+
+    // Apply translations to all elements with data-i18n attribute
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+      const key = element.getAttribute('data-i18n');
+      const translation = this.t(key);
+      if (translation) {
+        element.textContent = translation;
+      }
+    });
   }
 };
 
