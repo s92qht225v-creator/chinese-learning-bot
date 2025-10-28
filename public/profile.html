@@ -357,11 +357,13 @@
         document.getElementById('page-loader').classList.add('hidden');
       }, 100);
     });
-    
-    // Initialize Telegram WebApp
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    tg.ready();
+
+    // Initialize Telegram WebApp (use existing if already declared)
+    if (typeof tg === 'undefined') {
+      window.tg = window.Telegram.WebApp;
+      window.tg.expand();
+      window.tg.ready();
+    }
 
     // Load user profile from Telegram
     function loadUserProfile() {
