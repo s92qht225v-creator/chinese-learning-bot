@@ -227,7 +227,7 @@
               </div>
               <div>
                 <p class="font-medium text-sm">HSK Level</p>
-                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">HSK 1 - Beginner</p>
+                <p id="hskLevelDisplay" class="text-xs text-text-secondary-light dark:text-text-secondary-dark">HSK 1 - Beginner</p>
               </div>
             </div>
             <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
@@ -390,9 +390,45 @@
       document.getElementById('activeDaysCount').textContent = `${activeCount} days active`;
     }
 
+    // Load and display HSK level
+    function loadHSKLevel() {
+      // Wait for settings to be available
+      if (typeof settings === 'undefined') {
+        setTimeout(loadHSKLevel, 50);
+        return;
+      }
+
+      const hskLevel = settings.getHSKLevel();
+      const levelNames = {
+        '1': 'Beginner',
+        '2': 'Elementary',
+        '3': 'Intermediate',
+        '4': 'Upper Intermediate',
+        '5': 'Advanced',
+        '6': 'Mastery'
+      };
+
+      const displayText = `HSK ${hskLevel} - ${levelNames[hskLevel] || 'Beginner'}`;
+      const hskLevelDisplay = document.getElementById('hskLevelDisplay');
+      if (hskLevelDisplay) {
+        hskLevelDisplay.textContent = displayText;
+      }
+    }
+
     // Load profile data on page load
     loadUserProfile();
     generateActivityCalendar();
+    loadHSKLevel();
+
+    // Reload HSK level when page becomes visible (e.g., returning from selector)
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) {
+        loadHSKLevel();
+      }
+    });
+
+    // Also reload on focus (for better compatibility)
+    window.addEventListener('focus', loadHSKLevel);
 
     // Dark mode toggle (use var to allow reloading)
     var darkModeBtn = document.getElementById('darkModeBtn');
