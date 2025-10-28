@@ -273,71 +273,125 @@
 
     // Extract body content from HTML
     function extractBodyContent(html) {
+      console.log('🔍 [extractBodyContent] Starting extraction...');
+      console.log('📄 [extractBodyContent] HTML length:', html.length);
+
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
 
       // Get body content
       const body = doc.querySelector('body');
-      if (!body) return html;
+      if (!body) {
+        console.warn('⚠️ [extractBodyContent] No body element found');
+        return html;
+      }
 
       // Extract scripts to execute them
       const scripts = Array.from(doc.querySelectorAll('script'));
+      console.log('📜 [extractBodyContent] Found', scripts.length, 'script tags');
+
+      scripts.forEach((script, index) => {
+        console.log(`  Script ${index}:`, {
+          src: script.src || '(inline)',
+          type: script.type || 'text/javascript',
+          hasContent: !!script.textContent,
+          contentLength: script.textContent?.length || 0
+        });
+      });
+
       const bodyContent = body.innerHTML;
+      console.log('✅ [extractBodyContent] Extraction complete');
 
       return { bodyContent, scripts };
     }
 
     // Execute scripts from loaded content
     function executeScripts(scripts) {
-      scripts.forEach(script => {
+      console.log('▶️ [executeScripts] Starting execution of', scripts.length, 'scripts');
+
+      scripts.forEach((script, index) => {
+        console.log(`▶️ [executeScripts] Processing script ${index}...`);
+
         if (script.src) {
           // External script
+          console.log(`  📦 External script: ${script.src}`);
           const newScript = document.createElement('script');
           newScript.src = script.src;
           if (script.type) newScript.type = script.type;
+
+          newScript.onload = () => {
+            console.log(`  ✅ Loaded successfully: ${script.src}`);
+          };
+
+          newScript.onerror = (e) => {
+            console.error(`  ❌ Failed to load: ${script.src}`, e);
+          };
+
           document.head.appendChild(newScript);
+          console.log(`  ➕ Added to document head`);
         } else {
           // Inline script
+          console.log(`  📝 Inline script (${script.textContent?.length || 0} chars)`);
           try {
             // Create a new script element to execute
             const newScript = document.createElement('script');
             newScript.textContent = script.textContent;
             document.body.appendChild(newScript);
+            console.log(`  ✅ Executed inline script`);
           } catch (e) {
-            console.error('Error executing inline script:', e);
+            console.error(`  ❌ Error executing inline script:`, e);
           }
         }
       });
+
+      console.log('✅ [executeScripts] All scripts processed');
     }
 
     // Load tab content
     async function loadTab(tabName) {
-      if (!tabs[tabName]) return;
+      console.log('📂 [loadTab] Loading tab:', tabName);
+
+      if (!tabs[tabName]) {
+        console.error('❌ [loadTab] Tab not found:', tabName);
+        return;
+      }
 
       try {
         // Show loading
         loadingOverlay.classList.remove('hidden');
 
         // Fetch content (caching disabled for now to ensure fresh JS execution)
-        const response = await fetch(tabs[tabName].url + '?v=' + Date.now());
+        const url = tabs[tabName].url + '?v=' + Date.now();
+        console.log('🌐 [loadTab] Fetching:', url);
+
+        const response = await fetch(url);
         if (!response.ok) throw new Error(`Failed to load ${tabName}`);
 
         const html = await response.text();
+        console.log('📥 [loadTab] Received HTML, length:', html.length);
+
         const { bodyContent, scripts } = extractBodyContent(html);
 
         const content = { bodyContent, scripts };
+        console.log('📦 [loadTab] Content prepared:', {
+          bodyLength: content.bodyContent.length,
+          scriptsCount: content.scripts.length
+        });
 
         // Clear current content
         contentArea.innerHTML = '';
+        console.log('🧹 [loadTab] Cleared content area');
 
         // Inject new content
         contentArea.innerHTML = content.bodyContent;
+        console.log('📝 [loadTab] Injected body content');
 
         // Execute scripts every time (needed for dynamic styling)
         executeScripts(content.scripts);
 
         // Update current tab
         currentTab = tabName;
+        console.log('✅ [loadTab] Tab loaded successfully:', tabName);
 
         // Update i18n if available
         if (window.i18n && window.i18n.init) {
