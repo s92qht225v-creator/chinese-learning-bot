@@ -4,23 +4,16 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
   <title>Select HSK Level - Chinese Learning</title>
-
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet">
-
+  
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/settings.js"></script>
-
-  <script>
-    // Redirect to profile-level-select if coming from profile
-    if (document.referrer.includes('profile.html') || document.referrer.includes('main-app.html')) {
-      window.location.replace('/profile-level-select.html');
-    }
-  </script>
-
+  
   <script>
     tailwind.config = {
       darkMode: "class",
@@ -49,46 +42,46 @@
       },
     }
   </script>
-
+  
   <style>
     body {
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
-
+    
     .level-card {
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
     }
-
+    
     .level-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(68, 143, 228, 0.15);
     }
-
+    
     .level-card.selected {
       border-color: #448fe4;
       background: rgba(68, 143, 228, 0.05);
     }
-
+    
     .dark .level-card.selected {
       background: rgba(68, 143, 228, 0.1);
     }
-
+    
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
-
+    
     .material-symbols-outlined.filled {
       font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
     }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-text-primary-light dark:text-text-primary-dark">
-
+  
   <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
-
+    
     <!-- Header -->
     <header class="sticky top-0 z-10 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-b border-border-light dark:border-border-dark">
       <div class="flex items-center justify-between p-4">
@@ -101,7 +94,7 @@
     </header>
 
     <main class="flex-1 px-4 py-6 max-w-screen-xl mx-auto w-full">
-
+      
       <!-- Info Card -->
       <div class="bg-primary/10 border border-primary/20 rounded-2xl p-4 mb-6">
         <div class="flex items-start gap-3">
@@ -115,7 +108,7 @@
 
       <!-- HSK Levels -->
       <div class="space-y-3">
-
+        
         <!-- HSK 1 -->
         <div class="level-card bg-surface-light dark:bg-surface-dark rounded-2xl p-5 border-2 border-border-light dark:border-border-dark" data-level="1" onclick="selectLevel(1)">
           <div class="flex items-center justify-between mb-3">
@@ -333,14 +326,14 @@
     // Select level
     function selectLevel(level, animate = true) {
       selectedLevel = level;
-
+      
       // Remove all selected states
       document.querySelectorAll('.level-card').forEach(card => {
         card.classList.remove('selected');
         const dot = card.querySelector('.selected-dot');
         if (dot) dot.classList.add('hidden');
       });
-
+      
       // Add selected state to clicked card
       const selectedCard = document.querySelector(`[data-level="${level}"]`);
       if (selectedCard) {
@@ -348,7 +341,7 @@
         const dot = selectedCard.querySelector('.selected-dot');
         if (dot) dot.classList.remove('hidden');
       }
-
+      
       // Enable save button
       document.getElementById('saveBtn').disabled = false;
     }
@@ -356,16 +349,16 @@
     // Save level
     function saveLevel() {
       if (!selectedLevel) return;
-
+      
       // Save to settings
       settings.setHSKLevel(selectedLevel.toString());
-
+      
       // Show success feedback
       const btn = document.getElementById('saveBtn');
       btn.textContent = '✓ Saved!';
       btn.classList.add('bg-success');
       btn.classList.remove('bg-primary');
-
+      
       // Navigate back after short delay
       setTimeout(() => {
         window.history.back();

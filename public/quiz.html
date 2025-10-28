@@ -215,11 +215,9 @@
       if (isCorrect) {
         selectedBtn.classList.add('correct');
         stats.correct++;
-        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
       } else {
         selectedBtn.classList.add('incorrect');
         stats.incorrect++;
-        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
         
         // Highlight correct answer
         const optionBtns = optionsContainer.querySelectorAll('.option-btn');
@@ -253,14 +251,12 @@
 
     // Next question
     nextBtn.addEventListener('click', () => {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
       
       if (currentQuestion < totalQuestions) {
         currentQuestion++;
         loadQuestion();
       } else {
         // Quiz finished
-        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         const accuracy = Math.round((stats.correct / totalQuestions) * 100);
         alert(`Quiz Complete! 🎉\n\nScore: ${stats.correct * 10}/${totalQuestions * 10}\nCorrect: ${stats.correct}\nIncorrect: ${stats.incorrect}\nAccuracy: ${accuracy}%`);
         window.location.href = '/practice.html';
@@ -269,7 +265,6 @@
 
     // Back button
     backBtn.addEventListener('click', () => {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
       window.history.back();
     });
 

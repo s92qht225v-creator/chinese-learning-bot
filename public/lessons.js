@@ -50,9 +50,6 @@ var lessonProgress = {}; // Store lesson completion status
 // Back button handler (remove old listeners to prevent duplicates)
 if (backBtn) {
   var backBtnHandler = () => {
-    if (tg.HapticFeedback) {
-      tg.HapticFeedback.impactOccurred('light');
-    }
     window.history.back();
   };
 
@@ -75,10 +72,6 @@ levelRadios.forEach(radio => {
   var changeHandler = (e) => {
     const level = parseInt(e.target.value);
     currentHskLevel = level;
-
-    if (tg.HapticFeedback) {
-      tg.HapticFeedback.impactOccurred('light');
-    }
 
     // Update visual styling for all tabs
     levelRadios.forEach(r => {
@@ -330,18 +323,11 @@ window.continueLearning = function() {
 
 // Open lesson
 window.openLesson = function(lessonId) {
-  if (tg.HapticFeedback) {
-    tg.HapticFeedback.impactOccurred('medium');
-  }
   window.location.href = `/lesson.html?id=${lessonId}`;
 };
 
 // Switch back to HSK 1
 window.switchToHSK1 = function() {
-  if (tg.HapticFeedback) {
-    tg.HapticFeedback.impactOccurred('light');
-  }
-  
   // Click the HSK 1 radio button
   const hsk1Radio = document.querySelector('input[name="hsk_level"][value="1"]');
   if (hsk1Radio) {

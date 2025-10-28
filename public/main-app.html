@@ -263,7 +263,7 @@
       learn: { url: '/lessons.html', title: 'Learn' },
       practice: { url: '/practice.html', title: 'Practice' },
       writing: { url: '/character-writing.html', title: 'Writing' },
-      profile: { url: '/profile.html', title: 'Profile' }
+      profile: { url: '/profile.html?v=20251029', title: 'Profile' }
     };
     console.log('📋 [main-app.html] Tabs configured:', Object.keys(tabs));
 
@@ -473,9 +473,6 @@
           return;
         }
 
-        // Haptic feedback
-        if (tg.HapticFeedback) {
-          tg.HapticFeedback.impactOccurred('light');
         }
 
         // Update active state
@@ -553,9 +550,6 @@
     const floatingDictBtn = document.getElementById('floatingDictBtn');
 
     floatingDictBtn.addEventListener('click', () => {
-      // Haptic feedback
-      if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('medium');
       }
 
       // TODO: Open dictionary search modal or navigate to vocabulary page
