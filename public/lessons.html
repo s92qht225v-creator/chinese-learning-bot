@@ -7,6 +7,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script>
@@ -15,24 +16,23 @@
       theme: {
         extend: {
           colors: {
-            "primary": "#4A90E2",
+            "primary": "#448fe4",
             "secondary": "#50E3C2",
             "accent": "#F5A623",
-            "background-light": "#F8F9FA",
-            "background-dark": "#101c22",
-            "text-light": "#333333",
-            "text-dark": "#F8F9FA",
-            "text-muted-light": "#6c757d",
-            "text-muted-dark": "#a0aec0",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#18222c",
+            "text-primary-light": "#111417",
+            "text-primary-dark": "#f0f4f8",
+            "text-secondary-light": "#647487",
+            "text-secondary-dark": "#a0aec0",
+            "border-light": "#dce0e5",
+            "border-dark": "#2d3748",
           },
           fontFamily: {
-            "display": ["Work Sans", "sans-serif"]
-          },
-          borderRadius: {
-            "DEFAULT": "0.25rem",
-            "lg": "0.5rem",
-            "xl": "0.75rem",
-            "full": "9999px"
+            "display": ["Work Sans", "sans-serif"],
+            "chinese": ["Noto Sans SC", "sans-serif"]
           },
         },
       },
@@ -40,67 +40,161 @@
   </script>
   <style>
     body {
-      min-height: max(884px, 100dvh);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Lesson Card Styles */
+    .lesson-card {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .lesson-card:active {
+      transform: scale(0.98);
+    }
+
+    .lesson-card:not(.locked):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(68, 143, 228, 0.15);
+    }
+
+    .lesson-card.locked {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Progress Circle */
+    .progress-ring-circle {
+      transition: stroke-dashoffset 0.35s;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    /* Level Tab Styles */
+    .level-tab {
+      transition: all 0.2s ease;
+    }
+
+    .level-tab input:checked ~ .tab-content {
+      background: #448fe4;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    /* Start Button */
+    .start-btn {
+      transition: all 0.2s ease;
+    }
+
+    .start-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(68, 143, 228, 0.3);
+    }
+
+    .start-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Material Icons */
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
     }
   </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
-  <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
-    <!-- Top App Bar -->
-    <header class="sticky top-0 z-10 flex items-center bg-background-light dark:bg-background-dark/80 backdrop-blur-sm p-4 pb-2 justify-between border-b border-gray-200 dark:border-gray-700">
-      <div class="flex size-12 shrink-0 items-center justify-start">
-        <button id="backBtn" class="flex items-center justify-center">
-          <span class="material-symbols-outlined text-2xl text-text-light dark:text-text-dark">arrow_back</span>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-primary-light dark:text-text-primary-dark">
+  
+  <div class="relative flex min-h-screen w-full flex-col pb-20">
+    
+    <!-- Top Header -->
+    <header class="sticky top-0 z-10 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-sm border-b border-border-light dark:border-border-dark">
+      <div class="flex items-center justify-between p-4">
+        <button id="backBtn" class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 class="text-xl font-bold" id="pageTitle">HSK 1 Lessons</h1>
+        <button class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+          <span class="material-symbols-outlined">more_vert</span>
         </button>
       </div>
-      <h1 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-text-light dark:text-text-dark">HSK 1 Lessons</h1>
-      <div class="flex w-12 items-center justify-end">
-        <button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 bg-transparent text-text-light dark:text-text-dark gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
-          <span class="material-symbols-outlined text-2xl">more_vert</span>
-        </button>
+
+      <!-- Level Tabs -->
+      <div class="flex gap-2 px-4 pb-4">
+        <label class="level-tab flex-1">
+          <input checked class="hidden" name="hsk_level" type="radio" value="1"/>
+          <div class="tab-content cursor-pointer rounded-xl bg-background-light dark:bg-background-dark p-3 text-center font-semibold border-2 border-border-light dark:border-border-dark">
+            HSK 1
+          </div>
+        </label>
+        <label class="level-tab flex-1">
+          <input class="hidden" name="hsk_level" type="radio" value="2"/>
+          <div class="tab-content cursor-pointer rounded-xl bg-background-light dark:bg-background-dark p-3 text-center font-semibold border-2 border-border-light dark:border-border-dark">
+            HSK 2
+          </div>
+        </label>
+        <label class="level-tab flex-1">
+          <input class="hidden" name="hsk_level" type="radio" value="3"/>
+          <div class="tab-content cursor-pointer rounded-xl bg-background-light dark:bg-background-dark p-3 text-center font-semibold border-2 border-border-light dark:border-border-dark">
+            HSK 3
+          </div>
+        </label>
       </div>
     </header>
 
     <main class="flex-1">
-      <!-- Level Selector -->
-      <div class="flex px-4 py-3">
-        <div class="flex h-10 flex-1 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-800 p-1">
-          <label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white has-[:checked]:dark:bg-gray-700 has-[:checked]:shadow-sm has-[:checked]:text-text-light has-[:checked]:dark:text-text-dark text-text-muted-light dark:text-text-muted-dark text-sm font-medium leading-normal transition-colors">
-            <span class="truncate">HSK 1</span>
-            <input checked class="invisible w-0" name="hsk_level" type="radio" value="HSK 1"/>
-          </label>
-          <label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white has-[:checked]:dark:bg-gray-700 has-[:checked]:shadow-sm has-[:checked]:text-text-light has-[:checked]:dark:text-text-dark text-text-muted-light dark:text-text-muted-dark text-sm font-medium leading-normal transition-colors">
-            <span class="truncate">HSK 2</span>
-            <input class="invisible w-0" name="hsk_level" type="radio" value="HSK 2"/>
-          </label>
-          <label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white has-[:checked]:dark:bg-gray-700 has-[:checked]:shadow-sm has-[:checked]:text-text-light has-[:checked]:dark:text-text-dark text-text-muted-light dark:text-text-muted-dark text-sm font-medium leading-normal transition-colors">
-            <span class="truncate">HSK 3</span>
-            <input class="invisible w-0" name="hsk_level" type="radio" value="HSK 3"/>
-          </label>
+      
+      <!-- Overall Progress -->
+      <div class="p-4">
+        <div class="rounded-2xl bg-surface-light dark:bg-surface-dark p-5 shadow-sm border border-border-light dark:border-border-dark">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">school</span>
+              <p class="font-semibold">Overall Progress</p>
+            </div>
+            <p class="text-sm font-bold text-primary" id="progressText">0/15</p>
+          </div>
+          <div class="h-3 w-full rounded-full bg-background-light dark:bg-background-dark overflow-hidden">
+            <div id="progressBar" class="h-3 rounded-full bg-gradient-to-r from-primary to-blue-500 transition-all duration-500" style="width: 0%;"></div>
+          </div>
+          <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-2">
+            Keep going! 🎯
+          </p>
         </div>
       </div>
 
-      <!-- Overall Progress Summary -->
-      <div class="flex flex-col gap-2 p-4">
-        <div class="flex gap-6 justify-between items-center">
-          <p class="text-base font-medium leading-normal text-text-light dark:text-text-dark">Overall Progress</p>
-          <p class="text-sm font-medium leading-normal text-text-light dark:text-text-dark">2/15</p>
+      <!-- Continue Learning Section -->
+      <div class="px-4 pb-4" id="continueSection" style="display: none;">
+        <div class="rounded-2xl bg-gradient-to-br from-primary to-blue-500 p-5 text-white shadow-lg">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="material-symbols-outlined text-3xl">play_circle</span>
+            <div class="flex-1">
+              <p class="text-sm opacity-90">Continue Learning</p>
+              <p class="font-bold text-lg" id="continueTitle">Lesson 2: Numbers</p>
+            </div>
+          </div>
+          <button onclick="continueLearning()" class="w-full bg-white text-primary font-bold py-3 rounded-xl hover:bg-opacity-90 transition-all">
+            Continue →
+          </button>
         </div>
-        <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-          <div class="h-2 rounded-full bg-primary" style="width: 13%;"></div>
-        </div>
-        <p class="text-sm font-normal leading-normal text-text-muted-light dark:text-text-muted-dark">Lessons Completed</p>
       </div>
 
-      <!-- Lesson List (dynamically populated by lessons.js) -->
-      <div class="flex flex-col gap-3 px-4 pb-4">
-        <!-- Lessons will be loaded here by JavaScript -->
+      <!-- Lessons List -->
+      <div class="px-4 pb-8">
+        <h2 class="text-lg font-bold mb-4">All Lessons</h2>
+        <div id="lessonsContainer" class="space-y-3">
+          <!-- Lessons will be loaded here -->
+        </div>
       </div>
+
     </main>
+
   </div>
 
-  <!-- Navigation is handled by main-app.html -->
-
-  <script src="lessons.js?v=20251027-1"></script>
+  <script src="/i18n.js"></script>
+  <script src="lessons-enhanced.js"></script>
 </body>
 </html>
