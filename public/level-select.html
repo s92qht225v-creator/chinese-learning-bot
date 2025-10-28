@@ -1,22 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Select HSK Level - Chinese Learning</title>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>HSK Level Selection - Chinese Learning App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-  <script>
+  <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
       theme: {
         extend: {
           colors: {
-            "primary": "#4A90E2",
-            "secondary": "#50E3C2",
-            "accent": "#F5A623",
+            "primary": "#448fe4",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#18222c",
+            "text-primary-light": "#111417",
+            "text-primary-dark": "#f0f4f8",
+            "text-secondary-light": "#647487",
+            "text-secondary-dark": "#a0aec0",
+            "border-light": "#dce0e5",
+            "border-dark": "#2d3748",
           },
           fontFamily: {
             "display": ["Work Sans", "sans-serif"]
@@ -28,188 +38,188 @@
   <style>
     body {
       min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
-    .level-card {
-      transition: all 0.3s ease;
-      cursor: pointer;
+
+    .level-option {
+      transition: all 0.2s ease;
     }
-    .level-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+
+    .level-option:active {
+      transform: scale(0.98);
     }
-    .level-card.selected {
-      border-color: #4A90E2;
-      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
-      background: rgba(74, 144, 226, 0.05);
-    }
-    .fade-in {
-      animation: fadeIn 0.6s ease-in;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .level-badge {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+    .level-option input:checked ~ .option-content {
+      background: #448fe4;
       color: white;
-      width: 56px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 18px;
     }
-    .level-card.selected .level-badge {
-      background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+
+    .level-option input:checked ~ .option-content .level-badge {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .level-option input:checked ~ .option-content .level-subtitle {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .level-option input:checked ~ .option-content .check-icon {
+      display: flex;
     }
   </style>
 </head>
-<body class="font-display">
-  <div class="min-h-screen flex flex-col p-4 pb-24">
+<body class="font-display bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark">
+
+  <div class="flex min-h-screen flex-col p-6">
+
     <!-- Header -->
-    <div class="text-center mb-6 pt-6 fade-in">
-      <div class="text-5xl mb-3">📚</div>
-      <h1 class="text-2xl font-bold text-white mb-1" data-i18n="selectLevel">Select Your HSK Level</h1>
-      <p class="text-white/80 text-sm" data-i18n="selectLevelDesc">Choose the level that matches your current ability</p>
+    <div class="mb-12 text-center">
+      <div class="mx-auto mb-6 text-6xl">
+        📚
+      </div>
+      <h1 class="text-2xl font-bold mb-2" data-i18n="selectLevel">Select Your HSK Level</h1>
+      <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark" data-i18n="selectLevelDesc">Choose the level that matches your current ability</p>
     </div>
 
-    <!-- Level Cards Container -->
-    <div class="flex-1 max-w-md mx-auto w-full space-y-3 fade-in" style="animation-delay: 0.1s">
+    <!-- Level Options -->
+    <div class="mx-auto w-full max-w-md space-y-3 flex-1">
+
       <!-- HSK 1 -->
-      <div class="level-card bg-white rounded-2xl p-4 border-4 border-transparent" data-level="1">
-        <div class="flex items-center gap-3">
-          <div class="level-badge">
-            <span>1</span>
+      <label class="level-option block cursor-pointer">
+        <input type="radio" name="hsk-level" value="1" class="peer hidden" />
+        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+
+          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30 text-xl font-bold transition-all">
+            1
           </div>
+
           <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <h3 class="text-base font-bold text-gray-800" data-i18n="beginner">Beginner</h3>
-              <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">150 words</span>
-            </div>
-            <p class="text-xs text-gray-600" data-i18n="hsk1Desc">Know around 150 common words and basic phrases</p>
+            <p class="text-lg font-bold" data-i18n="beginner">Beginner</p>
+            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk1Desc">Know around 150 common words and basic phrases</p>
           </div>
-          <div class="checkmark hidden">
-            <span class="material-symbols-outlined text-primary text-2xl">check_circle</span>
+
+          <div class="check-icon hidden items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">check_circle</span>
           </div>
         </div>
-      </div>
+      </label>
 
       <!-- HSK 2 -->
-      <div class="level-card bg-white rounded-2xl p-4 border-4 border-transparent" data-level="2">
-        <div class="flex items-center gap-3">
-          <div class="level-badge">
-            <span>2</span>
+      <label class="level-option block cursor-pointer">
+        <input type="radio" name="hsk-level" value="2" class="peer hidden" />
+        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+
+          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-xl font-bold transition-all">
+            2
           </div>
+
           <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <h3 class="text-base font-bold text-gray-800" data-i18n="elementary">Elementary</h3>
-              <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">300 words</span>
-            </div>
-            <p class="text-xs text-gray-600" data-i18n="hsk2Desc">Handle simple communication on familiar topics</p>
+            <p class="text-lg font-bold" data-i18n="elementary">Elementary</p>
+            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk2Desc">Handle simple communication on familiar topics</p>
           </div>
-          <div class="checkmark hidden">
-            <span class="material-symbols-outlined text-primary text-2xl">check_circle</span>
+
+          <div class="check-icon hidden items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">check_circle</span>
           </div>
         </div>
-      </div>
+      </label>
 
       <!-- HSK 3 -->
-      <div class="level-card bg-white rounded-2xl p-4 border-4 border-transparent" data-level="3">
-        <div class="flex items-center gap-3">
-          <div class="level-badge">
-            <span>3</span>
+      <label class="level-option block cursor-pointer">
+        <input type="radio" name="hsk-level" value="3" class="peer hidden" />
+        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+
+          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-yellow-100 dark:bg-yellow-900/30 text-xl font-bold transition-all">
+            3
           </div>
+
           <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <h3 class="text-base font-bold text-gray-800" data-i18n="intermediate">Intermediate</h3>
-              <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">600 words</span>
-            </div>
-            <p class="text-xs text-gray-600" data-i18n="hsk3Desc">Communicate in everyday situations</p>
+            <p class="text-lg font-bold" data-i18n="intermediate">Intermediate</p>
+            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk3Desc">Communicate in everyday situations</p>
           </div>
-          <div class="checkmark hidden">
-            <span class="material-symbols-outlined text-primary text-2xl">check_circle</span>
+
+          <div class="check-icon hidden items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">check_circle</span>
           </div>
         </div>
-      </div>
+      </label>
 
       <!-- HSK 4 -->
-      <div class="level-card bg-white rounded-2xl p-4 border-4 border-transparent" data-level="4">
-        <div class="flex items-center gap-3">
-          <div class="level-badge">
-            <span>4</span>
+      <label class="level-option block cursor-pointer">
+        <input type="radio" name="hsk-level" value="4" class="peer hidden" />
+        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+
+          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-900/30 text-xl font-bold transition-all">
+            4
           </div>
+
           <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <h3 class="text-base font-bold text-gray-800" data-i18n="upperIntermediate">Upper Intermediate</h3>
-              <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">1200 words</span>
-            </div>
-            <p class="text-xs text-gray-600" data-i18n="hsk4Desc">Discuss a variety of topics fluently</p>
+            <p class="text-lg font-bold" data-i18n="upperIntermediate">Upper Intermediate</p>
+            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk4Desc">Discuss a variety of topics fluently</p>
           </div>
-          <div class="checkmark hidden">
-            <span class="material-symbols-outlined text-primary text-2xl">check_circle</span>
+
+          <div class="check-icon hidden items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">check_circle</span>
           </div>
         </div>
-      </div>
+      </label>
 
       <!-- HSK 5 -->
-      <div class="level-card bg-white rounded-2xl p-4 border-4 border-transparent" data-level="5">
-        <div class="flex items-center gap-3">
-          <div class="level-badge">
-            <span>5</span>
+      <label class="level-option block cursor-pointer">
+        <input type="radio" name="hsk-level" value="5" class="peer hidden" />
+        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+
+          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30 text-xl font-bold transition-all">
+            5
           </div>
+
           <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <h3 class="text-base font-bold text-gray-800" data-i18n="advanced">Advanced</h3>
-              <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">2500 words</span>
-            </div>
-            <p class="text-xs text-gray-600" data-i18n="hsk5Desc">Understand complex texts</p>
+            <p class="text-lg font-bold" data-i18n="advanced">Advanced</p>
+            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk5Desc">Understand complex texts</p>
           </div>
-          <div class="checkmark hidden">
-            <span class="material-symbols-outlined text-primary text-2xl">check_circle</span>
+
+          <div class="check-icon hidden items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">check_circle</span>
           </div>
         </div>
-      </div>
+      </label>
 
       <!-- HSK 6 -->
-      <div class="level-card bg-white rounded-2xl p-4 border-4 border-transparent" data-level="6">
-        <div class="flex items-center gap-3">
-          <div class="level-badge">
-            <span>6</span>
+      <label class="level-option block cursor-pointer">
+        <input type="radio" name="hsk-level" value="6" class="peer hidden" />
+        <div class="option-content relative flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm transition-all">
+
+          <div class="level-badge flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30 text-xl font-bold transition-all">
+            6
           </div>
+
           <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <h3 class="text-base font-bold text-gray-800" data-i18n="mastery">Mastery</h3>
-              <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-semibold">5000+ words</span>
-            </div>
-            <p class="text-xs text-gray-600" data-i18n="hsk6Desc">Full mastery and comprehension</p>
+            <p class="text-lg font-bold" data-i18n="mastery">Mastery</p>
+            <p class="level-subtitle text-sm text-text-secondary-light dark:text-text-secondary-dark transition-colors" data-i18n="hsk6Desc">Full mastery and comprehension</p>
           </div>
-          <div class="checkmark hidden">
-            <span class="material-symbols-outlined text-primary text-2xl">check_circle</span>
+
+          <div class="check-icon hidden items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">check_circle</span>
           </div>
         </div>
-      </div>
+      </label>
 
-      <!-- Not Sure Button -->
-      <div class="text-center pt-2">
-        <button id="notSureBtn" class="text-sm text-white/90 hover:text-white font-medium hover:underline">
-          💭 I'm not sure - start with HSK 1
-        </button>
-      </div>
     </div>
 
     <!-- Continue Button (Fixed at bottom) -->
-    <div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-purple-900/90 to-transparent">
-      <div class="max-w-md mx-auto">
-        <button id="continueBtn"
-                class="w-full bg-white text-primary font-bold py-4 px-6 rounded-xl shadow-lg opacity-50 cursor-not-allowed transition-all"
-                disabled>
-          <span data-i18n="startLearning">Start Learning</span>
-        </button>
+    <div class="sticky bottom-0 mt-8 pb-6">
+      <button id="continueBtn" class="flex w-full max-w-md mx-auto items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-bold text-white shadow-lg transition-all active:scale-98">
+        <span data-i18n="startLearning">Start Learning</span>
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+
+      <!-- Progress Indicator -->
+      <div class="mt-6 flex items-center justify-center gap-2">
+        <div class="h-2 w-8 rounded-full bg-border-light dark:bg-border-dark"></div>
+        <div class="h-2 w-8 rounded-full bg-primary"></div>
       </div>
     </div>
+
   </div>
 
   <script src="/i18n.js"></script>
@@ -220,56 +230,28 @@
 
     let selectedLevel = null;
     const continueBtn = document.getElementById('continueBtn');
-    const notSureBtn = document.getElementById('notSureBtn');
-    const levelCards = document.querySelectorAll('.level-card');
+    const levelInputs = document.querySelectorAll('input[name="hsk-level"]');
 
     // Handle level selection
-    levelCards.forEach(card => {
-      card.addEventListener('click', () => {
+    levelInputs.forEach(input => {
+      input.addEventListener('change', (e) => {
+        selectedLevel = e.target.value;
+
         // Haptic feedback
         if (tg.HapticFeedback) {
           tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Remove selection from all cards
-        levelCards.forEach(c => {
-          c.classList.remove('selected');
-          c.querySelector('.checkmark').classList.add('hidden');
-        });
-
-        // Add selection to clicked card
-        card.classList.add('selected');
-        card.querySelector('.checkmark').classList.remove('hidden');
-
-        // Store selected level
-        selectedLevel = card.getAttribute('data-level');
-
-        // Enable continue button
-        continueBtn.disabled = false;
-        continueBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        continueBtn.classList.add('hover:shadow-xl', 'hover:scale-105');
+        console.log('Level selected:', selectedLevel);
       });
-    });
-
-    // Handle "I'm not sure" button
-    notSureBtn.addEventListener('click', () => {
-      // Haptic feedback
-      if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('medium');
-      }
-
-      // Select HSK 1
-      const firstCard = document.querySelector('[data-level="1"]');
-      if (firstCard) {
-        firstCard.click();
-        // Scroll to top to show selection
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
     });
 
     // Handle continue button
     continueBtn.addEventListener('click', () => {
-      if (!selectedLevel) return;
+      if (!selectedLevel) {
+        alert('Please select an HSK level');
+        return;
+      }
 
       // Haptic feedback
       if (tg.HapticFeedback) {
@@ -284,12 +266,13 @@
       window.location.href = '/main-app.html';
     });
 
-    // Check if level already selected (returning user)
+    // Load previously selected level if exists
     const savedLevel = localStorage.getItem('hskLevel');
     if (savedLevel) {
-      const card = document.querySelector(`[data-level="${savedLevel}"]`);
-      if (card) {
-        card.click();
+      const input = document.querySelector(`input[value="${savedLevel}"]`);
+      if (input) {
+        input.checked = true;
+        selectedLevel = savedLevel;
       }
     }
 
@@ -298,5 +281,6 @@
       window.i18n.init();
     }
   </script>
+
 </body>
 </html>
