@@ -1,4 +1,5 @@
-// Settings utility
+// Settings utility (check if already declared to prevent duplicate)
+if (typeof Settings === 'undefined') {
 class Settings {
   constructor() {
     this.initDarkMode();
@@ -69,4 +70,5 @@ class Settings {
 }
 
 // Create global instance
-const settings = new Settings();
+var settings = new Settings();
+}
