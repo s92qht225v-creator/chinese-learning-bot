@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chinese Learning App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="/styles.css">
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4A90E2",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "background-light": "#F8F9FA",
+            "background-dark": "#101c22",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: 100vh;
+      padding-bottom: 80px; /* Space for bottom nav */
+    }
+
+    #content-area {
+      min-height: calc(100vh - 80px);
+      width: 100%;
+      overflow-y: auto;
+    }
+
+    /* Bottom Navigation Styles */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+
+    .dark .bottom-nav {
+      background: #1a1a1a;
+      border-top-color: #374151;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      color: #6B7280;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      min-width: 70px;
+    }
+
+    .nav-item:hover {
+      background: rgba(74, 144, 226, 0.05);
+      border-radius: 12px;
+    }
+
+    .nav-item.active {
+      color: #4A90E2;
+    }
+
+    .nav-item .material-symbols-outlined {
+      font-size: 28px;
+      margin-bottom: 2px;
+    }
+
+    .nav-item.active .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1, 'wght' 600;
+    }
+
+    .nav-item span:not(.material-symbols-outlined) {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    /* Loading indicator */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 80px;
+      background: var(--tg-theme-bg-color, #fff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(74, 144, 226, 0.1);
+      border-top-color: #4A90E2;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-overlay.hidden {
+      display: none;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Content Area -->
+  <div id="content-area"></div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a class="nav-item active" data-tab="learn" data-i18n-label="learn">
+      <span class="material-symbols-outlined">school</span>
+      <span>Learn</span>
+    </a>
+    <a class="nav-item" data-tab="practice" data-i18n-label="practice">
+      <span class="material-symbols-outlined">fitness_center</span>
+      <span>Practice</span>
+    </a>
+    <a class="nav-item" data-tab="writing" data-i18n-label="writing">
+      <span class="material-symbols-outlined">edit</span>
+      <span>Writing</span>
+    </a>
+    <a class="nav-item" data-tab="profile" data-i18n-label="profile">
+      <span class="material-symbols-outlined">person</span>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="/i18n.js"></script>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // Tab configuration
+    const tabs = {
+      learn: { url: '/lessons.html', title: 'Learn' },
+      practice: { url: '/practice.html', title: 'Practice' },
+      writing: { url: '/character-writing.html', title: 'Writing' },
+      profile: { url: '/profile.html', title: 'Profile' }
+    };
+
+    let currentTab = 'learn';
+    let contentCache = {};
+
+    // DOM elements
+    const contentArea = document.getElementById('content-area');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const navItems = document.querySelectorAll('.nav-item');
+
+    // Extract body content from HTML
+    function extractBodyContent(html) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      // Get body content
+      const body = doc.querySelector('body');
+      if (!body) return html;
+
+      // Extract scripts to execute them
+      const scripts = Array.from(doc.querySelectorAll('script'));
+      const bodyContent = body.innerHTML;
+
+      return { bodyContent, scripts };
+    }
+
+    // Execute scripts from loaded content
+    function executeScripts(scripts) {
+      scripts.forEach(script => {
+        if (script.src) {
+          // External script
+          const newScript = document.createElement('script');
+          newScript.src = script.src;
+          if (script.type) newScript.type = script.type;
+          document.head.appendChild(newScript);
+        } else {
+          // Inline script
+          try {
+            // Create a new script element to execute
+            const newScript = document.createElement('script');
+            newScript.textContent = script.textContent;
+            document.body.appendChild(newScript);
+          } catch (e) {
+            console.error('Error executing inline script:', e);
+          }
+        }
+      });
+    }
+
+    // Load tab content
+    async function loadTab(tabName) {
+      if (!tabs[tabName]) return;
+
+      try {
+        // Show loading
+        loadingOverlay.classList.remove('hidden');
+
+        // Check cache first
+        let content;
+        if (contentCache[tabName]) {
+          content = contentCache[tabName];
+        } else {
+          // Fetch content
+          const response = await fetch(tabs[tabName].url);
+          if (!response.ok) throw new Error(`Failed to load ${tabName}`);
+
+          const html = await response.text();
+          const { bodyContent, scripts } = extractBodyContent(html);
+
+          content = { bodyContent, scripts };
+          contentCache[tabName] = content;
+        }
+
+        // Clear current content
+        contentArea.innerHTML = '';
+
+        // Inject new content
+        contentArea.innerHTML = content.bodyContent;
+
+        // Execute scripts (only once, not from cache)
+        if (!contentCache[tabName] || tabName === currentTab) {
+          executeScripts(content.scripts);
+        }
+
+        // Update current tab
+        currentTab = tabName;
+
+        // Update i18n if available
+        if (window.i18n && window.i18n.updatePage) {
+          window.i18n.updatePage();
+        }
+
+        // Hide loading
+        setTimeout(() => {
+          loadingOverlay.classList.add('hidden');
+        }, 300);
+
+      } catch (error) {
+        console.error('Error loading tab:', error);
+        contentArea.innerHTML = `
+          <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="text-center">
+              <span class="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
+              <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Failed to Load Content</h2>
+              <p class="text-gray-600 dark:text-gray-400 mb-4">Unable to load ${tabs[tabName].title}</p>
+              <button onclick="location.reload()" class="bg-primary text-white px-6 py-2 rounded-lg font-semibold">
+                Retry
+              </button>
+            </div>
+          </div>
+        `;
+        loadingOverlay.classList.add('hidden');
+      }
+    }
+
+    // Handle navigation click
+    navItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        const tabName = item.getAttribute('data-tab');
+
+        // Don't reload if already on this tab
+        if (tabName === currentTab) return;
+
+        // Haptic feedback
+        if (tg.HapticFeedback) {
+          tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // Update active state
+        navItems.forEach(nav => nav.classList.remove('active'));
+        item.classList.add('active');
+
+        // Load tab content
+        loadTab(tabName);
+      });
+    });
+
+    // Update navigation labels with i18n
+    function updateNavLabels() {
+      navItems.forEach(item => {
+        const key = item.getAttribute('data-i18n-label');
+        const label = item.querySelector('span:not(.material-symbols-outlined)');
+        if (window.i18n && label && key) {
+          label.textContent = window.i18n.t(key);
+        }
+      });
+    }
+
+    // Initialize i18n
+    if (window.i18n) {
+      window.i18n.init();
+      updateNavLabels();
+
+      // Listen for language changes
+      window.addEventListener('languageChanged', () => {
+        updateNavLabels();
+      });
+    }
+
+    // Load default tab on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Check URL hash for specific tab
+      const hash = window.location.hash.slice(1);
+      const defaultTab = tabs[hash] ? hash : 'learn';
+
+      // Set active nav item
+      navItems.forEach(nav => {
+        if (nav.getAttribute('data-tab') === defaultTab) {
+          nav.classList.add('active');
+        } else {
+          nav.classList.remove('active');
+        }
+      });
+
+      // Load tab
+      loadTab(defaultTab);
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', () => {
+      const hash = window.location.hash.slice(1);
+      if (tabs[hash]) {
+        loadTab(hash);
+      }
+    });
+
+    // Update URL hash when tab changes
+    function updateHash(tabName) {
+      if (history.pushState) {
+        history.pushState(null, null, `#${tabName}`);
+      } else {
+        window.location.hash = tabName;
+      }
+    }
+  </script>
+</body>
+</html>

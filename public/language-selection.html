@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Select Language - Chinese Learning</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4A90E2",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .language-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .language-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    }
+    .language-card.selected {
+      border-color: #4A90E2;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+      background: rgba(74, 144, 226, 0.05);
+    }
+    .fade-in {
+      animation: fadeIn 0.6s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="font-display">
+  <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md fade-in">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <div class="text-6xl mb-4">🌍</div>
+        <h1 class="text-3xl font-bold text-white mb-2">Select Language</h1>
+        <p class="text-white/80">Choose your preferred interface language</p>
+      </div>
+
+      <!-- Language Cards -->
+      <div class="space-y-4 mb-8">
+        <!-- Uzbek -->
+        <div class="language-card bg-white rounded-2xl p-6 border-4 border-transparent" data-lang="uz">
+          <div class="flex items-center gap-4">
+            <div class="text-4xl">🇺🇿</div>
+            <div class="flex-1">
+              <h2 class="text-xl font-bold text-gray-800">O'zbek tili</h2>
+              <p class="text-sm text-gray-500">Uzbek</p>
+            </div>
+            <div class="checkmark hidden">
+              <span class="material-symbols-outlined text-primary text-3xl">check_circle</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Russian -->
+        <div class="language-card bg-white rounded-2xl p-6 border-4 border-transparent" data-lang="ru">
+          <div class="flex items-center gap-4">
+            <div class="text-4xl">🇷🇺</div>
+            <div class="flex-1">
+              <h2 class="text-xl font-bold text-gray-800">Русский язык</h2>
+              <p class="text-sm text-gray-500">Russian</p>
+            </div>
+            <div class="checkmark hidden">
+              <span class="material-symbols-outlined text-primary text-3xl">check_circle</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- English -->
+        <div class="language-card bg-white rounded-2xl p-6 border-4 border-transparent" data-lang="en">
+          <div class="flex items-center gap-4">
+            <div class="text-4xl">🇬🇧</div>
+            <div class="flex-1">
+              <h2 class="text-xl font-bold text-gray-800">English</h2>
+              <p class="text-sm text-gray-500">English</p>
+            </div>
+            <div class="checkmark hidden">
+              <span class="material-symbols-outlined text-primary text-3xl">check_circle</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Continue Button -->
+      <button id="continueBtn"
+              class="w-full bg-white text-primary font-bold py-4 px-6 rounded-xl shadow-lg opacity-50 cursor-not-allowed transition-all"
+              disabled>
+        Continue
+      </button>
+    </div>
+  </div>
+
+  <script src="/i18n.js"></script>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    let selectedLanguage = null;
+    const continueBtn = document.getElementById('continueBtn');
+    const languageCards = document.querySelectorAll('.language-card');
+
+    // Handle language selection
+    languageCards.forEach(card => {
+      card.addEventListener('click', () => {
+        // Haptic feedback
+        if (tg.HapticFeedback) {
+          tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // Remove selection from all cards
+        languageCards.forEach(c => {
+          c.classList.remove('selected');
+          c.querySelector('.checkmark').classList.add('hidden');
+        });
+
+        // Add selection to clicked card
+        card.classList.add('selected');
+        card.querySelector('.checkmark').classList.remove('hidden');
+
+        // Store selected language
+        selectedLanguage = card.getAttribute('data-lang');
+
+        // Enable continue button
+        continueBtn.disabled = false;
+        continueBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        continueBtn.classList.add('hover:shadow-xl', 'hover:scale-105');
+      });
+    });
+
+    // Handle continue button
+    continueBtn.addEventListener('click', () => {
+      if (!selectedLanguage) return;
+
+      // Haptic feedback
+      if (tg.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred('success');
+      }
+
+      // Save language selection
+      localStorage.setItem('selectedLanguage', selectedLanguage);
+      localStorage.setItem('appLanguage', selectedLanguage);
+
+      // Set language in i18n
+      if (window.i18n) {
+        window.i18n.setLanguage(selectedLanguage);
+      }
+
+      // Redirect to level selection
+      window.location.href = '/level-select.html';
+    });
+
+    // Check if language already selected (returning user)
+    const savedLanguage = localStorage.getItem('selectedLanguage');
+    if (savedLanguage) {
+      const card = document.querySelector(`[data-lang="${savedLanguage}"]`);
+      if (card) {
+        card.click();
+      }
+    }
+  </script>
+</body>
+</html>

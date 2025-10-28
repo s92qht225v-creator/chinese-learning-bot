@@ -6,20 +6,20 @@
   <title>Chinese Learning Bot</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    // Redirect to onboarding or level select based on completion status
+    // Redirect based on setup completion status
     window.addEventListener('DOMContentLoaded', () => {
-      const onboardingCompleted = localStorage.getItem('onboardingCompleted');
       const setupCompleted = localStorage.getItem('setupCompleted');
-      
+      const selectedLanguage = localStorage.getItem('selectedLanguage');
+
       if (setupCompleted) {
-        // User has completed setup, go to lessons
-        window.location.href = '/lessons.html';
-      } else if (onboardingCompleted) {
-        // Onboarding done, go to level selection
+        // User has completed setup, go to main app
+        window.location.href = '/main-app.html';
+      } else if (selectedLanguage) {
+        // Language selected, go to level selection
         window.location.href = '/level-select.html';
       } else {
-        // Start from the beginning
-        window.location.href = '/onboarding.html';
+        // First time user - start with language selection
+        window.location.href = '/language-selection.html';
       }
     });
   </script>

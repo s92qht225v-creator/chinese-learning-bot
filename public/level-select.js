@@ -54,6 +54,6 @@ continueBtn.addEventListener('click', () => {
     tg.HapticFeedback.notificationOccurred('success');
   }
   
-  // Navigate to lessons page
-  window.location.href = '/lessons.html';
+  // Navigate to main app
+  window.location.href = '/main-app.html';
 });
