@@ -342,9 +342,15 @@
     tg.expand();
     tg.ready();
 
-    let selectedLevel = null;
     const continueBtn = document.getElementById('continueBtn');
     const levelInputs = document.querySelectorAll('input[name="hsk-level"]');
+
+    // Initialize selectedLevel with checked radio (if any)
+    let selectedLevel = null;
+    const checkedInput = document.querySelector('input[name="hsk-level"]:checked');
+    if (checkedInput) {
+      selectedLevel = checkedInput.value;
+    }
 
     // Handle level selection
     levelInputs.forEach(input => {
