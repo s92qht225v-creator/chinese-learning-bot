@@ -9,7 +9,15 @@ if (typeof tg === 'undefined') {
 // Supabase config
 var SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2ZW9xZWRza3piYmdjYXpwc2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0Nzk1MjYsImV4cCI6MjA3NzA1NTUyNn0.NfTfTWKNDmsmiLF_MX5XGGq48xbX8OOUWhVmb5U-VXM';
-var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Initialize Supabase client (lazy initialization to handle async loading)
+var supabase;
+function getSupabaseClient() {
+  if (!supabase && window.supabase && window.supabase.createClient) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  return supabase;
+}
 
 // Elements
 var backBtn = document.getElementById('backBtn');
@@ -89,7 +97,12 @@ async function loadLessons(hskLevel = 1) {
     console.log('🔄 Loading lessons for HSK level:', hskLevel);
     lessonsContainer.innerHTML = '<div class="text-center py-8"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div></div>';
 
-    const { data: lessons, error } = await supabase
+    const client = getSupabaseClient();
+    if (!client) {
+      throw new Error('Supabase client not available');
+    }
+
+    const { data: lessons, error } = await client
       .from('lessons')
       .select('*')
       .eq('hsk_level', hskLevel)
