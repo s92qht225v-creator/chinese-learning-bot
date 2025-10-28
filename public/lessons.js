@@ -20,7 +20,7 @@ backBtn.addEventListener('click', () => {
   if (tg.HapticFeedback) {
     tg.HapticFeedback.impactOccurred('light');
   }
-  window.location.href = '/home.html';
+  window.location.href = '/main-app.html';
 });
 
 // Level selector handler
