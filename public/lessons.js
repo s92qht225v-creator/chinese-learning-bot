@@ -39,6 +39,24 @@ levelRadios.forEach(radio => {
       tg.HapticFeedback.impactOccurred('light');
     }
 
+    // Update visual styling for all tabs
+    levelRadios.forEach(r => {
+      const tabContent = r.nextElementSibling;
+      if (r.checked) {
+        tabContent.style.background = '#448fe4';
+        tabContent.style.color = 'white';
+        tabContent.style.borderColor = '#448fe4';
+        tabContent.style.transform = 'scale(1.05)';
+        tabContent.style.boxShadow = '0 4px 12px rgba(68, 143, 228, 0.3)';
+      } else {
+        tabContent.style.background = '';
+        tabContent.style.color = '';
+        tabContent.style.borderColor = '';
+        tabContent.style.transform = '';
+        tabContent.style.boxShadow = '';
+      }
+    });
+
     pageTitle.textContent = `HSK ${level} Lessons`;
     loadLessons(level);
   });
@@ -263,7 +281,22 @@ window.switchToHSK1 = function() {
   }
 };
 
-// Load lessons on page load
+// Initialize tab styling on page load
+function initializeTabStyling() {
+  levelRadios.forEach(r => {
+    const tabContent = r.nextElementSibling;
+    if (r.checked) {
+      tabContent.style.background = '#448fe4';
+      tabContent.style.color = 'white';
+      tabContent.style.borderColor = '#448fe4';
+      tabContent.style.transform = 'scale(1.05)';
+      tabContent.style.boxShadow = '0 4px 12px rgba(68, 143, 228, 0.3)';
+    }
+  });
+}
+
+// Initialize on page load
+initializeTabStyling();
 loadLessons(currentHskLevel);
 
 // Apply i18n if available
