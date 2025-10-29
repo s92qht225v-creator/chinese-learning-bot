@@ -50,7 +50,6 @@ var lessonProgress = {}; // Store lesson completion status
 // Back button handler (remove old listeners to prevent duplicates)
 if (backBtn) {
   var backBtnHandler = () => {
-    }
     window.history.back();
   };
 
@@ -73,8 +72,6 @@ levelRadios.forEach(radio => {
   var changeHandler = (e) => {
     const level = parseInt(e.target.value);
     currentHskLevel = level;
-
-    }
 
     // Update visual styling for all tabs
     levelRadios.forEach(r => {
