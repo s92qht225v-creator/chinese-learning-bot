@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>Daily Goal - Chinese Learning</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet">
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/settings.js"></script>
+  <script src="/study-tracker.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#448fe4",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "success": "#4CAF50",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#18222c",
+            "text-primary-light": "#111417",
+            "text-primary-dark": "#f0f4f8",
+            "text-secondary-light": "#647487",
+            "text-secondary-dark": "#a0aec0",
+            "border-light": "#dce0e5",
+            "border-dark": "#2d3748",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    body {
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .goal-card {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .goal-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(68, 143, 228, 0.15);
+    }
+
+    .goal-card.selected {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+    }
+
+    .dark .goal-card.selected {
+      background: rgba(68, 143, 228, 0.1);
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-primary-light dark:text-text-primary-dark">
+
+  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-10 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-b border-border-light dark:border-border-dark">
+      <div class="flex items-center justify-between p-4">
+        <button onclick="window.history.back()" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 class="text-lg font-bold">Daily Goal</h1>
+        <div class="w-10"></div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-4 py-6 max-w-screen-xl mx-auto w-full">
+
+      <!-- Info Card -->
+      <div class="bg-accent/10 border border-accent/20 rounded-2xl p-4 mb-6">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-accent text-2xl filled">flag</span>
+          <div>
+            <p class="text-sm font-semibold mb-1">Set Your Daily Goal</p>
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Choose how many minutes you want to study each day. Consistency is key to mastering Chinese!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Streak -->
+      <div id="streakCard" class="bg-surface-light dark:bg-surface-dark rounded-2xl p-4 mb-6 border border-border-light dark:border-border-dark">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-accent text-2xl filled">local_fire_department</span>
+            </div>
+            <div>
+              <p class="text-2xl font-bold" id="streakCount">0 days</p>
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Current streak</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-semibold" id="streakStatus">Start today!</p>
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark" id="streakMessage">Build your habit</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Goal Options -->
+      <h2 class="text-base font-bold mb-3">Choose Your Daily Goal</h2>
+      <div class="space-y-3 mb-6">
+
+        <!-- 5 minutes - Casual -->
+        <div class="goal-card bg-surface-light dark:bg-surface-dark rounded-2xl p-4 border-2 border-border-light dark:border-border-dark" data-minutes="5" onclick="selectGoal(5)">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <span class="material-symbols-outlined text-blue-600 text-2xl">coffee</span>
+              </div>
+              <div>
+                <p class="text-lg font-bold">5 minutes</p>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Casual · Perfect for busy days</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 border-border-light dark:border-border-dark flex items-center justify-center goal-radio">
+              <div class="w-3 h-3 rounded-full bg-primary hidden selected-dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10 minutes - Regular -->
+        <div class="goal-card bg-surface-light dark:bg-surface-dark rounded-2xl p-4 border-2 border-border-light dark:border-border-dark" data-minutes="10" onclick="selectGoal(10)">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-primary text-2xl">schedule</span>
+              </div>
+              <div>
+                <p class="text-lg font-bold">10 minutes</p>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Regular · Build steady progress</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 border-border-light dark:border-border-dark flex items-center justify-center goal-radio">
+              <div class="w-3 h-3 rounded-full bg-primary hidden selected-dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 15 minutes - Recommended -->
+        <div class="goal-card bg-surface-light dark:bg-surface-dark rounded-2xl p-4 border-2 border-border-light dark:border-border-dark" data-minutes="15" onclick="selectGoal(15)">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-secondary text-2xl filled">recommend</span>
+              </div>
+              <div>
+                <p class="text-lg font-bold">15 minutes</p>
+                <div class="flex items-center gap-2">
+                  <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Recommended</p>
+                  <span class="px-2 py-0.5 bg-secondary/20 text-secondary text-xs font-semibold rounded-full">Popular</span>
+                </div>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 border-border-light dark:border-border-dark flex items-center justify-center goal-radio">
+              <div class="w-3 h-3 rounded-full bg-primary hidden selected-dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 20 minutes - Serious -->
+        <div class="goal-card bg-surface-light dark:bg-surface-dark rounded-2xl p-4 border-2 border-border-light dark:border-border-dark" data-minutes="20" onclick="selectGoal(20)">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-success text-2xl">trending_up</span>
+              </div>
+              <div>
+                <p class="text-lg font-bold">20 minutes</p>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Serious · Fast improvement</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 border-border-light dark:border-border-dark flex items-center justify-center goal-radio">
+              <div class="w-3 h-3 rounded-full bg-primary hidden selected-dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 30 minutes - Intensive -->
+        <div class="goal-card bg-surface-light dark:bg-surface-dark rounded-2xl p-4 border-2 border-border-light dark:border-border-dark" data-minutes="30" onclick="selectGoal(30)">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-accent text-2xl filled">bolt</span>
+              </div>
+              <div>
+                <p class="text-lg font-bold">30 minutes</p>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Intensive · Maximum results</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 border-border-light dark:border-border-dark flex items-center justify-center goal-radio">
+              <div class="w-3 h-3 rounded-full bg-primary hidden selected-dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 60 minutes - Dedicated -->
+        <div class="goal-card bg-surface-light dark:bg-surface-dark rounded-2xl p-4 border-2 border-border-light dark:border-border-dark" data-minutes="60" onclick="selectGoal(60)">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <span class="material-symbols-outlined text-purple-600 text-2xl filled">workspace_premium</span>
+              </div>
+              <div>
+                <p class="text-lg font-bold">60 minutes</p>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Dedicated · Full immersion</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 border-border-light dark:border-border-dark flex items-center justify-center goal-radio">
+              <div class="w-3 h-3 rounded-full bg-primary hidden selected-dot"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Impact Estimate -->
+      <div id="impactCard" class="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-5 mb-6 border border-primary/20 hidden">
+        <p class="text-sm font-semibold mb-3">📊 Estimated Impact</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-2xl font-bold text-primary" id="monthlyHours">0</p>
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Hours per month</p>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-secondary" id="yearlyHours">0</p>
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Hours per year</p>
+          </div>
+        </div>
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-3" id="impactMessage"></p>
+      </div>
+
+      <!-- Save Button -->
+      <div class="fixed bottom-0 left-0 right-0 p-4 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-t border-border-light dark:border-border-dark">
+        <button id="saveBtn" onclick="saveGoal()" disabled class="w-full bg-primary text-white font-semibold py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-all active:scale-95">
+          Save Goal
+        </button>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    let selectedMinutes = null;
+
+    // Load current goal and streak
+    window.addEventListener('load', () => {
+      // Wait for settings and studyTracker to be available
+      setTimeout(() => {
+        const currentGoal = settings.getDailyGoal();
+        if (currentGoal) {
+          selectGoal(parseInt(currentGoal), false);
+        }
+
+        // Load streak if studyTracker is available
+        if (typeof studyTracker !== 'undefined') {
+          loadStreak();
+        }
+      }, 100);
+    });
+
+    // Load streak data
+    function loadStreak() {
+      const streak = studyTracker.getStreak();
+      const todayMinutes = studyTracker.getTodayMinutes();
+      const dailyGoal = settings.getDailyGoal();
+
+      document.getElementById('streakCount').textContent = `${streak} day${streak !== 1 ? 's' : ''}`;
+
+      if (streak > 0) {
+        if (todayMinutes >= dailyGoal) {
+          document.getElementById('streakStatus').textContent = '🔥 On fire!';
+          document.getElementById('streakStatus').className = 'text-sm font-semibold text-accent';
+          document.getElementById('streakMessage').textContent = 'Goal met today!';
+        } else {
+          document.getElementById('streakStatus').textContent = '⚡ Keep going!';
+          document.getElementById('streakStatus').className = 'text-sm font-semibold text-primary';
+          document.getElementById('streakMessage').textContent = 'Study to keep streak';
+        }
+      } else {
+        document.getElementById('streakStatus').textContent = '🌱 Start today!';
+        document.getElementById('streakStatus').className = 'text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark';
+        document.getElementById('streakMessage').textContent = 'Build your habit';
+      }
+    }
+
+    // Select goal
+    function selectGoal(minutes, animate = true) {
+      selectedMinutes = minutes;
+
+      // Remove all selected states
+      document.querySelectorAll('.goal-card').forEach(card => {
+        card.classList.remove('selected');
+        const dot = card.querySelector('.selected-dot');
+        if (dot) dot.classList.add('hidden');
+      });
+
+      // Add selected state to clicked card
+      const selectedCard = document.querySelector(`[data-minutes="${minutes}"]`);
+      if (selectedCard) {
+        selectedCard.classList.add('selected');
+        const dot = selectedCard.querySelector('.selected-dot');
+        if (dot) dot.classList.remove('hidden');
+      }
+
+      // Show impact estimate
+      updateImpactEstimate(minutes);
+
+      // Enable save button
+      document.getElementById('saveBtn').disabled = false;
+    }
+
+    // Update impact estimate
+    function updateImpactEstimate(minutes) {
+      const impactCard = document.getElementById('impactCard');
+      const monthlyHours = Math.round((minutes * 30) / 60 * 10) / 10;
+      const yearlyHours = Math.round((minutes * 365) / 60);
+
+      document.getElementById('monthlyHours').textContent = monthlyHours;
+      document.getElementById('yearlyHours').textContent = yearlyHours;
+
+      // Impact messages
+      const messages = {
+        5: "Great for building a daily habit! 🌱",
+        10: "Solid progress with consistent practice! 📚",
+        15: "Excellent balance of time and results! ⭐",
+        20: "Serious commitment to fluency! 🚀",
+        30: "Rapid progress guaranteed! 🔥",
+        60: "Professional-level dedication! 👨‍🎓"
+      };
+
+      document.getElementById('impactMessage').textContent = messages[minutes] || "Keep up the great work!";
+      impactCard.classList.remove('hidden');
+    }
+
+    // Save goal
+    function saveGoal() {
+      if (!selectedMinutes) return;
+
+      // Save to settings
+      settings.setDailyGoal(selectedMinutes);
+
+      // Show success feedback
+      const btn = document.getElementById('saveBtn');
+      btn.textContent = '✓ Goal Saved!';
+      btn.classList.add('bg-success');
+      btn.classList.remove('bg-primary');
+
+      // Navigate back after short delay
+      setTimeout(() => {
+        window.history.back();
+      }, 800);
+    }
+  </script>
+</body>
+</html>

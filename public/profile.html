@@ -235,18 +235,18 @@
           </a>
 
           <!-- Daily Goal -->
-          <button class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
+          <a href="/daily-goal.html" class="flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
                 <span class="material-symbols-outlined text-accent">flag</span>
               </div>
               <div>
                 <p class="font-medium text-sm text-left">Daily Goal</p>
-                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">20 minutes per day</p>
+                <p id="dailyGoalDisplay" class="text-xs text-text-secondary-light dark:text-text-secondary-dark">20 minutes per day</p>
               </div>
             </div>
             <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
-          </button>
+          </a>
 
           <!-- Interface Language -->
           <button class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
@@ -472,21 +472,44 @@
       }
     }
 
+    // Load and display daily goal
+    function loadDailyGoal() {
+      // Wait for settings to be available
+      if (typeof settings === 'undefined') {
+        setTimeout(loadDailyGoal, 50);
+        return;
+      }
+
+      const dailyGoal = settings.getDailyGoal();
+      const displayText = `${dailyGoal} minutes per day`;
+      const dailyGoalDisplay = document.getElementById('dailyGoalDisplay');
+      if (dailyGoalDisplay) {
+        dailyGoalDisplay.textContent = displayText;
+      }
+    }
+
     // Load profile data on page load
     loadUserProfile();
     generateActivityCalendar();
     loadHSKLevel();
+    loadDailyGoal();
     loadStudyTimeData();
 
-    // Reload HSK level when page becomes visible (e.g., returning from selector)
+    // Reload settings when page becomes visible (e.g., returning from selector)
     document.addEventListener('visibilitychange', function() {
       if (!document.hidden) {
         loadHSKLevel();
+        loadDailyGoal();
+        loadStudyTimeData();
       }
     });
 
     // Also reload on focus (for better compatibility)
-    window.addEventListener('focus', loadHSKLevel);
+    window.addEventListener('focus', function() {
+      loadHSKLevel();
+      loadDailyGoal();
+      loadStudyTimeData();
+    });
 
     // Dark mode toggle (use var to allow reloading)
     var darkModeBtn = document.getElementById('darkModeBtn');
