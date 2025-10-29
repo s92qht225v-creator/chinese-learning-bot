@@ -139,10 +139,26 @@ app.get('/api/vocabulary/random', async (req, res) => {
 
 app.get('/api/quiz', async (req, res) => {
   try {
-    const vocabulary = await db.getVocabulary();
+    console.log('[API] Quiz request received');
+
+    const vocabulary = await Promise.race([
+      db.getVocabulary(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Database timeout')), 5000))
+    ]);
+
+    console.log(`[API] Vocabulary loaded: ${vocabulary ? vocabulary.length : 0} words`);
+
+    if (!vocabulary || vocabulary.length === 0) {
+      return res.status(500).json({ error: 'No vocabulary data available' });
+    }
+
+    if (vocabulary.length < 4) {
+      return res.status(500).json({ error: 'Not enough vocabulary data (need at least 4 words)' });
+    }
+
     const question = vocabulary[Math.floor(Math.random() * vocabulary.length)];
     const options = [question.english];
-    
+
     // Add 3 random wrong answers
     while (options.length < 4) {
       const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
@@ -150,10 +166,10 @@ app.get('/api/quiz', async (req, res) => {
         options.push(randomWord.english);
       }
     }
-    
+
     // Shuffle options
     options.sort(() => Math.random() - 0.5);
-    
+
     res.json({
       id: question.id,
       question: question.chinese,
@@ -162,8 +178,8 @@ app.get('/api/quiz', async (req, res) => {
       correctAnswer: question.english
     });
   } catch (error) {
-    console.error('Error generating quiz:', error);
-    res.status(500).json({ error: 'Failed to generate quiz' });
+    console.error('[API] Error generating quiz:', error.message);
+    res.status(500).json({ error: 'Failed to generate quiz', details: error.message });
   }
 });
 
@@ -895,8 +911,11 @@ const server = app.listen(config.port, () => {
 // Handle server errors
 server.on('error', (error) => {
   if (error.code === 'EADDRINUSE') {
-    console.error(`❌ Port ${config.port} is already in use. Exiting...`);
-    process.exit(1);
+    console.error(`❌ Port ${config.port} is already in use. Waiting before retry...`);
+    // Wait 5 seconds before exiting to allow PM2 restart delay to kick in
+    setTimeout(() => {
+      process.exit(1);
+    }, 5000);
   } else {
     console.error('Server error:', error);
     process.exit(1);
