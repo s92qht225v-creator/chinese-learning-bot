@@ -445,6 +445,146 @@ app.delete('/api/review-queue/:id', async (req, res) => {
   }
 });
 
+// Study Time Tracking Endpoints
+// Save study session
+app.post('/api/study-time', async (req, res) => {
+  try {
+    const { telegram_user_id, activity, duration_minutes, session_date } = req.body;
+
+    if (!telegram_user_id || !duration_minutes) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (!db.isConfigured()) {
+      // If database not configured, just return success (client will use localStorage)
+      return res.json({ success: true, message: 'Saved locally (database not configured)' });
+    }
+
+    const { data, error } = await db.supabase
+      .from('study_sessions')
+      .insert([{
+        telegram_user_id: telegram_user_id,
+        activity: activity || 'study',
+        duration_minutes: duration_minutes,
+        session_date: session_date || new Date().toISOString().split('T')[0]
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Error saving study session:', error);
+    res.status(500).json({ error: 'Failed to save study session' });
+  }
+});
+
+// Get study time for a user
+app.get('/api/study-time/:telegram_user_id', async (req, res) => {
+  try {
+    const { telegram_user_id } = req.params;
+    const { start_date, end_date } = req.query;
+
+    if (!db.isConfigured()) {
+      // If database not configured, return empty data (client will use localStorage)
+      return res.json({ sessions: [], totalMinutes: 0 });
+    }
+
+    let query = db.supabase
+      .from('study_sessions')
+      .select('*')
+      .eq('telegram_user_id', telegram_user_id)
+      .order('session_date', { ascending: false });
+
+    if (start_date) {
+      query = query.gte('session_date', start_date);
+    }
+    if (end_date) {
+      query = query.lte('session_date', end_date);
+    }
+
+    const { data: sessions, error } = await query;
+
+    if (error) throw error;
+
+    const totalMinutes = sessions.reduce((sum, session) => sum + (session.duration_minutes || 0), 0);
+
+    res.json({ sessions, totalMinutes });
+  } catch (error) {
+    console.error('Error fetching study time:', error);
+    res.status(500).json({ error: 'Failed to fetch study time' });
+  }
+});
+
+// Get study stats summary for a user
+app.get('/api/study-time/:telegram_user_id/summary', async (req, res) => {
+  try {
+    const { telegram_user_id } = req.params;
+
+    if (!db.isConfigured()) {
+      return res.json({
+        totalMinutes: 0,
+        weekMinutes: 0,
+        todayMinutes: 0,
+        streak: 0
+      });
+    }
+
+    // Get all sessions for the user
+    const { data: allSessions, error: allError } = await db.supabase
+      .from('study_sessions')
+      .select('*')
+      .eq('telegram_user_id', telegram_user_id)
+      .order('session_date', { ascending: false });
+
+    if (allError) throw allError;
+
+    // Calculate today
+    const today = new Date().toISOString().split('T')[0];
+    const todayMinutes = allSessions
+      .filter(s => s.session_date === today)
+      .reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+
+    // Calculate this week (Monday - Sunday)
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const monday = new Date(now);
+    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    monday.setDate(now.getDate() + diff);
+    const mondayStr = monday.toISOString().split('T')[0];
+
+    const weekMinutes = allSessions
+      .filter(s => s.session_date >= mondayStr)
+      .reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+
+    // Calculate total
+    const totalMinutes = allSessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+
+    // Calculate streak
+    const uniqueDates = [...new Set(allSessions.map(s => s.session_date))].sort().reverse();
+    let streak = 0;
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < uniqueDates.length; i++) {
+      const expectedDate = new Date(todayDate);
+      expectedDate.setDate(todayDate.getDate() - i);
+      const expectedDateStr = expectedDate.toISOString().split('T')[0];
+
+      if (uniqueDates[i] === expectedDateStr) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    res.json({ totalMinutes, weekMinutes, todayMinutes, streak });
+  } catch (error) {
+    console.error('Error fetching study summary:', error);
+    res.status(500).json({ error: 'Failed to fetch study summary' });
+  }
+});
+
 // Simple admin authentication middleware
 const adminAuth = (req, res, next) => {
   const adminPassword = req.headers['x-admin-password'];

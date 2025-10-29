@@ -7,6 +7,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="/api-config.js?v=2"></script>
   <script src="/auth.js"></script>
+  <script src="/study-tracker.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" media="print" onload="this.media='all'"/>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -260,6 +261,12 @@
         loadQuestion();
       } else {
         // Quiz finished
+        // End study tracking session
+        if (typeof studyTracker !== 'undefined') {
+          const minutes = studyTracker.endSession();
+          console.log(`Quiz session completed: ${minutes} minutes`);
+        }
+
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         const accuracy = Math.round((stats.correct / totalQuestions) * 100);
         alert(`Quiz Complete! 🎉\n\nScore: ${stats.correct * 10}/${totalQuestions * 10}\nCorrect: ${stats.correct}\nIncorrect: ${stats.incorrect}\nAccuracy: ${accuracy}%`);
@@ -270,10 +277,26 @@
     // Back button
     backBtn.addEventListener('click', () => {
       if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      // End study session if user leaves early
+      if (typeof studyTracker !== 'undefined') {
+        studyTracker.endSession();
+      }
       window.history.back();
     });
 
+    // Also track when user leaves page (browser back, close, etc.)
+    window.addEventListener('beforeunload', () => {
+      if (typeof studyTracker !== 'undefined' && studyTracker.currentSession) {
+        studyTracker.endSession();
+      }
+    });
+
     // Initialize
+    // Start tracking study time
+    if (typeof studyTracker !== 'undefined') {
+      studyTracker.startSession('quiz');
+    }
+
     loadQuestion();
   </script>
 </body>

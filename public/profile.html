@@ -13,6 +13,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/settings.js"></script>
+  <script src="/study-tracker.js"></script>
   
   <style>
     body {
@@ -390,6 +391,62 @@
       document.getElementById('activeDaysCount').textContent = `${activeCount} days active`;
     }
 
+    // Load and display study time for the week
+    function loadStudyTimeData() {
+      // Wait for studyTracker to be available
+      if (typeof studyTracker === 'undefined') {
+        setTimeout(loadStudyTimeData, 50);
+        return;
+      }
+
+      const weekData = studyTracker.getWeekData();
+      const dailyGoal = settings.getDailyGoal();
+      const container = document.getElementById('studyTimeContainer');
+
+      if (!container) return;
+
+      // Clear existing content
+      container.innerHTML = '';
+
+      // Render each day
+      weekData.forEach(day => {
+        const percentage = dailyGoal > 0 ? Math.min((day.minutes / dailyGoal) * 100, 100) : 0;
+        const isOverGoal = day.minutes > dailyGoal;
+
+        const dayHtml = `
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <span class="text-sm font-medium">${day.day}</span>
+              <span class="text-sm font-semibold ${isOverGoal ? 'text-success' : 'text-primary'}">${day.minutes} min</span>
+            </div>
+            <div class="h-2 bg-background-light dark:bg-background-dark rounded-full overflow-hidden">
+              <div class="h-full ${isOverGoal ? 'bg-success' : 'bg-primary'} rounded-full transition-all" style="width: ${percentage}%;"></div>
+            </div>
+          </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', dayHtml);
+      });
+
+      // Add "Today" section
+      const today = weekData.find(d => d.isToday) || weekData[weekData.length - 1];
+      const todayPercentage = dailyGoal > 0 ? Math.min((today.minutes / dailyGoal) * 100, 100) : 0;
+
+      const todayHtml = `
+        <div class="pt-2 border-t border-border-light dark:border-border-dark">
+          <div class="flex justify-between items-center mb-1.5">
+            <span class="text-sm font-bold">Today</span>
+            <span class="text-sm font-bold text-accent">${today.minutes} min / 🎯 ${dailyGoal} min</span>
+          </div>
+          <div class="h-2.5 bg-background-light dark:bg-background-dark rounded-full overflow-hidden">
+            <div class="h-full bg-accent rounded-full transition-all" style="width: ${todayPercentage}%;"></div>
+          </div>
+        </div>
+      `;
+
+      container.insertAdjacentHTML('beforeend', todayHtml);
+    }
+
     // Load and display HSK level
     function loadHSKLevel() {
       // Wait for settings to be available
@@ -419,6 +476,7 @@
     loadUserProfile();
     generateActivityCalendar();
     loadHSKLevel();
+    loadStudyTimeData();
 
     // Reload HSK level when page becomes visible (e.g., returning from selector)
     document.addEventListener('visibilitychange', function() {
