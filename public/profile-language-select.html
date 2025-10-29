@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>Interface Language - Chinese Learning</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet">
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/settings.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#448fe4",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "success": "#4CAF50",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#18222c",
+            "text-primary-light": "#111417",
+            "text-primary-dark": "#f0f4f8",
+            "text-secondary-light": "#647487",
+            "text-secondary-dark": "#a0aec0",
+            "border-light": "#dce0e5",
+            "border-dark": "#2d3748",
+          },
+          fontFamily: {
+            "display": ["Work Sans", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    body {
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .language-card {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .language-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(68, 143, 228, 0.15);
+    }
+
+    .language-card.selected {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+    }
+
+    .dark .language-card.selected {
+      background: rgba(68, 143, 228, 0.1);
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .flag-emoji {
+      font-size: 2.5rem;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-primary-light dark:text-text-primary-dark">
+
+  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-10 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-b border-border-light dark:border-border-dark">
+      <div class="flex items-center justify-between p-4">
+        <button onclick="window.history.back()" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 class="text-lg font-bold">Interface Language</h1>
+        <div class="w-10"></div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-4 py-6 max-w-screen-xl mx-auto w-full">
+
+      <!-- Info Card -->
+      <div class="bg-primary/10 border border-primary/20 rounded-2xl p-4 mb-6">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-primary text-2xl">info</span>
+          <div>
+            <p class="text-sm font-semibold mb-1">Choose Your Language</p>
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Select the language for menus, buttons, and interface elements. This won't affect lesson content.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Language Options -->
+      <div class="space-y-3 mb-6">
+
+        <!-- English -->
+        <div class="language-card bg-surface-light dark:bg-surface-dark rounded-2xl p-5 border-2 border-border-light dark:border-border-dark" data-language="en" onclick="selectLanguage('en')">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <span class="flag-emoji">🇬🇧</span>
+              <div>
+                <h3 class="text-lg font-bold">English</h3>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">English</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 border-border-light dark:border-border-dark flex items-center justify-center language-radio">
+              <div class="w-3 h-3 rounded-full bg-primary hidden selected-dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Uzbek -->
+        <div class="language-card bg-surface-light dark:bg-surface-dark rounded-2xl p-5 border-2 border-border-light dark:border-border-dark" data-language="uz" onclick="selectLanguage('uz')">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <span class="flag-emoji">🇺🇿</span>
+              <div>
+                <h3 class="text-lg font-bold">Uzbek</h3>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Ўзбекча</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 border-border-light dark:border-border-dark flex items-center justify-center language-radio">
+              <div class="w-3 h-3 rounded-full bg-primary hidden selected-dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Russian -->
+        <div class="language-card bg-surface-light dark:bg-surface-dark rounded-2xl p-5 border-2 border-border-light dark:border-border-dark" data-language="ru" onclick="selectLanguage('ru')">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <span class="flag-emoji">🇷🇺</span>
+              <div>
+                <h3 class="text-lg font-bold">Russian</h3>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Русский</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 border-border-light dark:border-border-dark flex items-center justify-center language-radio">
+              <div class="w-3 h-3 rounded-full bg-primary hidden selected-dot"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Preview Section -->
+      <div class="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-5 mb-6 border border-primary/20">
+        <div class="flex items-start gap-3 mb-4">
+          <span class="material-symbols-outlined text-primary text-2xl">visibility</span>
+          <div>
+            <h4 class="font-semibold mb-1">Preview</h4>
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">How your interface will look</p>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex justify-between items-center p-3 bg-surface-light/50 dark:bg-surface-dark/50 rounded-lg">
+            <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Interface Language:</span>
+            <span class="font-semibold text-primary" id="previewInterface">English</span>
+          </div>
+          <div class="flex justify-between items-center p-3 bg-surface-light/50 dark:bg-surface-dark/50 rounded-lg">
+            <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Button Text:</span>
+            <span class="font-semibold" id="previewButton">Start Learning</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div class="fixed bottom-0 left-0 right-0 p-4 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-t border-border-light dark:border-border-dark">
+        <button id="saveBtn" onclick="saveLanguage()" disabled class="w-full bg-primary text-white font-semibold py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-all active:scale-95">
+          Save Language
+        </button>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    let selectedLanguage = null;
+
+    // Language translations
+    const translations = {
+      'en': {
+        interface: 'English',
+        button: 'Start Learning'
+      },
+      'uz': {
+        interface: "O'zbek tili",
+        button: "O'rganishni boshlash"
+      },
+      'ru': {
+        interface: 'Русский',
+        button: 'Начать обучение'
+      }
+    };
+
+    // Load current language
+    window.addEventListener('load', () => {
+      // Wait for settings to be available
+      setTimeout(() => {
+        const currentLang = settings ? settings.getInterfaceLanguage() : 'en';
+        selectLanguage(currentLang);
+      }, 100);
+    });
+
+    // Select language
+    function selectLanguage(lang) {
+      selectedLanguage = lang;
+
+      // Remove all selected states
+      document.querySelectorAll('.language-card').forEach(card => {
+        card.classList.remove('selected');
+        const dot = card.querySelector('.selected-dot');
+        if (dot) dot.classList.add('hidden');
+      });
+
+      // Add selected state to clicked card
+      const selectedCard = document.querySelector(`[data-language="${lang}"]`);
+      if (selectedCard) {
+        selectedCard.classList.add('selected');
+        const dot = selectedCard.querySelector('.selected-dot');
+        if (dot) dot.classList.remove('hidden');
+      }
+
+      // Update preview
+      updatePreview(lang);
+
+      // Enable save button
+      document.getElementById('saveBtn').disabled = false;
+    }
+
+    // Update preview
+    function updatePreview(lang) {
+      const trans = translations[lang] || translations['en'];
+      document.getElementById('previewInterface').textContent = trans.interface;
+      document.getElementById('previewButton').textContent = trans.button;
+    }
+
+    // Save language
+    function saveLanguage() {
+      if (!selectedLanguage) return;
+
+      // Save to settings
+      settings.setInterfaceLanguage(selectedLanguage);
+
+      // Show success feedback
+      const btn = document.getElementById('saveBtn');
+
+      // Localized success messages
+      const successMessages = {
+        'en': '✓ Language Saved!',
+        'uz': '✓ Til saqlandi!',
+        'ru': '✓ Язык сохранён!'
+      };
+
+      btn.textContent = successMessages[selectedLanguage] || '✓ Saved!';
+      btn.classList.add('bg-success');
+      btn.classList.remove('bg-primary');
+
+      // Navigate back after short delay
+      setTimeout(() => {
+        window.history.back();
+      }, 800);
+    }
+  </script>
+</body>
+</html>

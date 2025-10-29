@@ -67,6 +67,16 @@ class Settings {
   setNotificationsEnabled(enabled) {
     localStorage.setItem('notificationsEnabled', enabled.toString());
   }
+
+  // Get interface language
+  getInterfaceLanguage() {
+    return localStorage.getItem('interfaceLanguage') || 'en';
+  }
+
+  // Set interface language
+  setInterfaceLanguage(language) {
+    localStorage.setItem('interfaceLanguage', language);
+  }
 }
 
 // Create global instance
