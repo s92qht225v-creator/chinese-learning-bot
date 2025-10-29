@@ -399,7 +399,6 @@ function initializeAudioPlayer(audioUrl, thumbnailUrl) {
 }
 
 function playAudio(wordId) {
-  tg.HapticFeedback.impactOccurred('light');
 
   // Find the word in the current vocabulary
   const word = currentVocabulary.find(w => w.id == wordId);
@@ -442,7 +441,6 @@ function playTextToSpeech(text) {
 }
 
 async function addToReview(wordId) {
-  tg.HapticFeedback.impactOccurred('medium');
 
   try {
     const userId = tg.initDataUnsafe?.user?.id;
@@ -474,9 +472,7 @@ async function addToReview(wordId) {
 }
 
 async function toggleFavorite(wordId, event) {
-  // Haptic feedback (safe to call even if not supported)
   try {
-    tg.HapticFeedback?.impactOccurred('light');
   } catch (e) {}
 
   try {
@@ -544,14 +540,12 @@ async function toggleFavorite(wordId, event) {
 }
 
 function saveGrammar(grammarId) {
-  tg.HapticFeedback.notificationOccurred('success');
   console.log('Saved grammar:', grammarId);
 }
 
 function markLessonComplete() {
   if (currentLesson) {
     localStorage.setItem(`lesson${currentLesson.id}_completed`, 'true');
-    tg.HapticFeedback.notificationOccurred('success');
     document.getElementById('completeBtn').style.opacity = '0.5';
   }
 }

@@ -82,7 +82,6 @@
 
     // Back button
     backBtn.addEventListener('click', () => {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
       window.history.back();
     });
 
@@ -138,7 +137,6 @@
 
     // Remove from favorites
     async function removeFavorite(wordId, favoriteId) {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
 
       try {
         const response = await fetch(`/api/favorites/${favoriteId}`, {
@@ -165,7 +163,6 @@
     // Play audio
     let currentAudio = null;
     function playAudio(wordId) {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 
       const word = favorites.find(w => w.id === wordId);
       if (!word) return;

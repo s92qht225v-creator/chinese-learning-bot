@@ -190,8 +190,6 @@
     // Flip card
     flashcard.addEventListener('click', () => {
       flashcard.classList.toggle('flipped');
-      if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
       }
     });
 
@@ -215,8 +213,6 @@
         loadCard(currentIndex);
       } else {
         // Finished
-        if (tg.HapticFeedback) {
-          tg.HapticFeedback.notificationOccurred('success');
         }
         alert(`Session complete! 🎉\n\nAgain: ${stats.again}\nHard: ${stats.hard}\nGood: ${stats.good}\nEasy: ${stats.easy}`);
         window.location.href = '/practice.html';
@@ -231,31 +227,26 @@
 
     // Button handlers
     againBtn.addEventListener('click', () => {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
       updateStats('again');
       nextCard();
     });
 
     hardBtn.addEventListener('click', () => {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
       updateStats('hard');
       nextCard();
     });
 
     goodBtn.addEventListener('click', () => {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
       updateStats('good');
       nextCard();
     });
 
     easyBtn.addEventListener('click', () => {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
       updateStats('easy');
       nextCard();
     });
 
     backBtn.addEventListener('click', () => {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
       window.history.back();
     });
 

@@ -16,9 +16,6 @@ radioInputs.forEach(radio => {
     selectedLevel = e.target.value;
     continueBtn.disabled = false;
     
-    // Haptic feedback
-    if (tg.HapticFeedback) {
-      tg.HapticFeedback.impactOccurred('light');
     }
   });
 });
@@ -32,9 +29,6 @@ notSureBtn.addEventListener('click', () => {
   radioInputs[0].checked = true;
   continueBtn.disabled = false;
   
-  // Haptic feedback
-  if (tg.HapticFeedback) {
-    tg.HapticFeedback.impactOccurred('medium');
   }
   
   // Scroll to top to show the selection
@@ -49,9 +43,6 @@ continueBtn.addEventListener('click', () => {
   localStorage.setItem('hskLevel', selectedLevel);
   localStorage.setItem('setupCompleted', 'true');
   
-  // Haptic feedback
-  if (tg.HapticFeedback) {
-    tg.HapticFeedback.notificationOccurred('success');
   }
   
   // Navigate to main app

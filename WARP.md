@@ -186,9 +186,6 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
-// Haptic feedback
-tg.HapticFeedback.impactOccurred('light');
-tg.HapticFeedback.notificationOccurred('success');
 
 // User identification headers
 const headers = {

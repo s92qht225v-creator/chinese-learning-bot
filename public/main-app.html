@@ -473,9 +473,6 @@
           return;
         }
 
-        // Haptic feedback
-        if (tg.HapticFeedback) {
-          tg.HapticFeedback.impactOccurred('light');
         }
 
         // Update active state
@@ -553,9 +550,6 @@
     const floatingDictBtn = document.getElementById('floatingDictBtn');
 
     floatingDictBtn.addEventListener('click', () => {
-      // Haptic feedback
-      if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('medium');
       }
 
       // TODO: Open dictionary search modal or navigate to vocabulary page

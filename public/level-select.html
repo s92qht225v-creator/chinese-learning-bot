@@ -357,9 +357,6 @@
       input.addEventListener('change', (e) => {
         selectedLevel = e.target.value;
 
-        // Haptic feedback
-        if (tg.HapticFeedback) {
-          tg.HapticFeedback.impactOccurred('light');
         }
 
         console.log('Level selected:', selectedLevel);
@@ -373,9 +370,6 @@
         return;
       }
 
-      // Haptic feedback
-      if (tg.HapticFeedback) {
-        tg.HapticFeedback.notificationOccurred('success');
       }
 
       // Save selected level
