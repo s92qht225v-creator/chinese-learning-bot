@@ -2,6 +2,8 @@ const config = require('./config');
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
 const db = require('./database');
+const multer = require('multer');
+const { createClient } = require('@supabase/supabase-js');
 
 const bot = new TelegramBot(config.telegramBotToken, { 
   polling: {
@@ -24,8 +26,8 @@ const app = express();
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Telegram-User-Id, X-Telegram-Username, X-Telegram-First-Name');
-  
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Telegram-User-Id, X-Telegram-Username, X-Telegram-First-Name, X-Admin-Password');
+
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
@@ -643,23 +645,73 @@ app.get('/api/study-time/:telegram_user_id/summary', async (req, res) => {
 const adminAuth = (req, res, next) => {
   const adminPassword = req.headers['x-admin-password'];
   const expectedPassword = 'admin123';
-  
+
   console.log('[AUTH] Admin auth attempt:', {
     received: adminPassword ? `${adminPassword.substring(0, 3)}...` : 'none',
     expected: `${expectedPassword.substring(0, 3)}...`,
     match: adminPassword === expectedPassword
   });
-  
+
   if (adminPassword === expectedPassword) {
     next();
   } else {
     console.log('[AUTH] Authentication failed');
-    res.status(401).json({ 
+    res.status(401).json({
       error: 'Unauthorized',
       message: 'Invalid or missing admin password'
     });
   }
 };
+
+// Initialize Supabase client for file uploads (with service key)
+const supabase = createClient(
+  config.supabase.url,
+  config.supabase.serviceKey
+);
+
+// Configure multer for memory storage
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
+
+// Audio upload endpoint
+app.post('/api/admin/upload-audio', adminAuth, upload.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Generate unique filename
+    const fileExt = req.file.originalname.split('.').pop();
+    const fileName = `audio_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `quiz-audio/${fileName}`;
+
+    // Upload to Supabase storage
+    const { data, error } = await supabase.storage
+      .from('audio')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('audio')
+      .getPublicUrl(filePath);
+
+    res.json({ url: urlData.publicUrl });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get all vocabulary (admin)
 app.get('/api/admin/vocabulary', adminAuth, async (req, res) => {

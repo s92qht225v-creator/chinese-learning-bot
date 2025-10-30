@@ -9,9 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
-  
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
     tailwind.config = {
@@ -325,15 +324,10 @@
   </main>
 
   <script>
-    // Initialize Supabase
-    const SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2ZW9xZWRza3piYmdjYXpwc2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwMzA4MjcsImV4cCI6MjA0NTYwNjgyN30.U-b1_1K8LMvOW6hLWzLmNLqxb_G6x05uLKpW0gKRykg';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
     let selectedType = null;
     let currentQuestion = {};
 
-    // Handle audio file upload to Supabase
+    // Handle audio file upload via backend API
     async function handleAudioUpload(input) {
       const file = input.files[0];
       if (!file) return;
@@ -342,27 +336,32 @@
       statusDiv.innerHTML = '<span style="color: #448fe4;">⏳ Uploading...</span>';
 
       try {
-        // Generate unique filename
-        const fileExt = file.name.split('.').pop();
-        const fileName = `audio_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `quiz-audio/${fileName}`;
+        const password = await getAdminPassword();
+        if (!password) {
+          statusDiv.innerHTML = '<span style="color: #ef4444;">❌ Admin password required</span>';
+          return;
+        }
 
-        // Upload to Supabase storage
-        const { data, error } = await supabase.storage
-          .from('audio')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('audio', file);
 
-        if (error) throw error;
+        // Upload via backend API
+        const response = await fetch('/api/admin/upload-audio', {
+          method: 'POST',
+          headers: {
+            'X-Admin-Password': password
+          },
+          body: formData
+        });
 
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from('audio')
-          .getPublicUrl(filePath);
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Upload failed');
+        }
 
-        const publicUrl = urlData.publicUrl;
+        const data = await response.json();
+        const publicUrl = data.url;
 
         // Set the hidden input value
         document.getElementById('audioUrl').value = publicUrl;
