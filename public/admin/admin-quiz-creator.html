@@ -1451,9 +1451,9 @@
 
       // Collect form data based on question type
       const questionData = collectCompleteFormData();
-      
+
       if (!questionData) {
-        alert('❌ Please fill in all required fields!');
+        // Specific error already shown by collectCompleteFormData
         return;
       }
 
@@ -1534,8 +1534,11 @@
           const questionText = document.getElementById('questionText')?.value;
           const chineseText = document.getElementById('chineseText')?.value;
           const audioUrl = document.getElementById('audioUrl')?.value;
-          
-          if (!questionText) return null;
+
+          if (!questionText) {
+            alert('❌ Missing required field: Question Text');
+            return null;
+          }
 
           const options = [
             { id: 'a', text: document.getElementById('option_a')?.value || '' },
@@ -1544,6 +1547,18 @@
             { id: 'd', text: document.getElementById('option_d')?.value || '' }
           ];
 
+          // Check if all options are filled
+          const emptyOptions = [];
+          if (!options[0].text) emptyOptions.push('Option A');
+          if (!options[1].text) emptyOptions.push('Option B');
+          if (!options[2].text) emptyOptions.push('Option C');
+          if (!options[3].text) emptyOptions.push('Option D');
+
+          if (emptyOptions.length > 0) {
+            alert('❌ Missing required fields: ' + emptyOptions.join(', '));
+            return null;
+          }
+
           // Find correct answer
           let correctAnswer = '';
           if (document.getElementById('correct_a')?.checked) correctAnswer = options[0].text;
@@ -1551,7 +1566,10 @@
           else if (document.getElementById('correct_c')?.checked) correctAnswer = options[2].text;
           else if (document.getElementById('correct_d')?.checked) correctAnswer = options[3].text;
 
-          if (!correctAnswer) return null;
+          if (!correctAnswer) {
+            alert('❌ Please select which option is correct by clicking one of the radio buttons (A, B, C, or D)');
+            return null;
+          }
 
           questionData.question = questionText;
           if (chineseText) questionData.question += ' - ' + chineseText;
@@ -1805,7 +1823,7 @@
 
         const questionData = collectCompleteFormData();
         if (!questionData) {
-          alert('❌ Please fill in all required fields!');
+          // Specific error already shown by collectCompleteFormData
           return;
         }
 
