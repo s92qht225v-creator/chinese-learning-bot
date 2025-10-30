@@ -376,6 +376,8 @@
 
     // Select question type
     function selectQuestionType(type) {
+      console.log('selectQuestionType called with:', type);
+
       // Normalize legacy type names
       const typeMapping = {
         'match_pairs': 'matching',
@@ -390,12 +392,15 @@
       const normalizedType = typeMapping[type] || type;
       selectedType = normalizedType;
 
+      console.log('Normalized type:', normalizedType, 'selectedType:', selectedType);
+
       // Update UI
       document.querySelectorAll('.question-type-card').forEach(card => {
         card.classList.remove('selected');
       });
 
       const typeCard = document.querySelector(`[data-type="${normalizedType}"]`);
+      console.log('Found type card:', typeCard ? 'yes' : 'no', 'for type:', normalizedType);
       if (typeCard) {
         typeCard.classList.add('selected');
       }
@@ -406,10 +411,12 @@
 
     // Load form based on type
     function loadFormForType(type) {
+      console.log('loadFormForType called with:', type);
       const container = document.getElementById('questionFormContainer');
-      
+
       switch(type) {
         case 'multiple_choice':
+          console.log('Loading multiple choice form');
           container.innerHTML = getMultipleChoiceForm();
           break;
         case 'fill_gap':
