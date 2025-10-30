@@ -10,22 +10,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
 
-  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-
-  <script type="text/tailwindcss">
-    @config {
-      darkMode: "class";
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
+      darkMode: "class",
       theme: {
         extend: {
           colors: {
-            primary: #448fe4;
-            secondary: #50E3C2;
-            accent: #F5A623;
-            success: #4CAF50;
+            "primary": "#448fe4",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "success": "#4CAF50"
           }
         }
       }
-    }
+    };
   </script>
   
   <style>
