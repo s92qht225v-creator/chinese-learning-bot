@@ -9,9 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
-
+  
   <script src="https://cdn.tailwindcss.com"></script>
-
+  
   <script>
     tailwind.config = {
       darkMode: "class",
@@ -327,151 +327,26 @@
     let selectedType = null;
     let currentQuestion = {};
 
-    // Handle audio file upload via backend API
-    async function handleAudioUpload(input) {
-      const file = input.files[0];
-      if (!file) return;
-
-      const statusDiv = document.getElementById('audioUploadStatus');
-      statusDiv.innerHTML = '<span style="color: #448fe4;">⏳ Uploading...</span>';
-
-      try {
-        const password = await getAdminPassword();
-        if (!password) {
-          statusDiv.innerHTML = '<span style="color: #ef4444;">❌ Admin password required</span>';
-          return;
-        }
-
-        // Create FormData for file upload
-        const formData = new FormData();
-        formData.append('audio', file);
-
-        // Upload via backend API
-        const response = await fetch('/api/admin/upload-audio', {
-          method: 'POST',
-          headers: {
-            'X-Admin-Password': password
-          },
-          body: formData
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Upload failed');
-        }
-
-        const data = await response.json();
-        const publicUrl = data.url;
-
-        // Set the hidden input value
-        document.getElementById('audioUrl').value = publicUrl;
-        statusDiv.innerHTML = `<span style="color: #4CAF50;">✓ Uploaded successfully!</span>`;
-
-        console.log('Audio uploaded:', publicUrl);
-      } catch (error) {
-        console.error('Upload error:', error);
-        statusDiv.innerHTML = `<span style="color: #ef4444;">❌ Upload failed: ${error.message}</span>`;
-      }
-    }
-
-    // Handle image file upload via backend API
-    async function handleImageUpload(input) {
-      const file = input.files[0];
-      if (!file) return;
-
-      const statusDiv = document.getElementById('imageUploadStatus');
-      const imagePreview = document.getElementById('imagePreview');
-      const imagePreviewPlaceholder = document.getElementById('imagePreviewPlaceholder');
-
-      statusDiv.innerHTML = '<span style="color: #448fe4;">⏳ Uploading...</span>';
-
-      try {
-        const password = await getAdminPassword();
-        if (!password) {
-          statusDiv.innerHTML = '<span style="color: #ef4444;">❌ Admin password required</span>';
-          return;
-        }
-
-        // Create FormData for file upload
-        const formData = new FormData();
-        formData.append('image', file);
-
-        // Upload via backend API
-        const response = await fetch('/api/admin/upload-image', {
-          method: 'POST',
-          headers: {
-            'X-Admin-Password': password
-          },
-          body: formData
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Upload failed');
-        }
-
-        const data = await response.json();
-        const publicUrl = data.url;
-
-        // Set the hidden input value
-        document.getElementById('imageUrl').value = publicUrl;
-        statusDiv.innerHTML = `<span style="color: #4CAF50;">✓ Uploaded successfully!</span>`;
-
-        // Show preview
-        imagePreview.src = publicUrl;
-        imagePreview.classList.remove('hidden');
-        imagePreviewPlaceholder.classList.add('hidden');
-
-        console.log('Image uploaded:', publicUrl);
-      } catch (error) {
-        console.error('Upload error:', error);
-        statusDiv.innerHTML = `<span style="color: #ef4444;">❌ Upload failed: ${error.message}</span>`;
-      }
-    }
-
     // Select question type
     function selectQuestionType(type) {
-      console.log('selectQuestionType called with:', type);
-
-      // Normalize legacy type names
-      const typeMapping = {
-        'match_pairs': 'matching',
-        'chinese_to_uzbek': 'multiple_choice',
-        'uzbek_to_chinese': 'multiple_choice',
-        'pinyin_to_chinese': 'multiple_choice',
-        'chinese_to_pinyin': 'multiple_choice',
-        'audio_to_character': 'audio_to_word',
-        'fill_blank': 'fill_gap'
-      };
-
-      const normalizedType = typeMapping[type] || type;
-      selectedType = normalizedType;
-
-      console.log('Normalized type:', normalizedType, 'selectedType:', selectedType);
-
+      selectedType = type;
+      
       // Update UI
       document.querySelectorAll('.question-type-card').forEach(card => {
         card.classList.remove('selected');
       });
-
-      const typeCard = document.querySelector(`[data-type="${normalizedType}"]`);
-      console.log('Found type card:', typeCard ? 'yes' : 'no', 'for type:', normalizedType);
-      if (typeCard) {
-        typeCard.classList.add('selected');
-      }
-
+      document.querySelector(`[data-type="${type}"]`).classList.add('selected');
+      
       // Load appropriate form
-      loadFormForType(normalizedType);
+      loadFormForType(type);
     }
 
     // Load form based on type
     function loadFormForType(type) {
-      console.log('loadFormForType called with:', type);
       const container = document.getElementById('questionFormContainer');
-
+      
       switch(type) {
         case 'multiple_choice':
-          console.log('Loading multiple choice form');
           container.innerHTML = getMultipleChoiceForm();
           break;
         case 'fill_gap':
@@ -507,44 +382,6 @@
         case 'audio_to_word':
           container.innerHTML = getAudioToWordForm();
           break;
-        case 'match_pairs':
-          // Legacy type - redirect to matching
-          container.innerHTML = getMatchingForm();
-          break;
-        case 'chinese_to_uzbek':
-          // Chinese to Uzbek translation - use multiple choice form
-          container.innerHTML = getMultipleChoiceForm();
-          break;
-        case 'uzbek_to_chinese':
-          // Uzbek to Chinese translation - use multiple choice form
-          container.innerHTML = getMultipleChoiceForm();
-          break;
-        case 'pinyin_to_chinese':
-          // Pinyin to Chinese translation - use multiple choice form
-          container.innerHTML = getMultipleChoiceForm();
-          break;
-        case 'chinese_to_pinyin':
-          // Chinese to Pinyin translation - use multiple choice form
-          container.innerHTML = getMultipleChoiceForm();
-          break;
-        case 'audio_to_character':
-          // Audio to Character - use audio_to_word form
-          container.innerHTML = getAudioToWordForm();
-          break;
-        case 'fill_blank':
-          // Fill blank - use fill_gap form
-          container.innerHTML = getFillGapForm();
-          break;
-        default:
-          // Unknown type - show error message
-          container.innerHTML = `
-            <div style="padding: 40px; text-align: center; background: #fff3cd; border: 2px solid #ffc107; border-radius: 12px;">
-              <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">⚠️ Unsupported Question Type</h3>
-              <p style="color: #856404; margin-bottom: 20px;">Question type "${type}" is not supported in this editor.</p>
-              <p style="color: #856404;">Supported types: multiple_choice, fill_gap, true_false, matching, image_association, sentence_ordering, grammar_choice, error_correction, cloze_test, dictation, audio_comprehension, audio_to_word</p>
-            </div>
-          `;
-          break;
       }
     }
 
@@ -565,11 +402,9 @@
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Audio File (optional)</label>
-            <input type="file" id="audioFileInput" class="input-field" accept="audio/*" onchange="handleAudioUpload(this)">
-            <input type="hidden" id="audioUrl">
-            <div id="audioUploadStatus" class="text-sm mt-2"></div>
-            <p class="text-xs text-gray-500 mt-1">Upload new audio file to Supabase or keep existing</p>
+            <label class="block text-sm font-semibold mb-2">Audio URL (optional)</label>
+            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/shoubiao.mp3">
+            <p class="text-xs text-gray-500 mt-1">Upload audio file and paste URL here</p>
           </div>
         </section>
 
@@ -746,18 +581,15 @@
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Image File *</label>
-            <input type="file" id="imageFileInput" class="input-field" accept="image/*" onchange="handleImageUpload(this)">
-            <input type="hidden" id="imageUrl">
-            <div id="imageUploadStatus" class="text-sm mt-2"></div>
-            <p class="text-xs text-gray-500 mt-1">Upload image file to Supabase</p>
+            <label class="block text-sm font-semibold mb-2">Image URL *</label>
+            <input type="text" id="imageUrl" class="input-field" placeholder="/images/watch.jpg">
+            <p class="text-xs text-gray-500 mt-1">Upload image and paste URL here</p>
           </div>
 
           <div class="mb-4">
             <label class="block text-sm font-semibold mb-2">Image Preview</label>
-            <div id="imagePreviewContainer" class="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
-              <span class="text-gray-400" id="imagePreviewPlaceholder">No image</span>
-              <img id="imagePreview" src="" alt="Preview" class="hidden w-full h-full object-cover">
+            <div class="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+              <span class="text-gray-400">No image</span>
             </div>
           </div>
         </section>
@@ -971,11 +803,9 @@
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Audio File *</label>
-            <input type="file" id="audioFile" accept="audio/*" class="input-field" onchange="handleAudioUpload(this)">
-            <input type="hidden" id="audioUrl">
-            <div id="audioUploadStatus" class="text-sm mt-2"></div>
-            <p class="text-xs text-gray-500 mt-1">Upload MP3, WAV, or OGG audio file</p>
+            <label class="block text-sm font-semibold mb-2">Audio URL *</label>
+            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/wo-shi-xuesheng.mp3">
+            <p class="text-xs text-gray-500 mt-1">Upload audio file and paste URL</p>
           </div>
 
           <div class="mb-4">
@@ -1008,11 +838,8 @@
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Audio File *</label>
-            <input type="file" id="audioFile" accept="audio/*" class="input-field" onchange="handleAudioUpload(this)">
-            <input type="hidden" id="audioUrl">
-            <div id="audioUploadStatus" class="text-sm mt-2"></div>
-            <p class="text-xs text-gray-500 mt-1">Upload MP3, WAV, or OGG audio file</p>
+            <label class="block text-sm font-semibold mb-2">Audio URL *</label>
+            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/conversation-library.mp3">
           </div>
 
           <div class="mb-4">
@@ -1068,18 +895,15 @@
       return `
         <section class="form-card">
           <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
-
+          
           <div class="mb-4">
             <label class="block text-sm font-semibold mb-2">Question Text *</label>
             <input type="text" id="questionText" class="input-field" placeholder="e.g., Listen and select the word you hear:">
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Audio File *</label>
-            <input type="file" id="audioFile" accept="audio/*" class="input-field" onchange="handleAudioUpload(this)">
-            <input type="hidden" id="audioUrl">
-            <div id="audioUploadStatus" class="text-sm mt-2"></div>
-            <p class="text-xs text-gray-500 mt-1">Upload MP3, WAV, or OGG audio file</p>
+            <label class="block text-sm font-semibold mb-2">Audio URL *</label>
+            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/mama.mp3">
           </div>
         </section>
 
@@ -1517,9 +1341,9 @@
 
       // Collect form data based on question type
       const questionData = collectCompleteFormData();
-
+      
       if (!questionData) {
-        // Specific error already shown by collectCompleteFormData
+        alert('❌ Please fill in all required fields!');
         return;
       }
 
@@ -1572,14 +1396,11 @@
 
     // Collect complete form data for database
     function collectCompleteFormData() {
-      const hskLevelString = document.getElementById('hskLevel')?.value;
+      const hskLevel = document.getElementById('hskLevel')?.value;
       const tags = document.getElementById('tags')?.value.split(',').map(t => t.trim()).filter(t => t);
       const explanation = document.getElementById('explanation')?.value;
 
-      if (!hskLevelString) return null;
-
-      // Convert HSK level from 'HSK1' to integer 1
-      const hskLevel = parseInt(hskLevelString.replace('HSK', ''));
+      if (!hskLevel) return null;
 
       let questionData = {
         question_type: selectedType,
@@ -1600,11 +1421,8 @@
           const questionText = document.getElementById('questionText')?.value;
           const chineseText = document.getElementById('chineseText')?.value;
           const audioUrl = document.getElementById('audioUrl')?.value;
-
-          if (!questionText) {
-            alert('❌ Missing required field: Question Text');
-            return null;
-          }
+          
+          if (!questionText) return null;
 
           const options = [
             { id: 'a', text: document.getElementById('option_a')?.value || '' },
@@ -1613,18 +1431,6 @@
             { id: 'd', text: document.getElementById('option_d')?.value || '' }
           ];
 
-          // Check if all options are filled
-          const emptyOptions = [];
-          if (!options[0].text) emptyOptions.push('Option A');
-          if (!options[1].text) emptyOptions.push('Option B');
-          if (!options[2].text) emptyOptions.push('Option C');
-          if (!options[3].text) emptyOptions.push('Option D');
-
-          if (emptyOptions.length > 0) {
-            alert('❌ Missing required fields: ' + emptyOptions.join(', '));
-            return null;
-          }
-
           // Find correct answer
           let correctAnswer = '';
           if (document.getElementById('correct_a')?.checked) correctAnswer = options[0].text;
@@ -1632,10 +1438,7 @@
           else if (document.getElementById('correct_c')?.checked) correctAnswer = options[2].text;
           else if (document.getElementById('correct_d')?.checked) correctAnswer = options[3].text;
 
-          if (!correctAnswer) {
-            alert('❌ Please select which option is correct by clicking one of the radio buttons (A, B, C, or D)');
-            return null;
-          }
+          if (!correctAnswer) return null;
 
           questionData.question = questionText;
           if (chineseText) questionData.question += ' - ' + chineseText;
@@ -1696,37 +1499,12 @@
           const dictQuestion = document.getElementById('questionText')?.value;
           const dictAudio = document.getElementById('audioUrl')?.value;
           const dictAnswer = document.getElementById('correctAnswer')?.value;
-
+          
           if (!dictQuestion || !dictAudio || !dictAnswer) return null;
 
           questionData.question = dictQuestion + ' [audio: ' + dictAudio + ']';
           questionData.correct_answer = dictAnswer;
           questionData.options = JSON.stringify([dictAnswer]);
-          break;
-
-        case 'matching':
-          const matchQuestion = document.getElementById('questionText')?.value;
-          const pairs = [];
-
-          // Collect all chinese_X and english_X pairs
-          let pairIndex = 1;
-          while (document.getElementById(`chinese_${pairIndex}`)) {
-            const leftInput = document.getElementById(`chinese_${pairIndex}`);
-            const rightInput = document.getElementById(`english_${pairIndex}`);
-            if (leftInput && rightInput && leftInput.value && rightInput.value) {
-              pairs.push({
-                left: leftInput.value.trim(),
-                right: rightInput.value.trim()
-              });
-            }
-            pairIndex++;
-          }
-
-          if (!matchQuestion || pairs.length < 3) return null;
-
-          questionData.question = matchQuestion;
-          questionData.correct_answer = 'matches';
-          questionData.options = JSON.stringify(pairs);
           break;
 
         default:
@@ -1745,249 +1523,6 @@
     function viewAllQuestions() {
       window.location.href = '/admin/admin-questions-list.html';
     }
-
-    // Check if editing an existing question
-    async function loadQuestionForEdit() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const editId = urlParams.get('edit');
-
-      if (!editId) return; // Not editing, just creating new
-
-      try {
-        const password = await getAdminPassword();
-        if (!password) {
-          alert('❌ Admin password required to edit questions');
-          window.location.href = '/admin/admin-questions-list.html';
-          return;
-        }
-
-        // Fetch question from API
-        const response = await fetch(`/api/admin/quizzes`, {
-          headers: {
-            'X-Admin-Password': password
-          }
-        });
-
-        if (!response.ok) throw new Error('Failed to load questions');
-
-        const allQuestions = await response.json();
-        const question = allQuestions.find(q => q.id == editId);
-
-        if (!question) {
-          alert('❌ Question not found');
-          window.location.href = '/admin/admin-questions-list.html';
-          return;
-        }
-
-        // Load question data into form
-        console.log('Loading question for edit:', question);
-
-        // Select question type
-        selectQuestionType(question.question_type);
-
-        // Set HSK level
-        const hskLevelSelect = document.getElementById('hskLevel');
-        if (hskLevelSelect) {
-          hskLevelSelect.value = 'HSK' + question.hsk_level;
-        }
-
-        // Set tags
-        const tagsInput = document.getElementById('tags');
-        if (tagsInput && question.tags) {
-          tagsInput.value = question.tags;
-        }
-
-        // Set explanation
-        const explanationInput = document.getElementById('explanation');
-        if (explanationInput && question.explanation) {
-          explanationInput.value = question.explanation;
-        }
-
-        // Parse options
-        let options = question.options;
-        if (typeof options === 'string') {
-          try {
-            options = JSON.parse(options);
-          } catch (e) {
-            console.error('Failed to parse options:', e);
-            options = {};
-          }
-        }
-
-        // Load type-specific fields
-        setTimeout(() => {
-          const questionTextInput = document.getElementById('questionText');
-          const chineseTextInput = document.getElementById('chineseText');
-          const audioUrlInput = document.getElementById('audioUrl');
-          const correctAnswerInput = document.getElementById('correctAnswer');
-
-          // Parse question text that might contain " - 中文" or "[audio: url]"
-          let questionText = question.question || '';
-          let chineseText = '';
-          let audioUrl = '';
-
-          // Extract audio URL from [audio: url] format
-          const audioMatch = questionText.match(/\[audio:\s*(.+?)\]/);
-          if (audioMatch) {
-            audioUrl = audioMatch[1];
-            questionText = questionText.replace(/\[audio:\s*.+?\]/, '').trim();
-          }
-
-          // Extract Chinese text from " - 中文" format
-          const chineseMatch = questionText.match(/\s+-\s+(.+)$/);
-          if (chineseMatch) {
-            chineseText = chineseMatch[1];
-            questionText = questionText.replace(/\s+-\s+.+$/, '').trim();
-          }
-
-          if (questionTextInput) questionTextInput.value = questionText;
-          if (chineseTextInput) chineseTextInput.value = chineseText || question.chinese_text || '';
-          if (audioUrlInput) {
-            const url = audioUrl || question.audio_url || '';
-            audioUrlInput.value = url;
-            // Show current audio URL if exists
-            if (url) {
-              const statusDiv = document.getElementById('audioUploadStatus');
-              if (statusDiv) {
-                statusDiv.innerHTML = `<span style="color: #4CAF50;">✓ Current audio: ${url}</span>`;
-              }
-            }
-          }
-          if (correctAnswerInput) correctAnswerInput.value = question.correct_answer || '';
-
-          // Load multiple choice options - handle both array and object formats
-          if (Array.isArray(options)) {
-            // Array format: ["Hello", "Goodbye", "Thanks", "Sorry"]
-            const letters = ['a', 'b', 'c', 'd'];
-            options.forEach((optionText, index) => {
-              const optionInput = document.getElementById(`option_${letters[index]}`);
-              if (optionInput && optionText) {
-                optionInput.value = optionText;
-              }
-            });
-
-            // Set correct answer radio button
-            const correctAnswer = question.correct_answer;
-            if (correctAnswer) {
-              const correctIndex = options.indexOf(correctAnswer);
-              if (correctIndex >= 0) {
-                const radioButton = document.getElementById(`correct_${letters[correctIndex]}`);
-                if (radioButton) radioButton.checked = true;
-              }
-            }
-          } else if (options && typeof options === 'object') {
-            // Object format: {a: "Hello", b: "Goodbye", ...}
-            ['a', 'b', 'c', 'd'].forEach(key => {
-              const optionInput = document.getElementById(`option_${key}`);
-              if (optionInput && options[key]) {
-                optionInput.value = options[key];
-              }
-            });
-
-            // Set correct answer radio button
-            const correctAnswer = question.correct_answer;
-            if (correctAnswer) {
-              ['a', 'b', 'c', 'd'].forEach(key => {
-                if (options[key] === correctAnswer) {
-                  const radioButton = document.getElementById(`correct_${key}`);
-                  if (radioButton) radioButton.checked = true;
-                }
-              });
-            }
-          }
-
-          // Load matching pairs
-          if (selectedType === 'matching' && Array.isArray(options)) {
-            options.forEach((pair, index) => {
-              const pairNum = index + 1;
-              const leftInput = document.getElementById(`chinese_${pairNum}`);
-              const rightInput = document.getElementById(`english_${pairNum}`);
-              if (leftInput && rightInput) {
-                leftInput.value = pair.left || '';
-                rightInput.value = pair.right || '';
-              }
-            });
-          }
-
-          // Update Save button to indicate editing
-          const saveBtn = document.querySelector('button[onclick="saveQuestion()"]');
-          if (saveBtn) {
-            saveBtn.textContent = '💾 Update Question';
-            saveBtn.setAttribute('data-edit-id', editId);
-          }
-        }, 500); // Wait for form to render
-
-      } catch (error) {
-        console.error('Error loading question:', error);
-        alert('❌ Failed to load question: ' + error.message);
-      }
-    }
-
-    // Get admin password helper
-    async function getAdminPassword() {
-      let adminPassword = localStorage.getItem('adminPassword');
-      if (!adminPassword) {
-        adminPassword = prompt('Enter admin password:');
-        if (!adminPassword) return null;
-        localStorage.setItem('adminPassword', adminPassword);
-      }
-      return adminPassword;
-    }
-
-    // Modify saveQuestion to handle updates
-    const originalSaveQuestion = saveQuestion;
-    saveQuestion = async function() {
-      const saveBtn = document.querySelector('button[onclick="saveQuestion()"]');
-      const editId = saveBtn?.getAttribute('data-edit-id');
-
-      if (editId) {
-        // Update existing question
-        if (!selectedType) {
-          alert('Please select a question type first!');
-          return;
-        }
-
-        const questionData = collectCompleteFormData();
-        if (!questionData) {
-          // Specific error already shown by collectCompleteFormData
-          return;
-        }
-
-        try {
-          const adminPassword = await getAdminPassword();
-          if (!adminPassword) return;
-
-          const response = await fetch(`/api/admin/quizzes/${editId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Admin-Password': adminPassword
-            },
-            body: JSON.stringify(questionData)
-          });
-
-          if (!response.ok) {
-            if (response.status === 403) {
-              localStorage.removeItem('adminPassword');
-              throw new Error('Invalid admin password');
-            }
-            throw new Error(`Server error: ${response.status}`);
-          }
-
-          alert('✅ Question updated successfully!');
-          window.location.href = '/admin/admin-questions-list.html';
-        } catch (error) {
-          console.error('❌ Error updating question:', error);
-          alert('❌ Failed to update question: ' + error.message);
-        }
-      } else {
-        // Create new question (original behavior)
-        await originalSaveQuestion();
-      }
-    };
-
-    // Load question if editing
-    loadQuestionForEdit();
   </script>
 </body>
 </html>
