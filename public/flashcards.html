@@ -259,9 +259,28 @@
       nextCard();
     });
 
+    // Back button handler
     backBtn.addEventListener('click', () => {
-      window.history.back();
+      // Try to use Telegram's back button navigation first
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        // Fallback to practice page if no history
+        window.location.href = '/practice.html';
+      }
     });
+    
+    // Also setup Telegram WebApp BackButton if available
+    if (tg.BackButton) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(() => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = '/practice.html';
+        }
+      });
+    }
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
