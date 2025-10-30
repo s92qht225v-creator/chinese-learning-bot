@@ -90,7 +90,7 @@
     <!-- Header -->
     <header class="sticky top-0 z-10 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-b border-border-light dark:border-border-dark">
       <div class="flex items-center justify-between p-4">
-        <button onclick="window.history.back()" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+        <button onclick="goBack()" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
           <span class="material-symbols-outlined">arrow_back</span>
         </button>
         <h1 class="text-lg font-bold">Interface Language</h1>
@@ -262,6 +262,25 @@
       document.getElementById('previewButton').textContent = trans.button;
     }
 
+    // Go back to profile
+    function goBack() {
+      // If inside main-app (same-origin), trigger parent profile tab
+      try {
+        if (window.parent && window.parent !== window) {
+          const profileTab = window.parent.document?.querySelector?.('.nav-item[data-tab="profile"]');
+          if (profileTab) {
+            profileTab.click();
+            return;
+          }
+        }
+      } catch (e) {
+        // Ignore and fallback below
+      }
+
+      // Fallback: navigate to main app with profile tab selected
+      window.location.href = '/main-app.html#profile';
+    }
+
     // Save language
     function saveLanguage() {
       if (!selectedLanguage) return;
@@ -285,7 +304,7 @@
 
       // Navigate back after short delay
       setTimeout(() => {
-        window.history.back();
+        goBack();
       }, 800);
     }
   </script>

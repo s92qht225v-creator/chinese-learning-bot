@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>Quiz Results - Chinese Learning</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#448fe4",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "success": "#4CAF50",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#1e2732",
+            "text-light": "#1a1a1a",
+            "text-dark": "#ffffff",
+            "border-light": "#e5e7eb",
+            "border-dark": "#2d3748"
+          },
+          fontFamily: {
+            sans: ["Work Sans", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .score-circle {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #448fe4, #50b8e4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(68, 143, 228, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .score-circle::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: rgba(255, 255, 255, 0.1);
+      transform: rotate(45deg);
+    }
+
+    .score-circle.excellent {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+    }
+
+    .score-circle.good {
+      background: linear-gradient(135deg, #448fe4, #50b8e4);
+      box-shadow: 0 8px 24px rgba(68, 143, 228, 0.3);
+    }
+
+    .score-circle.average {
+      background: linear-gradient(135deg, #F5A623, #f39c12);
+      box-shadow: 0 8px 24px rgba(245, 166, 35, 0.3);
+    }
+
+    .score-circle.poor {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      transition: all 0.3s ease;
+    }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-circle {
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .celebration-confetti {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #111921;
+        color: #ffffff;
+      }
+
+      .stat-card {
+        background: #1e2732;
+        border-color: #2d3748;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+  <div class="min-h-screen pb-24">
+    
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-b border-border-light dark:border-border-dark">
+      <div class="px-4 py-4 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Quiz Complete!</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">HSK 3 • All Question Types</p>
+        </div>
+        <button onclick="goHome()" class="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
+          <span class="material-symbols-outlined text-gray-500">close</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="px-4 py-6">
+      
+      <!-- Score Display -->
+      <section class="mb-6 flex flex-col items-center fade-in">
+        <div id="scoreCircle" class="score-circle mb-4 relative z-10">
+          <span id="scorePercentage" class="text-5xl font-bold text-white relative z-10">85%</span>
+          <span class="text-sm text-white/90 relative z-10">Great Job!</span>
+        </div>
+        
+        <div class="text-center mb-2">
+          <p class="text-2xl font-bold text-text-light dark:text-text-dark mb-1">
+            <span id="scoreCount">11</span>/<span id="totalCount">13</span>
+          </p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Correct Answers</p>
+        </div>
+
+        <!-- Stars -->
+        <div class="flex gap-2 mb-4" id="starsContainer">
+          <!-- Will be populated by JS -->
+        </div>
+
+        <!-- XP Earned -->
+        <div class="bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-3 rounded-full">
+          <span class="text-white font-bold">+<span id="xpEarned">55</span> XP</span>
+        </div>
+      </section>
+
+      <!-- Quick Stats -->
+      <section class="mb-6">
+        <div class="grid grid-cols-3 gap-3">
+          <div class="stat-card rounded-xl p-4 text-center">
+            <span class="material-symbols-outlined text-green-500 text-2xl mb-1">check_circle</span>
+            <p id="correctCount" class="text-xl font-bold text-green-500">11</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Correct</p>
+          </div>
+          
+          <div class="stat-card rounded-xl p-4 text-center">
+            <span class="material-symbols-outlined text-red-500 text-2xl mb-1">cancel</span>
+            <p id="wrongCount" class="text-xl font-bold text-red-500">2</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Wrong</p>
+          </div>
+          
+          <div class="stat-card rounded-xl p-4 text-center">
+            <span class="material-symbols-outlined text-blue-500 text-2xl mb-1">schedule</span>
+            <p id="timeSpent" class="text-xl font-bold text-blue-500">5:32</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Time</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Performance by Question Type -->
+      <section class="mb-6">
+        <h2 class="text-lg font-bold mb-3 text-text-light dark:text-text-dark">Performance by Type</h2>
+        
+        <div class="space-y-3">
+          <!-- Multiple Choice -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">📝</span>
+                <span class="font-semibold text-sm">Multiple Choice</span>
+              </div>
+              <span class="text-sm font-bold text-green-500">100%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- Fill in Gap -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">✏️</span>
+                <span class="font-semibold text-sm">Fill in the Gap</span>
+              </div>
+              <span class="text-sm font-bold text-green-500">100%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- True/False -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">✓</span>
+                <span class="font-semibold text-sm">True/False</span>
+              </div>
+              <span class="text-sm font-bold text-green-500">100%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- Matching -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">🔗</span>
+                <span class="font-semibold text-sm">Matching</span>
+              </div>
+              <span class="text-sm font-bold text-green-500">100%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- Image Association -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">🖼️</span>
+                <span class="font-semibold text-sm">Image Association</span>
+              </div>
+              <span class="text-sm font-bold text-green-500">100%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- Sentence Ordering -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">📋</span>
+                <span class="font-semibold text-sm">Sentence Ordering</span>
+              </div>
+              <span class="text-sm font-bold text-green-500">100%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- Grammar Choice -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">📖</span>
+                <span class="font-semibold text-sm">Grammar Choice</span>
+              </div>
+              <span class="text-sm font-bold text-green-500">100%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- Error Correction -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">🔍</span>
+                <span class="font-semibold text-sm">Error Correction</span>
+              </div>
+              <span class="text-sm font-bold text-red-500">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-red-500 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+            <p class="text-xs text-red-500 mt-1">⚠️ Need more practice</p>
+          </div>
+
+          <!-- Cloze Test -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">📄</span>
+                <span class="font-semibold text-sm">Cloze Test</span>
+              </div>
+              <span class="text-sm font-bold text-green-500">100%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- Dictation -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">✍️</span>
+                <span class="font-semibold text-sm">Dictation</span>
+              </div>
+              <span class="text-sm font-bold text-green-500">100%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- Audio Comprehension -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">🎧</span>
+                <span class="font-semibold text-sm">Audio Comprehension</span>
+              </div>
+              <span class="text-sm font-bold text-red-500">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-red-500 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+            <p class="text-xs text-red-500 mt-1">⚠️ Practice listening more</p>
+          </div>
+
+          <!-- Audio to Word -->
+          <div class="stat-card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">👂</span>
+                <span class="font-semibold text-sm">Audio to Word</span>
+              </div>
+              <span class="text-sm font-bold text-green-500">100%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Achievements (if any) -->
+      <section id="achievementsSection" class="mb-6 hidden">
+        <h2 class="text-lg font-bold mb-3 text-text-light dark:text-text-dark">Achievements Unlocked! 🏆</h2>
+        
+        <div class="stat-card rounded-xl p-4 mb-3">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-3xl">🎯</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-text-light dark:text-text-dark">Perfect Start!</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Got the first 5 questions right</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action Buttons -->
+      <section class="space-y-3">
+        <button onclick="retakeQuiz()" class="w-full py-4 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 active:scale-98 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">refresh</span>
+          Retake Quiz
+        </button>
+
+        <button onclick="reviewMistakes()" class="w-full py-4 rounded-xl border-2 border-primary text-primary font-semibold hover:bg-primary/5 active:scale-98 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">school</span>
+          Review Mistakes (2)
+        </button>
+
+        <button onclick="tryNewLevel()" class="w-full py-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-98 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">arrow_forward</span>
+          Try Different Level
+        </button>
+
+        <button onclick="goHome()" class="w-full py-4 rounded-xl text-gray-500 dark:text-gray-400 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-98 transition-all">
+          Back to Practice
+        </button>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const score = parseInt(urlParams.get('score') || '11');
+    const total = parseInt(urlParams.get('total') || '13');
+    const percentage = parseInt(urlParams.get('percentage') || '85');
+
+    // Initialize page
+    function initResults() {
+      // Update score display
+      document.getElementById('scorePercentage').textContent = percentage + '%';
+      document.getElementById('scoreCount').textContent = score;
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('correctCount').textContent = score;
+      document.getElementById('wrongCount').textContent = total - score;
+      
+      // Calculate XP (5 points per correct answer)
+      const xp = score * 5;
+      document.getElementById('xpEarned').textContent = xp;
+      
+      // Set score circle color
+      const circle = document.getElementById('scoreCircle');
+      circle.className = 'score-circle relative z-10 ';
+      if (percentage >= 90) {
+        circle.classList.add('excellent');
+        circle.querySelector('span:last-child').textContent = 'Excellent!';
+      } else if (percentage >= 75) {
+        circle.classList.add('good');
+        circle.querySelector('span:last-child').textContent = 'Great Job!';
+      } else if (percentage >= 60) {
+        circle.classList.add('average');
+        circle.querySelector('span:last-child').textContent = 'Good Effort!';
+      } else {
+        circle.classList.add('poor');
+        circle.querySelector('span:last-child').textContent = 'Keep Trying!';
+      }
+      
+      // Display stars
+      const starsContainer = document.getElementById('starsContainer');
+      const starCount = percentage >= 90 ? 5 : percentage >= 75 ? 4 : percentage >= 60 ? 3 : percentage >= 40 ? 2 : 1;
+      
+      for (let i = 0; i < 5; i++) {
+        const star = document.createElement('span');
+        star.className = 'text-3xl';
+        star.textContent = i < starCount ? '⭐' : '☆';
+        starsContainer.appendChild(star);
+      }
+      
+      // Show achievements if excellent score
+      if (percentage >= 90) {
+        document.getElementById('achievementsSection').classList.remove('hidden');
+      }
+      
+      // Mock time spent
+      const minutes = Math.floor(Math.random() * 3) + 4;
+      const seconds = Math.floor(Math.random() * 60);
+      document.getElementById('timeSpent').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Button handlers
+    function retakeQuiz() {
+      window.location.href = '/quiz.html?level=3';
+    }
+
+    function reviewMistakes() {
+      window.location.href = '/quiz-review-mistakes.html';
+    }
+
+    function tryNewLevel() {
+      window.location.href = '/quiz-levels.html';
+    }
+
+    function goHome() {
+      window.location.href = '/practice.html';
+    }
+
+    // Initialize on load
+    initResults();
+  </script>
+</body>
+</html>

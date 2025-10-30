@@ -155,9 +155,22 @@
     // Load question from API
     async function loadQuestion() {
       try {
-        const response = await fetch(API_CONFIG.url(API_CONFIG.endpoints.quiz), {
+        // Check if API_CONFIG is loaded
+        if (typeof API_CONFIG === 'undefined') {
+          throw new Error('API_CONFIG not loaded yet');
+        }
+        
+        const url = API_CONFIG.url(API_CONFIG.endpoints.quiz);
+        console.log('Fetching quiz from:', url);
+        
+        const response = await fetch(url, {
           headers: telegramAuth.getHeaders()
         });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         questionChinese.textContent = data.question;
@@ -183,7 +196,13 @@
         nextBtn.disabled = true;
       } catch (error) {
         console.error('Failed to load question:', error);
-        alert('Failed to load question. Please try again.');
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          API_CONFIG_exists: typeof API_CONFIG !== 'undefined',
+          telegramAuth_exists: typeof telegramAuth !== 'undefined'
+        });
+        alert(`Failed to load question: ${error.message}\n\nPlease check your internet connection and try again.`);
       }
     }
 
@@ -285,13 +304,16 @@
       }
     });
 
-    // Initialize
-    // Start tracking study time
-    if (typeof studyTracker !== 'undefined') {
-      studyTracker.startSession('quiz');
-    }
-
-    loadQuestion();
+    // Initialize when page is fully loaded
+    window.addEventListener('DOMContentLoaded', () => {
+      // Start tracking study time
+      if (typeof studyTracker !== 'undefined') {
+        studyTracker.startSession('quiz');
+      }
+      
+      // Load first question
+      loadQuestion();
+    });
   </script>
 </body>
 </html>

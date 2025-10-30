@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>All Questions - Quiz Admin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#448fe4"
+          }
+        }
+      }
+    };
+  </script>
+  
+  <style>
+    body {
+      font-family: 'Work Sans', sans-serif;
+    }
+
+    .question-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .question-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50">
+  
+  <header class="bg-white border-b sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold">All Questions</h1>
+          <p class="text-sm text-gray-500">Manage your quiz questions</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="exportQuestions()" class="px-4 py-2 rounded-lg border-2 border-gray-300 font-semibold hover:bg-gray-50">
+            <span class="material-symbols-outlined text-sm">download</span>
+            Export
+          </button>
+          <button onclick="createNew()" class="px-6 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary/90">
+            <span class="material-symbols-outlined text-sm">add</span>
+            Create New
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    
+    <!-- Filters -->
+    <div class="bg-white rounded-xl p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <input type="text" id="searchInput" placeholder="Search questions..." class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg" onkeyup="filterQuestions()">
+        </div>
+        <div>
+          <select id="levelFilter" class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg" onchange="filterQuestions()">
+            <option value="">All Levels</option>
+            <option value="HSK1">HSK 1</option>
+            <option value="HSK2">HSK 2</option>
+            <option value="HSK3">HSK 3</option>
+            <option value="HSK4">HSK 4</option>
+            <option value="HSK5">HSK 5</option>
+            <option value="HSK6">HSK 6</option>
+          </select>
+        </div>
+        <div>
+          <select id="typeFilter" class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg" onchange="filterQuestions()">
+            <option value="">All Types</option>
+            <option value="multiple_choice">Multiple Choice</option>
+            <option value="fill_gap">Fill in Gap</option>
+            <option value="true_false">True/False</option>
+            <option value="matching">Matching</option>
+            <option value="image_association">Image Association</option>
+            <option value="sentence_ordering">Sentence Ordering</option>
+            <option value="grammar_choice">Grammar Choice</option>
+            <option value="error_correction">Error Correction</option>
+            <option value="cloze_test">Cloze Test</option>
+            <option value="dictation">Dictation</option>
+            <option value="audio_comprehension">Audio Comprehension</option>
+            <option value="audio_to_word">Audio to Word</option>
+          </select>
+        </div>
+        <div class="flex items-center justify-end gap-2">
+          <span class="text-sm font-semibold">Total: <span id="totalCount">156</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Questions List -->
+    <div id="questionsList">
+      <!-- Sample questions (in real app, load from database) -->
+      
+      <!-- Question 1 -->
+      <div class="question-card">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">HSK 3</span>
+              <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded">📝 Multiple Choice</span>
+            </div>
+            <h3 class="font-bold text-lg mb-1">What does 手表 mean?</h3>
+            <p class="text-sm text-gray-600 mb-2">Options: A) Newspaper B) Watch ✓ C) Book D) Phone</p>
+            <div class="flex items-center gap-3 text-xs text-gray-500">
+              <span>Created: Oct 28, 2025</span>
+              <span>•</span>
+              <span>Used in 24 quizzes</span>
+              <span>•</span>
+              <span>Avg accuracy: 87%</span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="previewQuestion(1)" class="p-2 hover:bg-blue-100 rounded-lg" title="Preview">
+              <span class="material-symbols-outlined text-primary">visibility</span>
+            </button>
+            <button onclick="editQuestion(1)" class="p-2 hover:bg-gray-100 rounded-lg" title="Edit">
+              <span class="material-symbols-outlined text-gray-600">edit</span>
+            </button>
+            <button onclick="duplicateQuestion(1)" class="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
+              <span class="material-symbols-outlined text-gray-600">content_copy</span>
+            </button>
+            <button onclick="deleteQuestion(1)" class="p-2 hover:bg-red-100 rounded-lg" title="Delete">
+              <span class="material-symbols-outlined text-red-500">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question 2 -->
+      <div class="question-card">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">HSK 2</span>
+              <span class="px-2 py-1 bg-teal-100 text-teal-700 text-xs font-bold rounded">✏️ Fill in Gap</span>
+            </div>
+            <h3 class="font-bold text-lg mb-1">Complete: 我 ___ 学生。</h3>
+            <p class="text-sm text-gray-600 mb-2">Answer: 是</p>
+            <div class="flex items-center gap-3 text-xs text-gray-500">
+              <span>Created: Oct 27, 2025</span>
+              <span>•</span>
+              <span>Used in 18 quizzes</span>
+              <span>•</span>
+              <span>Avg accuracy: 92%</span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="previewQuestion(2)" class="p-2 hover:bg-blue-100 rounded-lg" title="Preview">
+              <span class="material-symbols-outlined text-primary">visibility</span>
+            </button>
+            <button onclick="editQuestion(2)" class="p-2 hover:bg-gray-100 rounded-lg" title="Edit">
+              <span class="material-symbols-outlined text-gray-600">edit</span>
+            </button>
+            <button onclick="duplicateQuestion(2)" class="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
+              <span class="material-symbols-outlined text-gray-600">content_copy</span>
+            </button>
+            <button onclick="deleteQuestion(2)" class="p-2 hover:bg-red-100 rounded-lg" title="Delete">
+              <span class="material-symbols-outlined text-red-500">delete</span>
+            </button>
+          </div>
+      <div class="question-card">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">HSK 3</span>
+              <span class="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-bold rounded">🎧 Audio Comprehension</span>
+            </div>
+            <h3 class="font-bold text-lg mb-1">Where is person B going?</h3>
+            <p class="text-sm text-gray-600 mb-2">Audio: conversation-library.mp3 • Answer: Library</p>
+            <div class="flex items-center gap-3 text-xs text-gray-500">
+              <span>Created: Oct 26, 2025</span>
+              <span>•</span>
+              <span>Used in 15 quizzes</span>
+              <span>•</span>
+              <span>Avg accuracy: 68%</span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="previewQuestion(3)" class="p-2 hover:bg-blue-100 rounded-lg" title="Preview">
+              <span class="material-symbols-outlined text-primary">visibility</span>
+            </button>
+            <button onclick="editQuestion(3)" class="p-2 hover:bg-gray-100 rounded-lg" title="Edit">
+              <span class="material-symbols-outlined text-gray-600">edit</span>
+            </button>
+            <button onclick="duplicateQuestion(3)" class="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
+              <span class="material-symbols-outlined text-gray-600">content_copy</span>
+            </button>
+            <button onclick="deleteQuestion(3)" class="p-2 hover:bg-red-100 rounded-lg" title="Delete">
+              <span class="material-symbols-outlined text-red-500">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question 4 -->
+      <div class="question-card">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">HSK 3</span>
+              <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">🔍 Error Correction</span>
+            </div>
+            <h3 class="font-bold text-lg mb-1">Find error: 他学生也是</h3>
+            <p class="text-sm text-gray-600 mb-2">Error at position 2 (也) • Correct: 他也是学生</p>
+            <div class="flex items-center gap-3 text-xs text-gray-500">
+              <span>Created: Oct 25, 2025</span>
+              <span>•</span>
+              <span>Used in 21 quizzes</span>
+              <span>•</span>
+              <span>Avg accuracy: 54%</span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="previewQuestion(4)" class="p-2 hover:bg-blue-100 rounded-lg" title="Preview">
+              <span class="material-symbols-outlined text-primary">visibility</span>
+            </button>
+            <button onclick="editQuestion(4)" class="p-2 hover:bg-gray-100 rounded-lg" title="Edit">
+              <span class="material-symbols-outlined text-gray-600">edit</span>
+            </button>
+            <button onclick="duplicateQuestion(4)" class="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
+              <span class="material-symbols-outlined text-gray-600">content_copy</span>
+            </button>
+            <button onclick="deleteQuestion(4)" class="p-2 hover:bg-red-100 rounded-lg" title="Delete">
+              <span class="material-symbols-outlined text-red-500">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- More questions... -->
+      <div class="text-center py-8">
+        <p class="text-gray-500 mb-4">Showing 4 of 156 questions</p>
+        <button class="px-6 py-2 rounded-lg border-2 border-gray-300 font-semibold hover:bg-gray-50">
+          Load More
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    function filterQuestions() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const level = document.getElementById('levelFilter').value;
+      const type = document.getElementById('typeFilter').value;
+      
+      console.log('Filtering:', { search, level, type });
+      // In real app: filter questions from database
+    }
+
+    function createNew() {
+      window.location.href = '/admin-quiz-creator.html';
+    }
+
+    function previewQuestion(id) {
+      // In real app: fetch question data from database
+      alert('Preview for question ID: ' + id + '\n\nThis would show a modal with the question exactly as students see it.\n\nClick the Preview button in the creator page to see the full preview!');
+    }
+
+    function editQuestion(id) {
+      window.location.href = `/admin-quiz-creator.html?edit=${id}`;
+    }
+
+    function duplicateQuestion(id) {
+      if (confirm('Create a copy of this question?')) {
+        alert('✓ Question duplicated! ID: ' + id);
+        // In real app: duplicate in database
+      }
+    }
+
+    function deleteQuestion(id) {
+      if (confirm('Are you sure you want to delete this question? This cannot be undone.')) {
+        alert('✓ Question deleted! ID: ' + id);
+        // In real app: delete from database
+      }
+    }
+
+    function exportQuestions() {
+      alert('Exporting questions as JSON...\n\nThis would download all questions to a file.');
+      // In real app: export to JSON/CSV
+    }
+  </script>
+</body>
+</html>

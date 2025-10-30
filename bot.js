@@ -33,16 +33,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files with no caching for HTML
+// Serve static files with no caching for HTML and JS
 app.use(express.static('public', {
   maxAge: 0, // No caching
   etag: false,
   lastModified: true,
   setHeaders: (res, path) => {
-    if (path.endsWith('.html')) {
+    // Prevent aggressive caching for HTML and JavaScript files
+    if (path.endsWith('.html') || path.endsWith('.js')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
+    }
+    // Allow short caching for assets (CSS, images, etc.)
+    else {
+      res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
     }
   }
 }));

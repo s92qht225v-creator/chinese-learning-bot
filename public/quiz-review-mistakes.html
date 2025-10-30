@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>Review Mistakes - Chinese Learning</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#448fe4",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "success": "#4CAF50",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#1e2732",
+            "text-light": "#1a1a1a",
+            "text-dark": "#ffffff",
+            "border-light": "#e5e7eb",
+            "border-dark": "#2d3748"
+          },
+          fontFamily: {
+            sans: ["Work Sans", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .mistake-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-left: 6px solid #ef4444;
+    }
+
+    .answer-box {
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .answer-box.wrong {
+      background: rgba(239, 68, 68, 0.05);
+      border: 2px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .answer-box.correct {
+      background: rgba(76, 175, 80, 0.05);
+      border: 2px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .explanation-box {
+      background: linear-gradient(135deg, rgba(68, 143, 228, 0.05), rgba(80, 227, 194, 0.05));
+      border-left: 4px solid #448fe4;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #111921;
+        color: #ffffff;
+      }
+
+      .mistake-card {
+        background: #1e2732;
+        border-color: #2d3748;
+        border-left-color: #ef4444;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+  <div class="min-h-screen pb-24">
+    
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-b border-border-light dark:border-border-dark">
+      <div class="px-4 py-4 flex items-center gap-3">
+        <button onclick="goBack()" class="p-2 -ml-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-primary">arrow_back</span>
+        </button>
+        <div>
+          <h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Review Mistakes</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">2 questions to review</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="px-4 py-5">
+      
+      <!-- Info Banner -->
+      <div class="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-red-500 mt-0.5">lightbulb</span>
+          <div>
+            <p class="text-sm font-semibold text-text-light dark:text-text-dark mb-1">Learn from Your Mistakes</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Review these questions carefully to improve your understanding.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mistake 1: Error Correction -->
+      <div class="mistake-card rounded-2xl p-5 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🔍</span>
+            <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">Question 8 • Error Correction</span>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 text-xs font-bold">Wrong</span>
+        </div>
+
+        <!-- Original Question -->
+        <div class="mb-4">
+          <p class="font-semibold mb-3">Find and correct the error in this sentence:</p>
+          <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 text-center">
+            <div class="flex justify-center gap-2 flex-wrap text-2xl font-bold">
+              <span>他</span>
+              <span class="bg-yellow-100 dark:bg-yellow-900/30 px-2 rounded">学生</span>
+              <span class="bg-red-100 dark:bg-red-900/30 px-2 rounded border-b-2 border-red-500">也</span>
+              <span>是</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Your Answer -->
+        <div class="answer-box wrong mb-3">
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-red-500 mt-0.5">close</span>
+            <div>
+              <p class="font-semibold text-sm text-red-600 mb-1">Your Answer:</p>
+              <p class="text-base">You selected: <span class="font-bold">学生</span> (2nd position)</p>
+              <p class="text-sm text-gray-500 mt-1">You thought "学生" was the error</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Correct Answer -->
+        <div class="answer-box correct mb-4">
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-green-500 mt-0.5">check</span>
+            <div>
+              <p class="font-semibold text-sm text-green-600 mb-1">Correct Answer:</p>
+              <p class="text-base mb-2">The error is: <span class="font-bold">也</span> (3rd position)</p>
+              <p class="text-lg font-bold mb-1">✓ Correct sentence: 他也是学生</p>
+              <p class="text-sm text-gray-500">The word order should be: Subject + 也 + Verb + Object</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Explanation -->
+        <div class="explanation-box rounded-xl p-4">
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-primary mt-0.5">school</span>
+            <div>
+              <p class="font-semibold text-sm text-primary mb-2">💡 Explanation:</p>
+              <p class="text-sm leading-relaxed text-gray-700 dark:text-gray-300 mb-3">
+                In Chinese, <strong>也 (yě)</strong> meaning "also" must always come <strong>before the verb</strong>, not after the object. 
+              </p>
+              <div class="bg-white dark:bg-gray-800 rounded-lg p-3 mb-3">
+                <p class="text-xs text-gray-500 mb-1">Pattern:</p>
+                <p class="text-base font-bold">Subject + 也 + Verb + Object</p>
+              </div>
+              <p class="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                <strong>Examples:</strong><br>
+                ✓ 我也是学生 (Wǒ yě shì xuésheng) - I am also a student<br>
+                ✓ 他也喜欢书 (Tā yě xǐhuan shū) - He also likes books<br>
+                ✗ 我是也学生 - Incorrect!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practice More Button -->
+        <button onclick="practiceMore('error_correction')" class="w-full mt-4 py-3 rounded-xl border-2 border-primary text-primary font-semibold hover:bg-primary/5 active:scale-98 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">fitness_center</span>
+          Practice More Error Correction
+        </button>
+      </div>
+
+      <!-- Mistake 2: Audio Comprehension -->
+      <div class="mistake-card rounded-2xl p-5 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🎧</span>
+            <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">Question 11 • Audio Comprehension</span>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 text-xs font-bold">Wrong</span>
+        </div>
+
+        <!-- Original Question -->
+        <div class="mb-4">
+          <p class="font-semibold mb-3">Listen to the conversation and answer:</p>
+          
+          <!-- Audio Player -->
+          <div class="p-5 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-2 border-blue-200 dark:border-blue-800 mb-3">
+            <div class="flex flex-col items-center gap-3">
+              <span class="material-symbols-outlined text-primary text-4xl">headphones</span>
+              <button onclick="playAudio('/audio/conversation-library.mp3')" class="px-6 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined">play_arrow</span>
+                Listen Again
+              </button>
+            </div>
+          </div>
+
+          <!-- Transcript (revealed) -->
+          <details class="mb-3">
+            <summary class="cursor-pointer text-sm text-primary font-medium hover:underline">📝 Show Transcript</summary>
+            <div class="mt-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+              <p class="text-sm leading-relaxed">
+                <strong>A:</strong> 你去哪儿？(Nǐ qù nǎr?)<br>
+                <strong>B:</strong> 我去图书馆。(Wǒ qù túshūguǎn.)<br>
+                <strong>A:</strong> 你去做什么？(Nǐ qù zuò shénme?)<br>
+                <strong>B:</strong> 我去看书。(Wǒ qù kàn shū.)
+              </p>
+            </div>
+          </details>
+
+          <p class="font-semibold">Question: Where is person B going?</p>
+        </div>
+
+        <!-- Your Answer -->
+        <div class="answer-box wrong mb-3">
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-red-500 mt-0.5">close</span>
+            <div>
+              <p class="font-semibold text-sm text-red-600 mb-1">Your Answer:</p>
+              <p class="text-base font-bold">A. School</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Correct Answer -->
+        <div class="answer-box correct mb-4">
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-green-500 mt-0.5">check</span>
+            <div>
+              <p class="font-semibold text-sm text-green-600 mb-1">Correct Answer:</p>
+              <p class="text-base font-bold mb-2">B. Library (图书馆)</p>
+              <p class="text-sm text-gray-500">Person B clearly says "我去图书馆" (I'm going to the library)</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Explanation -->
+        <div class="explanation-box rounded-xl p-4">
+          <div class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-primary mt-0.5">school</span>
+            <div>
+              <p class="font-semibold text-sm text-primary mb-2">💡 Explanation:</p>
+              <p class="text-sm leading-relaxed text-gray-700 dark:text-gray-300 mb-3">
+                In the conversation, person B says <strong>"我去图书馆"</strong> (Wǒ qù túshūguǎn) which means "I'm going to the library."
+              </p>
+              
+              <div class="bg-white dark:bg-gray-800 rounded-lg p-3 mb-3">
+                <p class="text-xs text-gray-500 mb-2">Key vocabulary:</p>
+                <p class="text-sm mb-1">• 去 (qù) = to go</p>
+                <p class="text-sm mb-1">• 图书馆 (túshūguǎn) = library</p>
+                <p class="text-sm mb-1">• 学校 (xuéxiào) = school</p>
+                <p class="text-sm">• 看书 (kàn shū) = to read books</p>
+              </div>
+
+              <p class="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                <strong>Common confusion:</strong> You might have heard "看书" (read books) and thought "school", but person B specifically said the location is "图书馆" (library). Pay attention to place words!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practice More Button -->
+        <button onclick="practiceMore('listening')" class="w-full mt-4 py-3 rounded-xl border-2 border-primary text-primary font-semibold hover:bg-primary/5 active:scale-98 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">headphones</span>
+          Practice More Listening
+        </button>
+      </div>
+
+      <!-- Add to Flashcards -->
+      <div class="mb-6 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">credit_card</span>
+            <div>
+              <p class="text-sm font-semibold text-text-light dark:text-text-dark">Save for Review</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Add these mistakes to your flashcards</p>
+            </div>
+          </div>
+          <button onclick="addToFlashcards()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 active:scale-95 transition-all">
+            Add All
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="space-y-3">
+        <button onclick="retakeQuiz()" class="w-full py-4 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 active:scale-98 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">refresh</span>
+          Retake Quiz
+        </button>
+
+        <button onclick="goBack()" class="w-full py-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-98 transition-all">
+          Back to Results
+        </button>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // Back button
+    function goBack() {
+      window.history.back();
+    }
+
+    tg.BackButton.onClick(goBack);
+    tg.BackButton.show();
+
+    // Play audio (mock)
+    function playAudio(url) {
+      console.log('Playing audio:', url);
+      alert('Playing audio: ' + url);
+    }
+
+    // Practice more of specific type
+    function practiceMore(type) {
+      alert(`Starting practice session for: ${type}`);
+      // In real app: navigate to focused practice for this question type
+    }
+
+    // Add to flashcards
+    function addToFlashcards() {
+      alert('✓ Added 2 cards to your flashcard deck!\n\n• 也 (yě) placement\n• 图书馆 (túshūguǎn) vocabulary');
+    }
+
+    // Retake quiz
+    function retakeQuiz() {
+      window.location.href = '/quiz.html?level=3';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!-- Dark mode initialization (add right after Tailwind CDN) -->
+<script>
+  (function() {
+    try {
+      const stored = localStorage.getItem('darkMode');
+      const isDark = stored === 'true' || 
+                     (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (isDark) {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      }
+    } catch (e) {
+      // noop
+    }
+  })();
+</script>

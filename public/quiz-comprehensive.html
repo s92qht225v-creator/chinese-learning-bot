@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>HSK Quiz - Chinese Learning</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#448fe4",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "success": "#4CAF50",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#1e2732",
+            "text-light": "#1a1a1a",
+            "text-dark": "#ffffff",
+            "border-light": "#e5e7eb",
+            "border-dark": "#2d3748"
+          },
+          fontFamily: {
+            sans: ["Work Sans", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .option-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .option-card:active {
+      transform: scale(0.98);
+    }
+
+    .option-card.selected {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+    }
+
+    .option-card.correct {
+      border-color: #4CAF50;
+      background: rgba(76, 175, 80, 0.05);
+    }
+
+    .option-card.wrong {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    .progress-bar {
+      background: #e5e7eb;
+      height: 6px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, #448fe4, #50b8e4);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .audio-player {
+      background: linear-gradient(135deg, rgba(68, 143, 228, 0.1), rgba(80, 227, 194, 0.1));
+      border: 2px solid rgba(68, 143, 228, 0.2);
+    }
+
+    .reading-passage {
+      background: #f8f9fa;
+      border-left: 4px solid #448fe4;
+      padding: 16px;
+      border-radius: 12px;
+    }
+
+    .input-box {
+      background: white;
+      border: 2px solid #e5e7eb;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 18px;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+
+    .input-box:focus {
+      outline: none;
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+    }
+
+    .word-chip {
+      background: white;
+      border: 2px solid #e5e7eb;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: move;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .word-chip.selected {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.1);
+    }
+
+    .word-chip:active {
+      transform: scale(0.95);
+    }
+
+    .drop-zone {
+      min-height: 60px;
+      border: 2px dashed #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .drop-zone.active {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+    }
+
+    .match-line {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .error-text {
+      position: relative;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .error-text.error {
+      background: rgba(239, 68, 68, 0.1);
+      border-bottom: 2px wavy #ef4444;
+    }
+
+    .error-text.selected {
+      background: rgba(68, 143, 228, 0.2);
+    }
+
+    .image-option {
+      border: 3px solid #e5e7eb;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .image-option.selected {
+      border-color: #448fe4;
+      box-shadow: 0 4px 12px rgba(68, 143, 228, 0.3);
+    }
+
+    .image-option:active {
+      transform: scale(0.97);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #111921;
+        color: #ffffff;
+      }
+
+      .option-card, .input-box, .word-chip {
+        background: #1e2732;
+        border-color: #2d3748;
+      }
+
+      .option-card.selected, .input-box:focus {
+        background: rgba(68, 143, 228, 0.15);
+      }
+
+      .reading-passage {
+        background: #1e2732;
+        border-left-color: #448fe4;
+      }
+
+      .drop-zone {
+        border-color: #2d3748;
+      }
+
+      .image-option {
+        border-color: #2d3748;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+  <div class="min-h-screen pb-24">
+    
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-b border-border-light dark:border-border-dark">
+      <div class="px-4 py-3">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-3">
+            <button onclick="exitQuiz()" class="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
+              <span class="material-symbols-outlined text-gray-500">close</span>
+            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold text-text-light dark:text-text-dark">HSK 3 Quiz</span>
+                <span id="questionType" class="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium">📝 Multiple Choice</span>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Question <span id="currentQuestion">1</span>/<span id="totalQuestions">12</span></p>
+            </div>
+          </div>
+        </div>
+        <div class="progress-bar">
+          <div id="progressBar" class="progress-fill" style="width: 8%"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="px-4 py-5">
+      
+      <!-- Question Container -->
+      <div id="questionContainer">
+        <!-- Questions will be dynamically loaded here -->
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="fixed bottom-0 left-0 right-0 p-4 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-t border-border-light dark:border-border-dark">
+        <div class="flex gap-3">
+          <button onclick="skipQuestion()" class="flex-1 px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-95 transition-all">
+            Skip
+          </button>
+          <button id="submitBtn" onclick="submitAnswer()" disabled class="flex-1 px-6 py-3 rounded-xl bg-primary text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 active:scale-95 transition-all">
+            Submit
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // Quiz state
+    let currentQuestionIndex = 0;
+    let selectedAnswer = null;
+    let score = 0;
+    let answers = [];
+    let userAnswer = null;
+
+    // All 13 question types
+    const questions = [
+      // 1. Multiple Choice
+      {
+        type: 'multiple_choice',
+        format: '📝 Multiple Choice',
+        question: 'What does this mean?',
+        chinese: '手表',
+        audioUrl: '/audio/shoubia o.mp3',
+        options: [
+          { id: 'a', text: 'Newspaper' },
+          { id: 'b', text: 'Watch', correct: true },
+          { id: 'c', text: 'Book' },
+          { id: 'd', text: 'Phone' }
+        ],
+        explanation: '手表 (shǒubiǎo) means "watch".'
+      },
+
+      // 2. Fill in the Gap
+      {
+        type: 'fill_gap',
+        format: '✏️ Fill in the Gap',
+        question: 'Complete the sentence:',
+        sentence: '我 ___ 学生。',
+        translation: 'I ___ a student.',
+        correctAnswer: '是',
+        acceptableAnswers: ['是', 'shi', 'shì'],
+        explanation: '是 (shì) is the verb "to be". 我是学生 = I am a student.'
+      },
+
+      // 3. True/False
+      {
+        type: 'true_false',
+        format: '✓ True/False',
+        statement: '手表 means "newspaper"',
+        correctAnswer: false,
+        explanation: 'False. 手表 (shǒubiǎo) means "watch", not newspaper. Newspaper is 报纸 (bàozhǐ).'
+      },
+
+      // 4. Matching
+      {
+        type: 'matching',
+        format: '🔗 Matching',
+        question: 'Match the Chinese words to their English meanings:',
+        pairs: [
+          { chinese: '手表', english: 'Watch', id: 1 },
+          { chinese: '书', english: 'Book', id: 2 },
+          { chinese: '报纸', english: 'Newspaper', id: 3 }
+        ],
+        explanation: 'Correct matches: 手表=Watch, 书=Book, 报纸=Newspaper'
+      },
+
+      // 5. Image Association
+      {
+        type: 'image_association',
+        format: '🖼️ Image Association',
+        question: 'What is this?',
+        imageUrl: '/images/watch.jpg',
+        options: [
+          { id: 'a', text: '手表', correct: true },
+          { id: 'b', text: '书' },
+          { id: 'c', text: '报纸' },
+          { id: 'd', text: '手机' }
+        ],
+        explanation: 'The image shows a watch, which is 手表 (shǒubiǎo) in Chinese.'
+      },
+
+      // 6. Sentence Ordering
+      {
+        type: 'sentence_ordering',
+        format: '📋 Sentence Ordering',
+        question: 'Arrange these words in the correct order:',
+        words: ['我', '也', '是', '学生'],
+        correctOrder: ['我', '也', '是', '学生'],
+        translation: 'I am also a student',
+        explanation: 'Correct order: 我也是学生 (Wǒ yě shì xuésheng) = I am also a student. 也 must come before the verb 是.'
+      },
+
+      // 7. Grammar Choice
+      {
+        type: 'grammar_choice',
+        format: '📖 Grammar Choice',
+        question: 'Choose the correct word to complete the sentence:',
+        sentence: '我 ___ 学生。',
+        options: [
+          { id: 'a', text: '是', correct: true },
+          { id: 'b', text: '有' },
+          { id: 'c', text: '在' }
+        ],
+        explanation: '是 (shì) is the correct verb "to be" in this context.'
+      },
+
+      // 8. Error Correction
+      {
+        type: 'error_correction',
+        format: '🔍 Error Correction',
+        question: 'Find and correct the error in this sentence:',
+        sentence: ['他', '学生', '也', '是'],
+        errorIndex: 2,
+        correctSentence: ['他', '也', '是', '学生'],
+        explanation: '也 (also) should come before the verb 是, not after 学生. Correct: 他也是学生.'
+      },
+
+      // 9. Cloze Test
+      {
+        type: 'cloze_test',
+        format: '📄 Cloze Test',
+        question: 'Fill in all the blanks:',
+        passage: '我___李明。我___学生。我每天___七点起床。',
+        blanks: [
+          { index: 0, answer: '叫', acceptable: ['叫', 'jiao', 'jiào'] },
+          { index: 1, answer: '是', acceptable: ['是', 'shi', 'shì'] },
+          { index: 2, answer: '早上', acceptable: ['早上', 'zaoshang', 'zǎoshang'] }
+        ],
+        explanation: 'Correct: 我叫李明。我是学生。我每天早上七点起床。'
+      },
+
+      // 10. Dictation
+      {
+        type: 'dictation',
+        format: '✍️ Dictation',
+        question: 'Listen to the audio and type what you hear:',
+        audioUrl: '/audio/wo-shi-xuesheng.mp3',
+        correctAnswer: '我是学生',
+        acceptableAnswers: ['我是学生', 'wo shi xuesheng', 'wǒ shì xuésheng'],
+        explanation: 'The audio says: 我是学生 (Wǒ shì xuésheng) = I am a student.'
+      },
+
+      // 11. Audio Comprehension
+      {
+        type: 'audio_comprehension',
+        format: '🎧 Audio Comprehension',
+        question: 'Listen to the conversation and answer:',
+        audioUrl: '/audio/conversation-library.mp3',
+        transcript: 'A: 你去哪儿？\nB: 我去图书馆。\nA: 你去做什么？\nB: 我去看书。',
+        comprehensionQuestion: 'Where is person B going?',
+        options: [
+          { id: 'a', text: 'School' },
+          { id: 'b', text: 'Library', correct: true },
+          { id: 'c', text: 'Home' },
+          { id: 'd', text: 'Store' }
+        ],
+        explanation: 'Person B says "我去图书馆" (I\'m going to the library).'
+      },
+
+      // 12. Audio to Word
+      {
+        type: 'audio_to_word',
+        format: '👂 Audio to Word',
+        question: 'Listen and select the word you hear:',
+        audioUrl: '/audio/mama.mp3',
+        options: [
+          { id: 'a', text: '妈妈 (māma - mother)', correct: true },
+          { id: 'b', text: '马马 (mǎma - horses)' },
+          { id: 'c', text: '骂妈 (màma - scold mother)' },
+          { id: 'd', text: '麻麻 (máma - hemp)' }
+        ],
+        explanation: 'The audio says 妈妈 (māma) with first tone on both characters = mother.'
+      }
+    ];
+
+    // Load question
+    function loadQuestion() {
+      const question = questions[currentQuestionIndex];
+      const container = document.getElementById('questionContainer');
+      
+      // Update header
+      document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+      document.getElementById('totalQuestions').textContent = questions.length;
+      document.getElementById('questionType').textContent = question.format;
+      document.getElementById('progressBar').style.width = 
+        ((currentQuestionIndex + 1) / questions.length * 100) + '%';
+      
+      // Build question HTML based on type
+      let html = renderQuestion(question);
+      container.innerHTML = html;
+      
+      // Reset state
+      selectedAnswer = null;
+      userAnswer = null;
+      document.getElementById('submitBtn').disabled = true;
+      
+      // Initialize interactions based on question type
+      initializeQuestionType(question);
+    }
+
+    // Render question based on type
+    function renderQuestion(q) {
+      switch(q.type) {
+        case 'multiple_choice':
+          return renderMultipleChoice(q);
+        case 'fill_gap':
+          return renderFillGap(q);
+        case 'true_false':
+          return renderTrueFalse(q);
+        case 'matching':
+          return renderMatching(q);
+        case 'image_association':
+          return renderImageAssociation(q);
+        case 'sentence_ordering':
+          return renderSentenceOrdering(q);
+        case 'grammar_choice':
+          return renderGrammarChoice(q);
+        case 'error_correction':
+          return renderErrorCorrection(q);
+        case 'cloze_test':
+          return renderClozeTest(q);
+        case 'dictation':
+          return renderDictation(q);
+        case 'audio_comprehension':
+          return renderAudioComprehension(q);
+        case 'audio_to_word':
+          return renderAudioToWord(q);
+        default:
+          return '<p>Unknown question type</p>';
+      }
+    }
+
+    // Render functions for each type
+    function renderMultipleChoice(q) {
+      let html = `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>`;
+      
+      if (q.chinese) {
+        html += `<div class="flex flex-col items-center gap-3 my-6">
+          <p class="text-5xl font-bold text-primary">${q.chinese}</p>
+          ${q.audioUrl ? `<button onclick="playAudio('${q.audioUrl}')" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary">
+            <span class="material-symbols-outlined">volume_up</span>
+            Play Audio
+          </button>` : ''}
+        </div>`;
+      }
+      
+      html += '<div class="space-y-3">';
+      q.options.forEach(opt => {
+        html += `<div onclick="selectOption('${opt.id}')" class="option-card rounded-xl p-4 flex items-center gap-3" data-option="${opt.id}">
+          <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center">
+            <span class="font-semibold text-gray-600">${opt.id.toUpperCase()}</span>
+          </div>
+          <span class="text-base font-medium">${opt.text}</span>
+        </div>`;
+      });
+      html += '</div></div>';
+      return html;
+    }
+
+    function renderFillGap(q) {
+      return `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center mb-4">
+          <p class="text-3xl font-bold mb-2">${q.sentence}</p>
+          <p class="text-sm text-gray-500">${q.translation}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Your answer:</label>
+          <input type="text" id="gapInput" class="input-box" placeholder="Type your answer here..." oninput="handleInputChange()">
+        </div>
+      </div>`;
+    }
+
+    function renderTrueFalse(q) {
+      return `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">Is this statement true or false?</h2>
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center mb-6">
+          <p class="text-2xl font-bold">${q.statement}</p>
+        </div>
+        <div class="space-y-3">
+          <div onclick="selectTrueFalse(true)" class="option-card rounded-xl p-5 flex items-center gap-3" data-option="true">
+            <span class="material-symbols-outlined text-green-500 text-3xl">check_circle</span>
+            <span class="text-lg font-semibold">True</span>
+          </div>
+          <div onclick="selectTrueFalse(false)" class="option-card rounded-xl p-5 flex items-center gap-3" data-option="false">
+            <span class="material-symbols-outlined text-red-500 text-3xl">cancel</span>
+            <span class="text-lg font-semibold">False</span>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function renderMatching(q) {
+      let html = `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <div class="space-y-4" id="matchingContainer">`;
+      
+      q.pairs.forEach((pair, index) => {
+        html += `<div class="flex items-center gap-4">
+          <div class="flex-1 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 font-bold text-xl text-center">
+            ${pair.chinese}
+          </div>
+          <select id="match_${index}" onchange="handleMatchingChange()" class="flex-1 p-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+            <option value="">Select...</option>
+            ${q.pairs.map(p => `<option value="${p.id}">${p.english}</option>`).join('')}
+          </select>
+        </div>`;
+      });
+      
+      html += '</div></div>';
+      return html;
+    }
+
+    function renderImageAssociation(q) {
+      let html = `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <div class="mb-6 flex justify-center">
+          <div class="w-64 h-64 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <span class="text-6xl">⌚</span>
+          </div>
+        </div>
+        <div class="space-y-3">`;
+      
+      q.options.forEach(opt => {
+        html += `<div onclick="selectOption('${opt.id}')" class="option-card rounded-xl p-4 flex items-center justify-center gap-3" data-option="${opt.id}">
+          <span class="text-2xl font-bold">${opt.text}</span>
+        </div>`;
+      });
+      
+      html += '</div></div>';
+      return html;
+    }
+
+    function renderSentenceOrdering(q) {
+      let html = `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <p class="text-sm text-gray-500 mb-2">${q.translation}</p>
+        <div class="drop-zone mb-4" id="dropZone" ondrop="drop(event)" ondragover="allowDrop(event)">
+          <p class="text-gray-400 text-sm">Drop words here in correct order</p>
+        </div>
+        <div class="flex flex-wrap gap-3" id="wordBank">`;
+      
+      // Shuffle words
+      const shuffled = [...q.words].sort(() => Math.random() - 0.5);
+      shuffled.forEach((word, index) => {
+        html += `<div class="word-chip" draggable="true" ondragstart="drag(event)" id="word_${index}" data-word="${word}">
+          <span class="text-lg font-bold">${word}</span>
+        </div>`;
+      });
+      
+      html += '</div></div>';
+      return html;
+    }
+
+    function renderGrammarChoice(q) {
+      let html = `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center mb-6">
+          <p class="text-3xl font-bold">${q.sentence}</p>
+        </div>
+        <div class="space-y-3">`;
+      
+      q.options.forEach(opt => {
+        html += `<div onclick="selectOption('${opt.id}')" class="option-card rounded-xl p-5 text-center" data-option="${opt.id}">
+          <span class="text-2xl font-bold">${opt.text}</span>
+        </div>`;
+      });
+      
+      html += '</div></div>';
+      return html;
+    }
+
+    function renderErrorCorrection(q) {
+      let html = `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <p class="text-sm text-gray-500 mb-4">Tap the word that is in the wrong position:</p>
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center">
+          <div class="flex justify-center gap-2 flex-wrap">`;
+      
+      q.sentence.forEach((word, index) => {
+        html += `<span class="error-text text-2xl font-bold px-2 py-1" onclick="selectError(${index})" data-index="${index}">${word}</span>`;
+      });
+      
+      html += `</div></div>
+        <div id="correctionInput" class="hidden mt-4">
+          <p class="text-sm font-medium mb-2">Drag to reorder:</p>
+          <div class="drop-zone" id="correctionZone"></div>
+        </div>
+      </div>`;
+      return html;
+    }
+
+    function renderClozeTest(q) {
+      let html = `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800">
+          <p class="text-2xl leading-relaxed mb-4">${q.passage}</p>
+        </div>
+        <div class="space-y-3">`;
+      
+      q.blanks.forEach((blank, index) => {
+        html += `<div>
+          <label class="block text-sm font-medium mb-1">Blank ${index + 1}:</label>
+          <input type="text" id="blank_${index}" class="input-box" placeholder="Type answer..." oninput="handleClozeChange()">
+        </div>`;
+      });
+      
+      html += '</div></div>';
+      return html;
+    }
+
+    function renderDictation(q) {
+      return `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <div class="audio-player rounded-2xl p-6 my-4">
+          <div class="flex flex-col items-center gap-4">
+            <span class="material-symbols-outlined text-primary text-5xl">headphones</span>
+            <button onclick="playAudio('${q.audioUrl}')" class="px-6 py-3 rounded-xl bg-primary text-white font-semibold flex items-center gap-2">
+              <span class="material-symbols-outlined">play_arrow</span>
+              Play Audio
+            </button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Type what you hear:</label>
+          <input type="text" id="dictationInput" class="input-box" placeholder="Type here..." oninput="handleInputChange()">
+        </div>
+      </div>`;
+    }
+
+    function renderAudioComprehension(q) {
+      let html = `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <div class="audio-player rounded-2xl p-6 my-4">
+          <div class="flex flex-col items-center gap-4">
+            <span class="material-symbols-outlined text-primary text-5xl">forum</span>
+            <button onclick="playAudio('${q.audioUrl}')" class="px-6 py-3 rounded-xl bg-primary text-white font-semibold flex items-center gap-2">
+              <span class="material-symbols-outlined">play_arrow</span>
+              Listen to Conversation
+            </button>
+          </div>
+        </div>
+        <p class="font-semibold mb-3">${q.comprehensionQuestion}</p>
+        <div class="space-y-3">`;
+      
+      q.options.forEach(opt => {
+        html += `<div onclick="selectOption('${opt.id}')" class="option-card rounded-xl p-4 flex items-center gap-3" data-option="${opt.id}">
+          <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center">
+            <span class="font-semibold text-gray-600">${opt.id.toUpperCase()}</span>
+          </div>
+          <span class="text-base font-medium">${opt.text}</span>
+        </div>`;
+      });
+      
+      html += '</div></div>';
+      return html;
+    }
+
+    function renderAudioToWord(q) {
+      let html = `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <div class="audio-player rounded-2xl p-6 my-4">
+          <div class="flex flex-col items-center gap-4">
+            <span class="material-symbols-outlined text-primary text-5xl">hearing</span>
+            <button onclick="playAudio('${q.audioUrl}')" class="px-6 py-3 rounded-xl bg-primary text-white font-semibold flex items-center gap-2">
+              <span class="material-symbols-outlined">play_arrow</span>
+              Play Audio
+            </button>
+            <p class="text-xs text-gray-500">Listen carefully to the tones!</p>
+          </div>
+        </div>
+        <div class="space-y-3">`;
+      
+      q.options.forEach(opt => {
+        html += `<div onclick="selectOption('${opt.id}')" class="option-card rounded-xl p-4" data-option="${opt.id}">
+          <p class="text-2xl font-bold mb-1">${opt.text.split(' ')[0]}</p>
+          <p class="text-sm text-gray-500">${opt.text.split(' ').slice(1).join(' ')}</p>
+        </div>`;
+      });
+      
+      html += '</div></div>';
+      return html;
+    }
+
+    // Initialize question-specific interactions
+    function initializeQuestionType(question) {
+      // Enable submit button for certain types immediately
+      if (['sentence_ordering', 'matching', 'cloze_test'].includes(question.type)) {
+        // These need special validation
+      }
+    }
+
+    // Event handlers
+    function selectOption(optionId) {
+      document.querySelectorAll('.option-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      document.querySelector(`[data-option="${optionId}"]`).classList.add('selected');
+      selectedAnswer = optionId;
+      document.getElementById('submitBtn').disabled = false;
+    }
+
+    function selectTrueFalse(value) {
+      selectOption(value.toString());
+    }
+
+    function handleInputChange() {
+      const input = document.getElementById('gapInput') || document.getElementById('dictationInput');
+      if (input && input.value.trim()) {
+        userAnswer = input.value.trim();
+        document.getElementById('submitBtn').disabled = false;
+      }
+    }
+
+    function handleMatchingChange() {
+      const q = questions[currentQuestionIndex];
+      let allMatched = true;
+      q.pairs.forEach((_, index) => {
+        const select = document.getElementById(`match_${index}`);
+        if (!select.value) allMatched = false;
+      });
+      if (allMatched) {
+        document.getElementById('submitBtn').disabled = false;
+      }
+    }
+
+    function handleClozeChange() {
+      const q = questions[currentQuestionIndex];
+      let allFilled = true;
+      q.blanks.forEach((_, index) => {
+        const input = document.getElementById(`blank_${index}`);
+        if (!input.value.trim()) allFilled = false;
+      });
+      if (allFilled) {
+        document.getElementById('submitBtn').disabled = false;
+      }
+    }
+
+    function selectError(index) {
+      document.querySelectorAll('.error-text').forEach(el => el.classList.remove('selected'));
+      document.querySelector(`[data-index="${index}"]`).classList.add('selected');
+      selectedAnswer = index;
+      document.getElementById('submitBtn').disabled = false;
+    }
+
+    // Drag and drop handlers
+    let draggedElement = null;
+    let orderedWords = [];
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+      ev.target.closest('.drop-zone')?.classList.add('active');
+    }
+
+    function drag(ev) {
+      draggedElement = ev.target;
+      ev.dataTransfer.effectAllowed = 'move';
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const dropZone = document.getElementById('dropZone');
+      dropZone.classList.remove('active');
+      
+      if (draggedElement) {
+        dropZone.appendChild(draggedElement);
+        draggedElement.style.cursor = 'move';
+        
+        // Update ordered words
+        orderedWords = Array.from(dropZone.querySelectorAll('.word-chip')).map(chip => chip.dataset.word);
+        
+        // Check if all words are in drop zone
+        const wordBank = document.getElementById('wordBank');
+        if (wordBank.children.length === 0) {
+          document.getElementById('submitBtn').disabled = false;
+        }
+      }
+    }
+
+    // Audio playback (mock)
+    function playAudio(url) {
+      console.log('Playing:', url);
+      alert('Audio: ' + url);
+    }
+
+    // Submit answer
+    function submitAnswer() {
+      const question = questions[currentQuestionIndex];
+      let isCorrect = false;
+
+      // Validate based on question type
+      switch(question.type) {
+        case 'multiple_choice':
+        case 'grammar_choice':
+        case 'image_association':
+        case 'audio_comprehension':
+        case 'audio_to_word':
+          const correctOpt = question.options.find(o => o.correct);
+          isCorrect = selectedAnswer === correctOpt.id;
+          break;
+        
+        case 'fill_gap':
+        case 'dictation':
+          isCorrect = question.acceptableAnswers.some(ans => 
+            userAnswer.toLowerCase() === ans.toLowerCase()
+          );
+          break;
+        
+        case 'true_false':
+          isCorrect = selectedAnswer === question.correctAnswer.toString();
+          break;
+        
+        case 'sentence_ordering':
+          isCorrect = JSON.stringify(orderedWords) === JSON.stringify(question.correctOrder);
+          break;
+        
+        case 'error_correction':
+          isCorrect = parseInt(selectedAnswer) === question.errorIndex;
+          break;
+        
+        case 'matching':
+          isCorrect = true;
+          question.pairs.forEach((pair, index) => {
+            const select = document.getElementById(`match_${index}`);
+            if (parseInt(select.value) !== pair.id) isCorrect = false;
+          });
+          break;
+        
+        case 'cloze_test':
+          isCorrect = true;
+          question.blanks.forEach((blank, index) => {
+            const input = document.getElementById(`blank_${index}`);
+            if (!blank.acceptable.includes(input.value.trim())) isCorrect = false;
+          });
+          break;
+      }
+
+      if (isCorrect) score++;
+      
+      answers.push({
+        questionIndex: currentQuestionIndex,
+        isCorrect: isCorrect
+      });
+
+      // Move to next
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function skipQuestion() {
+      answers.push({ questionIndex: currentQuestionIndex, skipped: true });
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      const percentage = Math.round((score / questions.length) * 100);
+      window.location.href = `/quiz-results.html?score=${score}&total=${questions.length}&percentage=${percentage}`;
+    }
+
+    function exitQuiz() {
+      if (confirm('Exit quiz? Progress will be lost.')) {
+        window.history.back();
+      }
+    }
+
+    // Initialize
+    loadQuestion();
+  </script>
+</body>
+</html>

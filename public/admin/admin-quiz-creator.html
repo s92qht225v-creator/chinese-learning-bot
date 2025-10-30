@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Quiz Admin Panel - Create Questions</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#448fe4",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "success": "#4CAF50"
+          }
+        }
+      }
+    };
+  </script>
+  
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .form-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 15px;
+      transition: all 0.2s ease;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+    }
+
+    .textarea-field {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .question-type-card {
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .question-type-card:hover {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+    }
+
+    .question-type-card.selected {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.1);
+      box-shadow: 0 4px 12px rgba(68, 143, 228, 0.2);
+    }
+
+    .option-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    .preview-box {
+      background: #f8f9fa;
+      border: 2px dashed #448fe4;
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #111921;
+        color: #ffffff;
+      }
+
+      .form-card {
+        background: #1e2732;
+        border-color: #2d3748;
+      }
+
+      .input-field {
+        background: #1e2732;
+        border-color: #2d3748;
+        color: #ffffff;
+      }
+
+      .question-type-card {
+        background: #1e2732;
+        border-color: #2d3748;
+      }
+
+      .preview-box {
+        background: #1e2732;
+        border-color: #448fe4;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900">
+  
+  <!-- Header -->
+  <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Quiz Admin Panel</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Create and manage quiz questions</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="viewAllQuestions()" class="px-4 py-2 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary/5">
+            <span class="material-symbols-outlined text-sm">list</span>
+            View All
+          </button>
+          <button onclick="previewQuestion()" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600">
+            <span class="material-symbols-outlined text-sm">visibility</span>
+            Preview
+          </button>
+          <button onclick="saveQuestion()" class="px-6 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary/90">
+            <span class="material-symbols-outlined text-sm">save</span>
+            Save Question
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    
+    <!-- Question Type Selection -->
+    <section class="form-card">
+      <h2 class="text-xl font-bold mb-4">1. Select Question Type</h2>
+      <p class="text-sm text-gray-500 mb-4">Choose the format for this question</p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="question-type-card" onclick="selectQuestionType('multiple_choice')" data-type="multiple_choice">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">📝</span>
+            <div>
+              <p class="font-semibold">Multiple Choice</p>
+              <p class="text-xs text-gray-500">A, B, C, D options</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('fill_gap')" data-type="fill_gap">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">✏️</span>
+            <div>
+              <p class="font-semibold">Fill in the Gap</p>
+              <p class="text-xs text-gray-500">Type missing word</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('true_false')" data-type="true_false">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">✓</span>
+            <div>
+              <p class="font-semibold">True/False</p>
+              <p class="text-xs text-gray-500">Binary choice</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('matching')" data-type="matching">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">🔗</span>
+            <div>
+              <p class="font-semibold">Matching</p>
+              <p class="text-xs text-gray-500">Connect pairs</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('image_association')" data-type="image_association">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">🖼️</span>
+            <div>
+              <p class="font-semibold">Image Association</p>
+              <p class="text-xs text-gray-500">Image + options</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('sentence_ordering')" data-type="sentence_ordering">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">📋</span>
+            <div>
+              <p class="font-semibold">Sentence Ordering</p>
+              <p class="text-xs text-gray-500">Arrange words</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('grammar_choice')" data-type="grammar_choice">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">📖</span>
+            <div>
+              <p class="font-semibold">Grammar Choice</p>
+              <p class="text-xs text-gray-500">Pick correct word</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('error_correction')" data-type="error_correction">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">🔍</span>
+            <div>
+              <p class="font-semibold">Error Correction</p>
+              <p class="text-xs text-gray-500">Find mistake</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('cloze_test')" data-type="cloze_test">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">📄</span>
+            <div>
+              <p class="font-semibold">Cloze Test</p>
+              <p class="text-xs text-gray-500">Multiple blanks</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('dictation')" data-type="dictation">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">✍️</span>
+            <div>
+              <p class="font-semibold">Dictation</p>
+              <p class="text-xs text-gray-500">Listen & type</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('audio_comprehension')" data-type="audio_comprehension">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">🎧</span>
+            <div>
+              <p class="font-semibold">Audio Comprehension</p>
+              <p class="text-xs text-gray-500">Listen & answer</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-type-card" onclick="selectQuestionType('audio_to_word')" data-type="audio_to_word">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">👂</span>
+            <div>
+              <p class="font-semibold">Audio to Word</p>
+              <p class="text-xs text-gray-500">Hear & select</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Basic Information -->
+    <section class="form-card">
+      <h2 class="text-xl font-bold mb-4">2. Basic Information</h2>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-semibold mb-2">HSK Level *</label>
+        <select id="hskLevel" class="input-field">
+          <option value="">Select level...</option>
+          <option value="HSK1">HSK 1 - Beginner (150 words)</option>
+          <option value="HSK2">HSK 2 - Elementary (300 words)</option>
+          <option value="HSK3">HSK 3 - Intermediate (600 words)</option>
+          <option value="HSK4">HSK 4 - Upper Intermediate (1200 words)</option>
+          <option value="HSK5">HSK 5 - Advanced (2500 words)</option>
+          <option value="HSK6">HSK 6 - Mastery (5000+ words)</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">HSK level defines the difficulty - no separate difficulty setting needed</p>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-semibold mb-2">Tags (comma separated)</label>
+        <input type="text" id="tags" class="input-field" placeholder="e.g., grammar, vocabulary, daily life">
+        <p class="text-xs text-gray-500 mt-1">Use tags to organize questions by topic</p>
+      </div>
+    </section>
+
+    <!-- Dynamic Form Container -->
+    <div id="questionFormContainer">
+      <!-- Form will be inserted here based on selected type -->
+    </div>
+
+  </main>
+
+  <script>
+    let selectedType = null;
+    let currentQuestion = {};
+
+    // Select question type
+    function selectQuestionType(type) {
+      selectedType = type;
+      
+      // Update UI
+      document.querySelectorAll('.question-type-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      document.querySelector(`[data-type="${type}"]`).classList.add('selected');
+      
+      // Load appropriate form
+      loadFormForType(type);
+    }
+
+    // Load form based on type
+    function loadFormForType(type) {
+      const container = document.getElementById('questionFormContainer');
+      
+      switch(type) {
+        case 'multiple_choice':
+          container.innerHTML = getMultipleChoiceForm();
+          break;
+        case 'fill_gap':
+          container.innerHTML = getFillGapForm();
+          break;
+        case 'true_false':
+          container.innerHTML = getTrueFalseForm();
+          break;
+        case 'matching':
+          container.innerHTML = getMatchingForm();
+          break;
+        case 'image_association':
+          container.innerHTML = getImageAssociationForm();
+          break;
+        case 'sentence_ordering':
+          container.innerHTML = getSentenceOrderingForm();
+          break;
+        case 'grammar_choice':
+          container.innerHTML = getGrammarChoiceForm();
+          break;
+        case 'error_correction':
+          container.innerHTML = getErrorCorrectionForm();
+          break;
+        case 'cloze_test':
+          container.innerHTML = getClozeTestForm();
+          break;
+        case 'dictation':
+          container.innerHTML = getDictationForm();
+          break;
+        case 'audio_comprehension':
+          container.innerHTML = getAudioComprehensionForm();
+          break;
+        case 'audio_to_word':
+          container.innerHTML = getAudioToWordForm();
+          break;
+      }
+    }
+
+    // Form Templates
+    function getMultipleChoiceForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., What does this mean?">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Chinese Text (if applicable)</label>
+            <input type="text" id="chineseText" class="input-field" placeholder="e.g., 手表" style="font-size: 24px;">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Audio URL (optional)</label>
+            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/shoubiao.mp3">
+            <p class="text-xs text-gray-500 mt-1">Upload audio file and paste URL here</p>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Answer Options</h2>
+          
+          <div id="optionsContainer">
+            <div class="option-row">
+              <input type="radio" name="correct" value="a" id="correct_a">
+              <label for="correct_a" class="text-sm font-semibold w-8">A</label>
+              <input type="text" id="option_a" class="input-field" placeholder="Option A">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="b" id="correct_b">
+              <label for="correct_b" class="text-sm font-semibold w-8">B</label>
+              <input type="text" id="option_b" class="input-field" placeholder="Option B">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="c" id="correct_c">
+              <label for="correct_c" class="text-sm font-semibold w-8">C</label>
+              <input type="text" id="option_c" class="input-field" placeholder="Option C">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="d" id="correct_d">
+              <label for="correct_d" class="text-sm font-semibold w-8">D</label>
+              <input type="text" id="option_d" class="input-field" placeholder="Option D">
+            </div>
+          </div>
+
+          <p class="text-sm text-gray-500 mt-2">✓ Select the radio button for the correct answer</p>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">5. Explanation</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Explanation for Review *</label>
+            <textarea id="explanation" class="input-field textarea-field" placeholder="Explain why this answer is correct and provide additional context..."></textarea>
+            <p class="text-xs text-gray-500 mt-1">This will be shown when students review their mistakes</p>
+          </div>
+        </section>
+      `;
+    }
+
+    function getFillGapForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., Complete the sentence:">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Sentence with Gap *</label>
+            <input type="text" id="sentenceText" class="input-field" placeholder="e.g., 我 ___ 学生。" style="font-size: 20px;">
+            <p class="text-xs text-gray-500 mt-1">Use ___ to indicate where the gap is</p>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Translation (optional)</label>
+            <input type="text" id="translation" class="input-field" placeholder="e.g., I ___ a student.">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Correct Answer *</label>
+            <input type="text" id="correctAnswer" class="input-field" placeholder="e.g., 是">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Alternative Acceptable Answers</label>
+            <input type="text" id="acceptableAnswers" class="input-field" placeholder="e.g., shi, shì (comma separated)">
+            <p class="text-xs text-gray-500 mt-1">Include pinyin variations and alternative spellings</p>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Explain the grammar rule or vocabulary..."></textarea>
+        </section>
+      `;
+    }
+
+    function getTrueFalseForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Statement</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Statement *</label>
+            <input type="text" id="statement" class="input-field" placeholder="e.g., 手表 means 'newspaper'">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Correct Answer *</label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="trueFalse" value="true" id="true">
+                <span class="font-semibold">True</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="trueFalse" value="false" id="false">
+                <span class="font-semibold">False</span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Explain why the statement is true or false..."></textarea>
+        </section>
+      `;
+    }
+
+    function getMatchingForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., Match the Chinese words to their English meanings:">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-4">Matching Pairs * (minimum 3)</label>
+            
+            <div id="pairsContainer">
+              <div class="option-row mb-3">
+                <input type="text" class="input-field" placeholder="Chinese" id="chinese_1" style="flex: 1; font-size: 18px;">
+                <span class="text-2xl">→</span>
+                <input type="text" class="input-field" placeholder="English" id="english_1" style="flex: 1;">
+              </div>
+
+              <div class="option-row mb-3">
+                <input type="text" class="input-field" placeholder="Chinese" id="chinese_2" style="flex: 1; font-size: 18px;">
+                <span class="text-2xl">→</span>
+                <input type="text" class="input-field" placeholder="English" id="english_2" style="flex: 1;">
+              </div>
+
+              <div class="option-row mb-3">
+                <input type="text" class="input-field" placeholder="Chinese" id="chinese_3" style="flex: 1; font-size: 18px;">
+                <span class="text-2xl">→</span>
+                <input type="text" class="input-field" placeholder="English" id="english_3" style="flex: 1;">
+              </div>
+            </div>
+
+            <button onclick="addPair()" class="px-4 py-2 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary/5">
+              + Add Another Pair
+            </button>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Provide additional context or memory tips..."></textarea>
+        </section>
+      `;
+    }
+
+    function getImageAssociationForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., What is this?">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Image URL *</label>
+            <input type="text" id="imageUrl" class="input-field" placeholder="/images/watch.jpg">
+            <p class="text-xs text-gray-500 mt-1">Upload image and paste URL here</p>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Image Preview</label>
+            <div class="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+              <span class="text-gray-400">No image</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Answer Options</h2>
+          
+          <div id="optionsContainer">
+            <div class="option-row">
+              <input type="radio" name="correct" value="a" id="correct_a">
+              <label for="correct_a" class="text-sm font-semibold w-8">A</label>
+              <input type="text" id="option_a" class="input-field" placeholder="Chinese word A" style="font-size: 18px;">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="b" id="correct_b">
+              <label for="correct_b" class="text-sm font-semibold w-8">B</label>
+              <input type="text" id="option_b" class="input-field" placeholder="Chinese word B" style="font-size: 18px;">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="c" id="correct_c">
+              <label for="correct_c" class="text-sm font-semibold w-8">C</label>
+              <input type="text" id="option_c" class="input-field" placeholder="Chinese word C" style="font-size: 18px;">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="d" id="correct_d">
+              <label for="correct_d" class="text-sm font-semibold w-8">D</label>
+              <input type="text" id="option_d" class="input-field" placeholder="Chinese word D" style="font-size: 18px;">
+            </div>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">5. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Explain the correct answer..."></textarea>
+        </section>
+      `;
+    }
+
+    function getSentenceOrderingForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., Arrange these words in the correct order:">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Correct Sentence *</label>
+            <input type="text" id="correctSentence" class="input-field" placeholder="e.g., 我也是学生" style="font-size: 20px;">
+            <p class="text-xs text-gray-500 mt-1">Enter the sentence in correct order (spaces will separate words)</p>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Translation *</label>
+            <input type="text" id="translation" class="input-field" placeholder="e.g., I am also a student">
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Explain the correct word order and grammar rules..."></textarea>
+        </section>
+      `;
+    }
+
+    function getGrammarChoiceForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., Choose the correct word to complete the sentence:">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Sentence with Gap *</label>
+            <input type="text" id="sentenceText" class="input-field" placeholder="e.g., 我 ___ 学生。" style="font-size: 20px;">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Grammar Options</label>
+            
+            <div class="option-row">
+              <input type="radio" name="correct" value="a" id="correct_a">
+              <label for="correct_a" class="text-sm font-semibold w-8">A</label>
+              <input type="text" id="option_a" class="input-field" placeholder="Grammar word A" style="font-size: 18px;">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="b" id="correct_b">
+              <label for="correct_b" class="text-sm font-semibold w-8">B</label>
+              <input type="text" id="option_b" class="input-field" placeholder="Grammar word B" style="font-size: 18px;">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="c" id="correct_c">
+              <label for="correct_c" class="text-sm font-semibold w-8">C</label>
+              <input type="text" id="option_c" class="input-field" placeholder="Grammar word C" style="font-size: 18px;">
+            </div>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Explain the grammar rule and why other options are incorrect..."></textarea>
+        </section>
+      `;
+    }
+
+    function getErrorCorrectionForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., Find and correct the error in this sentence:">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Incorrect Sentence *</label>
+            <input type="text" id="incorrectSentence" class="input-field" placeholder="e.g., 他学生也是" style="font-size: 20px;">
+            <p class="text-xs text-gray-500 mt-1">Enter sentence with space-separated words</p>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Which Word Position is Wrong? *</label>
+            <input type="number" id="errorIndex" class="input-field" placeholder="e.g., 2 (zero-indexed: 0,1,2,3...)" min="0">
+            <p class="text-xs text-gray-500 mt-1">Count starts from 0. For "他学生也是", 也 is at index 2</p>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Correct Sentence *</label>
+            <input type="text" id="correctSentence" class="input-field" placeholder="e.g., 他也是学生" style="font-size: 20px;">
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Explain why the word position is wrong and the correct grammar rule..."></textarea>
+        </section>
+      `;
+    }
+
+    function getClozeTestForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., Fill in all the blanks:">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Passage with Blanks *</label>
+            <textarea id="passage" class="input-field textarea-field" placeholder="e.g., 我___李明。我___学生。我每天___七点起床。" style="font-size: 18px;"></textarea>
+            <p class="text-xs text-gray-500 mt-1">Use ___ to mark blanks</p>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-4">Answers for Each Blank *</label>
+            
+            <div id="blanksContainer">
+              <div class="mb-3">
+                <label class="block text-xs font-semibold mb-1">Blank 1:</label>
+                <input type="text" id="blank_1_answer" class="input-field" placeholder="Correct answer">
+                <input type="text" id="blank_1_acceptable" class="input-field mt-2" placeholder="Alternative answers (comma separated)">
+              </div>
+
+              <div class="mb-3">
+                <label class="block text-xs font-semibold mb-1">Blank 2:</label>
+                <input type="text" id="blank_2_answer" class="input-field" placeholder="Correct answer">
+                <input type="text" id="blank_2_acceptable" class="input-field mt-2" placeholder="Alternative answers (comma separated)">
+              </div>
+
+              <div class="mb-3">
+                <label class="block text-xs font-semibold mb-1">Blank 3:</label>
+                <input type="text" id="blank_3_answer" class="input-field" placeholder="Correct answer">
+                <input type="text" id="blank_3_acceptable" class="input-field mt-2" placeholder="Alternative answers (comma separated)">
+              </div>
+            </div>
+
+            <button onclick="addBlank()" class="px-4 py-2 rounded-lg border-2 border-primary text-primary font-semibold hover:bg-primary/5">
+              + Add Another Blank
+            </button>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Explain the passage and answers..."></textarea>
+        </section>
+      `;
+    }
+
+    function getDictationForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., Listen to the audio and type what you hear:">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Audio URL *</label>
+            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/wo-shi-xuesheng.mp3">
+            <p class="text-xs text-gray-500 mt-1">Upload audio file and paste URL</p>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Correct Answer (Chinese) *</label>
+            <input type="text" id="correctAnswer" class="input-field" placeholder="e.g., 我是学生" style="font-size: 20px;">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Alternative Acceptable Answers</label>
+            <input type="text" id="acceptableAnswers" class="input-field" placeholder="e.g., wo shi xuesheng, wǒ shì xuésheng">
+            <p class="text-xs text-gray-500 mt-1">Include pinyin variations</p>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Explain the meaning and any tricky pronunciation..."></textarea>
+        </section>
+      `;
+    }
+
+    function getAudioComprehensionForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Audio Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., Listen to the conversation and answer:">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Audio URL *</label>
+            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/conversation-library.mp3">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Transcript *</label>
+            <textarea id="transcript" class="input-field textarea-field" placeholder="A: 你去哪儿？&#10;B: 我去图书馆。" style="font-size: 16px;"></textarea>
+            <p class="text-xs text-gray-500 mt-1">This will be revealed when students review mistakes</p>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Comprehension Question *</label>
+            <input type="text" id="comprehensionQuestion" class="input-field" placeholder="e.g., Where is person B going?">
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Answer Options</h2>
+          
+          <div id="optionsContainer">
+            <div class="option-row">
+              <input type="radio" name="correct" value="a" id="correct_a">
+              <label for="correct_a" class="text-sm font-semibold w-8">A</label>
+              <input type="text" id="option_a" class="input-field" placeholder="Option A">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="b" id="correct_b">
+              <label for="correct_b" class="text-sm font-semibold w-8">B</label>
+              <input type="text" id="option_b" class="input-field" placeholder="Option B">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="c" id="correct_c">
+              <label for="correct_c" class="text-sm font-semibold w-8">C</label>
+              <input type="text" id="option_c" class="input-field" placeholder="Option C">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="d" id="correct_d">
+              <label for="correct_d" class="text-sm font-semibold w-8">D</label>
+              <input type="text" id="option_d" class="input-field" placeholder="Option D">
+            </div>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">5. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Explain the correct answer and key vocabulary..."></textarea>
+        </section>
+      `;
+    }
+
+    function getAudioToWordForm() {
+      return `
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., Listen and select the word you hear:">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Audio URL *</label>
+            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/mama.mp3">
+          </div>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">4. Answer Options (with tones)</h2>
+          
+          <div id="optionsContainer">
+            <div class="option-row">
+              <input type="radio" name="correct" value="a" id="correct_a">
+              <label for="correct_a" class="text-sm font-semibold w-8">A</label>
+              <input type="text" id="option_a" class="input-field" placeholder="e.g., 妈妈 (māma - mother)" style="font-size: 16px;">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="b" id="correct_b">
+              <label for="correct_b" class="text-sm font-semibold w-8">B</label>
+              <input type="text" id="option_b" class="input-field" placeholder="e.g., 马马 (mǎma - horses)" style="font-size: 16px;">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="c" id="correct_c">
+              <label for="correct_c" class="text-sm font-semibold w-8">C</label>
+              <input type="text" id="option_c" class="input-field" placeholder="e.g., 骂妈 (màma)" style="font-size: 16px;">
+            </div>
+
+            <div class="option-row">
+              <input type="radio" name="correct" value="d" id="correct_d">
+              <label for="correct_d" class="text-sm font-semibold w-8">D</label>
+              <input type="text" id="option_d" class="input-field" placeholder="e.g., 麻麻 (máma)" style="font-size: 16px;">
+            </div>
+          </div>
+
+          <p class="text-sm text-gray-500 mt-2">💡 Include pinyin with tone marks in each option</p>
+        </section>
+
+        <section class="form-card">
+          <h2 class="text-xl font-bold mb-4">5. Explanation</h2>
+          <textarea id="explanation" class="input-field textarea-field" placeholder="Explain the correct tone and meaning..."></textarea>
+        </section>
+      `;
+    }
+
+    // Helper functions
+    function addPair() {
+      const container = document.getElementById('pairsContainer');
+      const pairCount = container.children.length + 1;
+      const html = `
+        <div class="option-row mb-3">
+          <input type="text" class="input-field" placeholder="Chinese" id="chinese_${pairCount}" style="flex: 1; font-size: 18px;">
+          <span class="text-2xl">→</span>
+          <input type="text" class="input-field" placeholder="English" id="english_${pairCount}" style="flex: 1;">
+          <button onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', html);
+    }
+
+    function addBlank() {
+      const container = document.getElementById('blanksContainer');
+      const blankCount = container.children.length + 1;
+      const html = `
+        <div class="mb-3">
+          <label class="block text-xs font-semibold mb-1">Blank ${blankCount}:</label>
+          <input type="text" id="blank_${blankCount}_answer" class="input-field" placeholder="Correct answer">
+          <input type="text" id="blank_${blankCount}_acceptable" class="input-field mt-2" placeholder="Alternative answers (comma separated)">
+          <button onclick="this.parentElement.remove()" class="text-sm text-red-500 hover:text-red-700 mt-1">Remove</button>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', html);
+    }
+
+    // Preview question
+    function previewQuestion() {
+      if (!selectedType) {
+        alert('Please select a question type first!');
+        return;
+      }
+
+      // Collect current form data
+      const previewData = collectFormData();
+      
+      // Show preview modal
+      showPreviewModal(previewData);
+    }
+
+    function collectFormData() {
+      const data = {
+        type: selectedType,
+        level: document.getElementById('hskLevel')?.value,
+        questionText: document.getElementById('questionText')?.value,
+        chineseText: document.getElementById('chineseText')?.value,
+        audioUrl: document.getElementById('audioUrl')?.value,
+        explanation: document.getElementById('explanation')?.value
+      };
+
+      // Collect type-specific data
+      if (['multiple_choice', 'grammar_choice', 'image_association', 'audio_comprehension', 'audio_to_word'].includes(selectedType)) {
+        data.options = [
+          { id: 'a', text: document.getElementById('option_a')?.value, correct: document.getElementById('correct_a')?.checked },
+          { id: 'b', text: document.getElementById('option_b')?.value, correct: document.getElementById('correct_b')?.checked },
+          { id: 'c', text: document.getElementById('option_c')?.value, correct: document.getElementById('correct_c')?.checked },
+          { id: 'd', text: document.getElementById('option_d')?.value, correct: document.getElementById('correct_d')?.checked }
+        ];
+      }
+
+      if (selectedType === 'fill_gap') {
+        data.sentence = document.getElementById('sentenceText')?.value;
+        data.translation = document.getElementById('translation')?.value;
+        data.correctAnswer = document.getElementById('correctAnswer')?.value;
+      }
+
+      if (selectedType === 'true_false') {
+        data.statement = document.getElementById('statement')?.value;
+        data.correctAnswer = document.querySelector('input[name="trueFalse"]:checked')?.value;
+      }
+
+      if (selectedType === 'sentence_ordering') {
+        data.correctSentence = document.getElementById('correctSentence')?.value;
+        data.translation = document.getElementById('translation')?.value;
+      }
+
+      if (selectedType === 'error_correction') {
+        data.incorrectSentence = document.getElementById('incorrectSentence')?.value;
+        data.correctSentence = document.getElementById('correctSentence')?.value;
+        data.errorIndex = document.getElementById('errorIndex')?.value;
+      }
+
+      if (selectedType === 'dictation' || selectedType === 'repeat_after_me') {
+        data.targetPhrase = document.getElementById('targetPhrase')?.value || document.getElementById('correctAnswer')?.value;
+        data.pinyin = document.getElementById('pinyin')?.value;
+        data.translation = document.getElementById('translation')?.value;
+      }
+
+      if (selectedType === 'audio_comprehension') {
+        data.transcript = document.getElementById('transcript')?.value;
+        data.comprehensionQuestion = document.getElementById('comprehensionQuestion')?.value;
+      }
+
+      if (selectedType === 'image_association') {
+        data.imageUrl = document.getElementById('imageUrl')?.value;
+      }
+
+      return data;
+    }
+
+    function showPreviewModal(data) {
+      // Create modal overlay
+      const modal = document.createElement('div');
+      modal.id = 'previewModal';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.7);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        overflow-y: auto;
+      `;
+
+      // Create modal content
+      const content = document.createElement('div');
+      content.style.cssText = `
+        background: white;
+        border-radius: 24px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      `;
+
+      const typeIcons = {
+        multiple_choice: '📝',
+        fill_gap: '✏️',
+        true_false: '✓',
+        matching: '🔗',
+        image_association: '🖼️',
+        sentence_ordering: '📋',
+        grammar_choice: '📖',
+        error_correction: '🔍',
+        cloze_test: '📄',
+        dictation: '✍️',
+        audio_comprehension: '🎧',
+        audio_to_word: '👂'
+      };
+
+      const typeNames = {
+        multiple_choice: 'Multiple Choice',
+        fill_gap: 'Fill in the Gap',
+        true_false: 'True/False',
+        matching: 'Matching',
+        image_association: 'Image Association',
+        sentence_ordering: 'Sentence Ordering',
+        grammar_choice: 'Grammar Choice',
+        error_correction: 'Error Correction',
+        cloze_test: 'Cloze Test',
+        dictation: 'Dictation',
+        audio_comprehension: 'Audio Comprehension',
+        audio_to_word: 'Audio to Word'
+      };
+
+      content.innerHTML = `
+        <div style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
+          <div style="display: flex; justify-content: between; align-items: center;">
+            <div>
+              <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">Question Preview</h2>
+              <p style="font-size: 14px; color: #6b7280;">This is how students will see this question</p>
+            </div>
+            <button onclick="closePreview()" style="padding: 8px; border-radius: 8px; background: #f3f4f6; border: none; cursor: pointer; margin-left: auto;">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="padding: 24px;">
+          <!-- Header -->
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+            <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: bold;">${data.level || 'No Level'}</span>
+            <span style="background: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: bold;">${typeIcons[data.type]} ${typeNames[data.type]}</span>
+          </div>
+
+          <!-- Question Content -->
+          ${renderPreviewContent(data)}
+
+          <!-- Explanation -->
+          ${data.explanation ? `
+            <div style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-left: 4px solid #448fe4; border-radius: 8px;">
+              <p style="font-size: 12px; font-weight: bold; color: #448fe4; margin-bottom: 8px;">💡 EXPLANATION (shown after answer)</p>
+              <p style="font-size: 14px; line-height: 1.6;">${data.explanation}</p>
+            </div>
+          ` : ''}
+        </div>
+
+        <div style="padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 12px;">
+          <button onclick="closePreview()" style="flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #e5e7eb; background: white; font-weight: 600; cursor: pointer;">
+            Close Preview
+          </button>
+          <button onclick="closePreview(); saveQuestion();" style="flex: 1; padding: 12px; border-radius: 12px; border: none; background: #448fe4; color: white; font-weight: 600; cursor: pointer;">
+            Looks Good - Save Question
+          </button>
+        </div>
+      `;
+
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+
+      // Close on backdrop click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closePreview();
+      });
+    }
+
+    function renderPreviewContent(data) {
+      let html = '';
+
+      // Question text
+      if (data.questionText) {
+        html += `<h3 style="font-size: 18px; font-weight: bold; margin-bottom: 16px;">${data.questionText}</h3>`;
+      }
+
+      // Chinese text (large display)
+      if (data.chineseText) {
+        html += `
+          <div style="text-align: center; margin: 24px 0;">
+            <p style="font-size: 48px; font-weight: bold; color: #448fe4;">${data.chineseText}</p>
+            ${data.audioUrl ? `
+              <button style="margin-top: 12px; padding: 8px 16px; background: rgba(68, 143, 228, 0.1); border: none; border-radius: 8px; color: #448fe4; font-weight: 600; cursor: pointer;">
+                <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">volume_up</span>
+                Play Audio
+              </button>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      // Type-specific rendering
+      switch(data.type) {
+        case 'multiple_choice':
+        case 'grammar_choice':
+        case 'audio_comprehension':
+        case 'audio_to_word':
+          if (data.options) {
+            html += '<div style="display: flex; flex-direction: column; gap: 12px;">';
+            data.options.forEach(opt => {
+              const isCorrect = opt.correct;
+              html += `
+                <div style="padding: 16px; border: 2px solid ${isCorrect ? '#4ade80' : '#e5e7eb'}; background: ${isCorrect ? 'rgba(74, 222, 128, 0.05)' : 'white'}; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+                  <span style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #d1d5db; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">${opt.id.toUpperCase()}</span>
+                  <span style="font-size: 16px; font-weight: 500;">${opt.text || '(empty)'}</span>
+                  ${isCorrect ? '<span style="margin-left: auto; color: #4ade80; font-weight: bold;">✓</span>' : ''}
+                </div>
+              `;
+            });
+            html += '</div>';
+          }
+          break;
+
+        case 'fill_gap':
+          if (data.sentence) {
+            html += `
+              <div style="padding: 24px; background: #f9fafb; border-radius: 12px; text-align: center; margin-bottom: 16px;">
+                <p style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">${data.sentence}</p>
+                ${data.translation ? `<p style="font-size: 14px; color: #6b7280;">${data.translation}</p>` : ''}
+              </div>
+              <div style="padding: 16px; background: rgba(74, 222, 128, 0.1); border: 2px solid #4ade80; border-radius: 12px;">
+                <p style="font-size: 12px; font-weight: bold; color: #15803d; margin-bottom: 4px;">CORRECT ANSWER:</p>
+                <p style="font-size: 20px; font-weight: bold;">${data.correctAnswer || '(not set)'}</p>
+              </div>
+            `;
+          }
+          break;
+
+        case 'true_false':
+          if (data.statement) {
+            html += `
+              <div style="padding: 24px; background: #f9fafb; border-radius: 12px; text-align: center; margin-bottom: 16px;">
+                <p style="font-size: 20px; font-weight: bold;">${data.statement}</p>
+              </div>
+              <div style="display: flex; gap: 12px;">
+                <div style="flex: 1; padding: 20px; border: 2px solid ${data.correctAnswer === 'true' ? '#4ade80' : '#e5e7eb'}; background: ${data.correctAnswer === 'true' ? 'rgba(74, 222, 128, 0.05)' : 'white'}; border-radius: 12px; text-align: center;">
+                  <span style="font-size: 32px; color: #22c55e;">✓</span>
+                  <p style="font-weight: bold; margin-top: 8px;">True</p>
+                  ${data.correctAnswer === 'true' ? '<p style="color: #22c55e; font-size: 12px; margin-top: 4px;">CORRECT</p>' : ''}
+                </div>
+                <div style="flex: 1; padding: 20px; border: 2px solid ${data.correctAnswer === 'false' ? '#4ade80' : '#e5e7eb'}; background: ${data.correctAnswer === 'false' ? 'rgba(74, 222, 128, 0.05)' : 'white'}; border-radius: 12px; text-align: center;">
+                  <span style="font-size: 32px; color: #ef4444;">✗</span>
+                  <p style="font-weight: bold; margin-top: 8px;">False</p>
+                  ${data.correctAnswer === 'false' ? '<p style="color: #22c55e; font-size: 12px; margin-top: 4px;">CORRECT</p>' : ''}
+                </div>
+              </div>
+            `;
+          }
+          break;
+
+        case 'sentence_ordering':
+          if (data.correctSentence) {
+            const words = data.correctSentence.split(' ');
+            html += `
+              ${data.translation ? `<p style="font-size: 14px; color: #6b7280; margin-bottom: 16px;">${data.translation}</p>` : ''}
+              <div style="padding: 16px; background: rgba(74, 222, 128, 0.1); border: 2px solid #4ade80; border-radius: 12px; margin-bottom: 12px;">
+                <p style="font-size: 12px; font-weight: bold; color: #15803d; margin-bottom: 8px;">CORRECT ORDER:</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  ${words.map(word => `<span style="padding: 8px 16px; background: white; border: 2px solid #4ade80; border-radius: 8px; font-size: 18px; font-weight: bold;">${word}</span>`).join('')}
+                </div>
+              </div>
+              <p style="font-size: 12px; color: #6b7280;">Students will drag and drop these words to form the correct sentence</p>
+            `;
+          }
+          break;
+
+        case 'error_correction':
+          if (data.incorrectSentence) {
+            const words = data.incorrectSentence.split(' ');
+            html += `
+              <div style="padding: 20px; background: #fef2f2; border: 2px solid #fca5a5; border-radius: 12px; margin-bottom: 16px;">
+                <p style="font-size: 12px; font-weight: bold; color: #dc2626; margin-bottom: 8px;">INCORRECT SENTENCE:</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                  ${words.map((word, idx) => `
+                    <span style="padding: 8px 12px; background: ${idx == data.errorIndex ? '#fee2e2' : 'white'}; border: 2px solid ${idx == data.errorIndex ? '#dc2626' : '#e5e7eb'}; border-radius: 8px; font-size: 20px; font-weight: bold;">
+                      ${word}
+                      ${idx == data.errorIndex ? '<br><span style="font-size: 10px; color: #dc2626;">ERROR ❌</span>' : ''}
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+              ${data.correctSentence ? `
+                <div style="padding: 16px; background: rgba(74, 222, 128, 0.1); border: 2px solid #4ade80; border-radius: 12px;">
+                  <p style="font-size: 12px; font-weight: bold; color: #15803d; margin-bottom: 4px;">CORRECT:</p>
+                  <p style="font-size: 20px; font-weight: bold;">${data.correctSentence}</p>
+                </div>
+              ` : ''}
+            `;
+          }
+          break;
+
+        case 'dictation':
+          html += `
+            <div style="padding: 24px; background: linear-gradient(135deg, rgba(68, 143, 228, 0.1), rgba(80, 227, 194, 0.1)); border: 2px solid rgba(68, 143, 228, 0.3); border-radius: 16px; text-align: center; margin-bottom: 16px;">
+              <span class="material-symbols-outlined" style="font-size: 48px; color: #448fe4;">headphones</span>
+              <p style="margin-top: 12px; font-weight: 600;">Listen to Audio</p>
+              <p style="font-size: 12px; color: #6b7280; margin-top: 4px;">Students will type what they hear</p>
+            </div>
+            ${data.targetPhrase ? `
+              <div style="padding: 16px; background: rgba(74, 222, 128, 0.1); border: 2px solid #4ade80; border-radius: 12px;">
+                <p style="font-size: 12px; font-weight: bold; color: #15803d; margin-bottom: 4px;">CORRECT ANSWER:</p>
+                <p style="font-size: 24px; font-weight: bold;">${data.targetPhrase}</p>
+              </div>
+            ` : ''}
+          `;
+          break;
+
+        case 'image_association':
+          html += `
+            <div style="margin-bottom: 16px; text-align: center;">
+              ${data.imageUrl ? `
+                <img src="${data.imageUrl}" style="width: 200px; height: 200px; object-fit: cover; border-radius: 16px; border: 3px solid #e5e7eb;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              ` : ''}
+              <div style="${data.imageUrl ? 'display: none;' : 'display: flex;'} width: 200px; height: 200px; border-radius: 16px; background: #f3f4f6; align-items: center; justify-content: center; margin: 0 auto;">
+                <span style="font-size: 64px;">🖼️</span>
+              </div>
+            </div>
+            ${data.options ? renderPreviewContent({type: 'multiple_choice', options: data.options}) : ''}
+          `;
+          break;
+      }
+
+      return html;
+    }
+
+    function closePreview() {
+      const modal = document.getElementById('previewModal');
+      if (modal) modal.remove();
+    }
+
+    // Save question
+    function saveQuestion() {
+      if (!selectedType) {
+        alert('Please select a question type first!');
+        return;
+      }
+
+      // Collect form data
+      const questionData = {
+        type: selectedType,
+        level: document.getElementById('hskLevel').value,
+        tags: document.getElementById('tags').value.split(',').map(t => t.trim()),
+        // ... collect all other fields based on type
+      };
+
+      console.log('Question data:', questionData);
+      
+      // In real app: send to Supabase
+      alert('✓ Question saved successfully!\n\nThis would save to your database.');
+      
+      // Reset form
+      if (confirm('Question saved! Create another one?')) {
+        location.reload();
+      }
+    }
+
+    // View all questions
+    function viewAllQuestions() {
+      window.location.href = '/admin-questions-list.html';
+    }
+  </script>
+</body>
+</html>

@@ -58,7 +58,7 @@
     }
 
     .practice-card {
-      background: white !important;
+      background: white;
       border: 1px solid #e5e7eb;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
@@ -119,7 +119,7 @@
     }
 
     .stat-card {
-      background: white !important;
+      background: white;
       border: 1px solid #e5e7eb;
       transition: all 0.3s ease;
     }
@@ -144,6 +144,17 @@
         border-color: #2d3748;
       }
     }
+
+    /* Ensure dark mode via class as well (when app controls theme) */
+    .dark .practice-card {
+      background: #1e2732;
+      border-color: #2d3748;
+    }
+
+    .dark .stat-card {
+      background: #1e2732;
+      border-color: #2d3748;
+    }
   </style>
 </head>
 
@@ -151,7 +162,7 @@
   <div class="min-h-screen pb-24">
     
     <!-- Header -->
-    <header class="sticky top-0 z-50 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-b border-border-light dark:border-border-dark">
+    <header class="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
       <div class="px-4 py-4">
         <h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Practice</h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Master Chinese through practice</p>
@@ -162,7 +173,7 @@
       
       <!-- Daily Challenge with Stats -->
       <section class="mb-6">
-        <div class="daily-challenge rounded-2xl p-6 text-white relative" style="background: linear-gradient(135deg, #448fe4 0%, #50b8e4 100%) !important;">
+        <div class="daily-challenge rounded-2xl p-6 text-white relative" style="background: linear-gradient(135deg, #448fe4 0%, #50b8e4 100%);">
           <div class="flex items-center justify-between mb-4 relative z-10">
             <div>
               <p class="text-sm opacity-90 mb-1">Daily Challenge</p>
@@ -183,25 +194,25 @@
 
           <!-- Quick Stats inside challenge card -->
           <div class="grid grid-cols-4 gap-2 relative z-10">
-            <div class="stat-card rounded-xl p-3 text-center" style="background: white !important; border: 1px solid #e5e7eb;">
+            <div class="stat-card rounded-xl p-3 text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800">
               <span class="material-symbols-outlined text-primary text-2xl mb-1">check_circle</span>
               <p class="text-xl font-bold text-primary">24</p>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Done</p>
             </div>
 
-            <div class="stat-card rounded-xl p-3 text-center" style="background: white !important; border: 1px solid #e5e7eb;">
+            <div class="stat-card rounded-xl p-3 text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800">
               <span class="material-symbols-outlined text-secondary text-2xl mb-1">workspace_premium</span>
               <p class="text-xl font-bold text-secondary">87%</p>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Accuracy</p>
             </div>
 
-            <div class="stat-card rounded-xl p-3 text-center" style="background: white !important; border: 1px solid #e5e7eb;">
+            <div class="stat-card rounded-xl p-3 text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800">
               <span class="material-symbols-outlined text-accent text-2xl mb-1">schedule</span>
               <p class="text-xl font-bold text-accent">2.5h</p>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Time</p>
             </div>
 
-            <div class="stat-card rounded-xl p-3 text-center" style="background: white !important; border: 1px solid #e5e7eb;">
+            <div class="stat-card rounded-xl p-3 text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800">
               <span class="material-symbols-outlined text-orange-500 text-2xl mb-1">local_fire_department</span>
               <p class="text-xl font-bold text-orange-500">5</p>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Streak</p>
@@ -215,7 +226,7 @@
         <h2 class="text-lg font-bold mb-3 text-text-light dark:text-text-dark">Practice Activities</h2>
         
         <!-- Flashcards -->
-        <a href="/flashcards.html" class="practice-card block rounded-2xl p-5 mb-3" style="background: white !important; border: 1px solid #e5e7eb;">
+        <a href="/flashcards.html" class="practice-card block rounded-2xl p-5 mb-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800">
           <div class="flex items-center gap-4 relative z-10">
             <div class="shrink-0">
               <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center">
@@ -235,7 +246,7 @@
         </a>
 
         <!-- Quizzes -->
-        <a href="/quiz-levels.html" class="practice-card block rounded-2xl p-5 mb-3" style="background: white !important; border: 1px solid #e5e7eb;">
+        <a href="/quiz-levels.html" class="practice-card block rounded-2xl p-5 mb-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800">
           <div class="flex items-center gap-4 relative z-10">
             <div class="shrink-0">
               <div class="w-16 h-16 bg-purple-50 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center">

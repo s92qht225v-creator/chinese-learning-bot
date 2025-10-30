@@ -44,12 +44,30 @@ The bot runs on port 3000 by default (configurable via `PORT` env var).
 # Initial schema setup - run schema.sql in Supabase SQL Editor
 # See DATABASE-SETUP.md for detailed instructions
 
-# Apply migrations
+# Apply migrations programmatically
 node apply-migration.js
+node run-dialogue-migration.js
+node update-quiz-functions.js
 
 # Or run migration files manually in Supabase SQL Editor:
 # - migrations/update-dialogues-schema.sql
 # - migrations/update-dialogues-multilang.sql
+```
+
+### Production Deployment
+
+```bash
+# Start with PM2 process manager
+pm2 start ecosystem.config.js
+
+# Monitor logs
+pm2 logs chinese-learning-bot
+
+# Restart after updates
+pm2 restart chinese-learning-bot
+
+# View status
+pm2 status
 ```
 
 ## Architecture Overview
@@ -59,11 +77,12 @@ node apply-migration.js
 This is a **Telegram Mini App** with three main components:
 
 1. **Backend (bot.js)**: Express server that:
-   - Runs Telegram bot with `node-telegram-bot-api`
+   - Runs Telegram bot with `node-telegram-bot-api` (polling mode)
    - Serves static files from `/public` directory
    - Provides REST API endpoints (public + admin)
    - Manages database operations through `database.js`
    - Handles bot commands (`/start`, `/help`, `/stats`)
+   - CORS configured for Telegram Mini App origin
 
 2. **Frontend (public/)**: Multi-page web app with:
    - Telegram WebApp API integration (`window.Telegram.WebApp`)
@@ -73,9 +92,9 @@ This is a **Telegram Mini App** with three main components:
    - Multiple learning modes (lessons, flashcards, quizzes, character writing)
 
 3. **Admin Panel (public/admin/)**: Content management interface
-   - Password-protected (default: admin123)
+   - Password-protected (default: admin123 - change in `bot.js` line ~274 and `admin/index.html`)
    - Manage lessons, dialogues, grammar points, quizzes, and vocabulary
-   - Direct database integration via admin API endpoints
+   - Direct database integration via admin API endpoints requiring `X-Admin-Password` header
 
 ### Database Layer
 

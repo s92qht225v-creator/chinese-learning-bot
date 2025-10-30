@@ -323,14 +323,11 @@ window.continueLearning = function() {
 
 // Open lesson
 window.openLesson = function(lessonId) {
-  }
   window.location.href = `/lesson.html?id=${lessonId}`;
 };
 
 // Switch back to HSK 1
 window.switchToHSK1 = function() {
-  }
-  
   // Click the HSK 1 radio button
   const hsk1Radio = document.querySelector('input[name="hsk_level"][value="1"]');
   if (hsk1Radio) {

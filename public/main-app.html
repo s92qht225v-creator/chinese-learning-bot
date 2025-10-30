@@ -10,6 +10,28 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Initialize dark mode ASAP to avoid flash of light theme -->
+  <script>
+    (function() {
+      try {
+        const stored = localStorage.getItem('darkMode');
+        const isDark = stored === 'true' ||
+                       (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {
+        // noop
+      }
+    })();
+  </script>
+  
+  <!-- Global settings (provides window.settings and persists theme) -->
+  <script src="/settings.js"></script>
+  
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
@@ -20,11 +42,20 @@
       theme: {
         extend: {
           colors: {
-            "primary": "#4A90E2",
+            "primary": "#448fe4",
             "secondary": "#50E3C2",
             "accent": "#F5A623",
-            "background-light": "#F8F9FA",
-            "background-dark": "#101c22",
+            "success": "#4CAF50",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#18222c",
+            "text-primary-light": "#111417",
+            "text-primary-dark": "#f0f4f8",
+            "text-secondary-light": "#647487",
+            "text-secondary-dark": "#a0aec0",
+            "border-light": "#dce0e5",
+            "border-dark": "#2d3748"
           },
           fontFamily: {
             "display": ["Work Sans", "sans-serif"]
@@ -348,12 +379,35 @@
             return;
           }
 
+          // Skip settings if already loaded
+          if (scriptPath.endsWith('/settings.js') && window.settings) {
+            console.log(`  ⏭️ Skipping settings.js (already loaded)`);
+            return;
+          }
+
+          // Skip study-tracker if already loaded
+          if (scriptPath.endsWith('/study-tracker.js') && window.studyTracker) {
+            console.log(`  ⏭️ Skipping study-tracker.js (already loaded)`);
+            return;
+          }
+
           // External script
           console.log(`  📦 External script: ${srcAttr}`);
           const newScript = document.createElement('script');
 
-          // Use the src attribute value directly (preserves relative paths and query params)
-          newScript.src = srcAttr;
+          // Add aggressive cache busting for tab-specific scripts
+          let finalSrc = srcAttr;
+          if (!srcAttr.includes('supabase') && 
+              !srcAttr.includes('tailwindcss') && 
+              !srcAttr.includes('telegram-web-app') &&
+              !srcAttr.includes('i18n.js')) {
+            // Add timestamp to bust cache for app scripts
+            const separator = srcAttr.includes('?') ? '&' : '?';
+            finalSrc = srcAttr + separator + 'cb=' + Date.now();
+            console.log(`  🔄 Cache-busted URL: ${finalSrc}`);
+          }
+          
+          newScript.src = finalSrc;
           if (script.type) newScript.type = script.type;
 
           newScript.onload = () => {
@@ -369,6 +423,19 @@
         } else {
           // Inline script
           console.log(`  📝 Inline script (${script.textContent?.length || 0} chars)`);
+          
+          // Skip inline Tailwind config if Tailwind already loaded
+          if (window.tailwind && script.textContent?.includes('tailwind.config')) {
+            console.log(`  ⏭️ Skipping inline tailwind.config (already configured)`);
+            return;
+          }
+          
+          // Skip dark mode init scripts (main-app already handles this)
+          if (script.textContent?.includes('localStorage.getItem(\'darkMode\')')) {
+            console.log(`  ⏭️ Skipping dark mode init (main-app handles this)`);
+            return;
+          }
+          
           try {
             // Create a new script element to execute
             const newScript = document.createElement('script');
@@ -391,6 +458,13 @@
       if (!tabs[tabName]) {
         console.error('❌ [loadTab] Tab not found:', tabName);
         return;
+      }
+
+      // Save current tab to localStorage
+      try {
+        localStorage.setItem('lastActiveTab', tabName);
+      } catch (e) {
+        // noop
       }
 
       try {
@@ -508,10 +582,15 @@
     // Load default tab on page load
     window.addEventListener('DOMContentLoaded', () => {
       console.log('🎬 [DOMContentLoaded] Event fired');
-      // Check URL hash for specific tab
-      const hash = window.location.hash.slice(1);
-      const defaultTab = tabs[hash] ? hash : 'learn';
-      console.log('🔖 [DOMContentLoaded] Hash:', hash, '| Default tab:', defaultTab);
+      
+      // Remove hash from URL
+      if (window.location.hash) {
+        history.replaceState(null, null, window.location.pathname + window.location.search);
+      }
+      
+      // Always load 'learn' tab by default
+      const defaultTab = 'learn';
+      console.log('🔖 [DOMContentLoaded] Default tab:', defaultTab);
 
       // Set active nav item
       navItems.forEach(nav => {
@@ -535,13 +614,9 @@
       }
     });
 
-    // Update URL hash when tab changes
+    // Update URL hash when tab changes (disabled - no longer updating hash)
     function updateHash(tabName) {
-      if (history.pushState) {
-        history.pushState(null, null, `#${tabName}`);
-      } else {
-        window.location.hash = tabName;
-      }
+      // Do nothing - we don't want hash in URL
     }
 
     // Floating Dictionary Button

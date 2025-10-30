@@ -12,6 +12,48 @@
   
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind config for shared design tokens -->
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#448fe4",
+            secondary: "#50E3C2",
+            accent: "#F5A623",
+            success: "#4CAF50",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#18222c",
+            "text-primary-light": "#111417",
+            "text-primary-dark": "#f0f4f8",
+            "text-secondary-light": "#647487",
+            "text-secondary-dark": "#a0aec0",
+            "border-light": "#dce0e5",
+            "border-dark": "#2d3748"
+          },
+          fontFamily: { display: ["Work Sans", "sans-serif"] }
+        }
+      }
+    };
+  </script>
+  
+  <!-- Initialize dark mode immediately before page renders -->
+  <script>
+    (function() {
+      const stored = localStorage.getItem('darkMode');
+      const isDark = stored === 'true' || 
+                     (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (isDark) {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+  
   <script src="/settings.js"></script>
   <script src="/study-tracker.js"></script>
   
@@ -263,18 +305,23 @@
           </a>
 
           <!-- Dark Mode -->
-          <button id="darkModeBtn" class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
+          <div class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <span class="material-symbols-outlined text-purple-600">dark_mode</span>
+                <span class="material-symbols-outlined text-purple-600 dark:text-purple-400">dark_mode</span>
               </div>
               <div>
                 <p class="font-medium text-sm text-left">Theme</p>
                 <p id="themeStatus" class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Light Mode</p>
               </div>
             </div>
-            <span id="toggleIcon" class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">toggle_off</span>
-          </button>
+            <!-- Toggle Switch -->
+            <label class="relative inline-block w-12 h-6 cursor-pointer" id="darkModeBtn">
+              <input type="checkbox" id="themeToggle" class="sr-only peer">
+              <div class="toggle-bg w-12 h-6 bg-gray-300 peer-checked:bg-primary rounded-full shadow-inner transition-colors"></div>
+              <div class="toggle-dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-6"></div>
+            </label>
+          </div>
         </div>
       </section>
 
@@ -393,8 +440,8 @@
 
     // Load and display study time for the week
     function loadStudyTimeData() {
-      // Wait for studyTracker to be available
-      if (typeof studyTracker === 'undefined') {
+      // Wait for studyTracker and settings to be available
+      if (typeof studyTracker === 'undefined' || typeof settings === 'undefined') {
         setTimeout(loadStudyTimeData, 50);
         return;
       }
@@ -537,9 +584,8 @@
     });
 
     // Dark mode toggle (use var to allow reloading)
-    var darkModeBtn = document.getElementById('darkModeBtn');
     var themeStatus = document.getElementById('themeStatus');
-    var toggleIcon = document.getElementById('toggleIcon');
+    var themeToggle = document.getElementById('themeToggle');
 
     function updateThemeUI() {
       // Wait for settings to be available
@@ -549,24 +595,28 @@
       }
       var isDark = settings.isDarkMode();
       themeStatus.textContent = isDark ? 'Dark Mode' : 'Light Mode';
-      toggleIcon.textContent = isDark ? 'toggle_on' : 'toggle_off';
+      
+      // Update toggle switch (CSS handles the animation via peer-checked)
+      if (themeToggle) {
+        themeToggle.checked = isDark;
+      }
     }
 
     // Remove old event listener if exists
-    if (darkModeBtn && darkModeBtn._profileClickHandler) {
-      darkModeBtn.removeEventListener('click', darkModeBtn._profileClickHandler);
+    if (themeToggle && themeToggle._profileChangeHandler) {
+      themeToggle.removeEventListener('change', themeToggle._profileChangeHandler);
     }
 
-    var darkModeHandler = () => {
+    var themeToggleHandler = () => {
       if (typeof settings !== 'undefined') {
         settings.toggleDarkMode();
         updateThemeUI();
       }
     };
 
-    if (darkModeBtn) {
-      darkModeBtn._profileClickHandler = darkModeHandler;
-      darkModeBtn.addEventListener('click', darkModeHandler);
+    if (themeToggle) {
+      themeToggle._profileChangeHandler = themeToggleHandler;
+      themeToggle.addEventListener('change', themeToggleHandler);
     }
 
     // Initialize theme UI (will wait for settings to load)

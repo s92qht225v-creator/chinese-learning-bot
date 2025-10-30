@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>Choose Level - Quizzes</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#448fe4",
+            "secondary": "#50E3C2",
+            "accent": "#F5A623",
+            "success": "#4CAF50",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111921",
+            "surface-light": "#ffffff",
+            "surface-dark": "#1e2732",
+            "text-light": "#1a1a1a",
+            "text-dark": "#ffffff",
+            "border-light": "#e5e7eb",
+            "border-dark": "#2d3748"
+          },
+          fontFamily: {
+            sans: ["Work Sans", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .level-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .level-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(68, 143, 228, 0.05), rgba(80, 227, 194, 0.05));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .level-card:not(.locked):active {
+      transform: scale(0.98);
+    }
+
+    .level-card:not(.locked):active::before {
+      opacity: 1;
+    }
+
+    .level-card.locked {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .level-badge {
+      background: linear-gradient(135deg, #448fe4, #50b8e4);
+      color: white;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .score-badge {
+      background: rgba(68, 143, 228, 0.1);
+      color: #448fe4;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #111921;
+        color: #ffffff;
+      }
+
+      .level-card {
+        background: #1e2732;
+        border-color: #2d3748;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+  <div class="min-h-screen pb-24">
+    
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-b border-border-light dark:border-border-dark">
+      <div class="px-4 py-4 flex items-center gap-3">
+        <button onclick="goBack()" class="p-2 -ml-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-primary">arrow_back</span>
+        </button>
+        <div>
+          <h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Quizzes</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Choose your level</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="px-4 py-5">
+      
+      <!-- Info Banner -->
+      <div class="mb-6 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-primary mt-0.5">info</span>
+          <div>
+            <p class="text-sm font-semibold text-text-light dark:text-text-dark mb-1">Mixed Question Types</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Each quiz includes vocabulary, grammar, listening, and reading questions.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Selection -->
+      <section>
+        <h2 class="text-lg font-bold mb-3 text-text-light dark:text-text-dark">Select HSK Level</h2>
+        
+        <!-- HSK 1 -->
+        <a href="/quiz.html?level=1" class="level-card block rounded-2xl p-5 mb-3">
+          <div class="relative z-10">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="level-badge">HSK 1</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Beginner</span>
+                </div>
+                <h3 class="font-bold text-lg text-text-light dark:text-text-dark mb-1">Elementary Level</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">150 words • Basic communication</p>
+              </div>
+              <span class="material-symbols-outlined text-primary text-3xl">school</span>
+            </div>
+            
+            <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm text-green-500">check_circle</span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">15 questions</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm text-blue-500">schedule</span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">~5 min</span>
+                </div>
+              </div>
+              <span class="score-badge">Last: 92%</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- HSK 2 -->
+        <a href="/quiz.html?level=2" class="level-card block rounded-2xl p-5 mb-3">
+          <div class="relative z-10">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="level-badge">HSK 2</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Elementary</span>
+                </div>
+                <h3 class="font-bold text-lg text-text-light dark:text-text-dark mb-1">Basic Conversations</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">300 words • Everyday topics</p>
+              </div>
+              <span class="material-symbols-outlined text-primary text-3xl">chat</span>
+            </div>
+            
+            <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm text-green-500">check_circle</span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">15 questions</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm text-blue-500">schedule</span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">~6 min</span>
+                </div>
+              </div>
+              <span class="score-badge">Last: 85%</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- HSK 3 -->
+        <a href="/quiz.html?level=3" class="level-card block rounded-2xl p-5 mb-3">
+          <div class="relative z-10">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="level-badge">HSK 3</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Intermediate</span>
+                </div>
+                <h3 class="font-bold text-lg text-text-light dark:text-text-dark mb-1">Daily Communication</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">600 words • Detailed conversations</p>
+              </div>
+              <span class="material-symbols-outlined text-primary text-3xl">forum</span>
+            </div>
+            
+            <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm text-green-500">check_circle</span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">15 questions</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm text-blue-500">schedule</span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">~7 min</span>
+                </div>
+              </div>
+              <span class="score-badge">Last: 78%</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- HSK 4 - Locked -->
+        <div class="level-card locked rounded-2xl p-5 mb-3">
+          <div class="relative z-10">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="level-badge" style="background: #9ca3af;">HSK 4</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Upper Intermediate</span>
+                </div>
+                <h3 class="font-bold text-lg text-text-light dark:text-text-dark mb-1">Complex Topics</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">1200 words • Abstract concepts</p>
+              </div>
+              <span class="material-symbols-outlined text-gray-400 text-3xl">lock</span>
+            </div>
+            
+            <div class="flex items-center pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-amber-500">warning</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400">Complete HSK 3 with 80% to unlock</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HSK 5 - Locked -->
+        <div class="level-card locked rounded-2xl p-5 mb-3">
+          <div class="relative z-10">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="level-badge" style="background: #9ca3af;">HSK 5</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Advanced</span>
+                </div>
+                <h3 class="font-bold text-lg text-text-light dark:text-text-dark mb-1">Professional Level</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">2500 words • Newspapers & magazines</p>
+              </div>
+              <span class="material-symbols-outlined text-gray-400 text-3xl">lock</span>
+            </div>
+            
+            <div class="flex items-center pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-gray-400">lock</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Locked</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HSK 6 - Locked -->
+        <div class="level-card locked rounded-2xl p-5 mb-3">
+          <div class="relative z-10">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="level-badge" style="background: #9ca3af;">HSK 6</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Mastery</span>
+                </div>
+                <h3 class="font-bold text-lg text-text-light dark:text-text-dark mb-1">Native-like Fluency</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">5000+ words • Complex texts</p>
+              </div>
+              <span class="material-symbols-outlined text-gray-400 text-3xl">lock</span>
+            </div>
+            
+            <div class="flex items-center pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-gray-400">lock</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Locked</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+
+    // Back button handler
+    function goBack() {
+      window.history.back();
+    }
+
+    // Handle Telegram back button
+    tg.BackButton.onClick(goBack);
+    tg.BackButton.show();
+  </script>
+</body>
+</html>
