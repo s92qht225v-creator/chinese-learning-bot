@@ -1526,6 +1526,176 @@
     function viewAllQuestions() {
       window.location.href = '/admin/admin-questions-list.html';
     }
+
+    // Check if editing an existing question
+    async function loadQuestionForEdit() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const editId = urlParams.get('edit');
+
+      if (!editId) return; // Not editing, just creating new
+
+      try {
+        const password = await getAdminPassword();
+        if (!password) {
+          alert('❌ Admin password required to edit questions');
+          window.location.href = '/admin/admin-questions-list.html';
+          return;
+        }
+
+        // Fetch question from API
+        const response = await fetch(`/api/admin/quizzes`, {
+          headers: {
+            'X-Admin-Password': password
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to load questions');
+
+        const allQuestions = await response.json();
+        const question = allQuestions.find(q => q.id == editId);
+
+        if (!question) {
+          alert('❌ Question not found');
+          window.location.href = '/admin/admin-questions-list.html';
+          return;
+        }
+
+        // Load question data into form
+        console.log('Loading question for edit:', question);
+
+        // Select question type
+        selectType(question.question_type);
+
+        // Set HSK level
+        const hskLevelSelect = document.getElementById('hskLevel');
+        if (hskLevelSelect) {
+          hskLevelSelect.value = 'HSK' + question.hsk_level;
+        }
+
+        // Set tags
+        const tagsInput = document.getElementById('tags');
+        if (tagsInput && question.tags) {
+          tagsInput.value = question.tags;
+        }
+
+        // Set explanation
+        const explanationInput = document.getElementById('explanation');
+        if (explanationInput && question.explanation) {
+          explanationInput.value = question.explanation;
+        }
+
+        // Parse options
+        let options = question.options;
+        if (typeof options === 'string') {
+          try {
+            options = JSON.parse(options);
+          } catch (e) {
+            console.error('Failed to parse options:', e);
+            options = {};
+          }
+        }
+
+        // Load type-specific fields
+        setTimeout(() => {
+          const questionTextInput = document.getElementById('questionText');
+          const chineseTextInput = document.getElementById('chineseText');
+          const audioUrlInput = document.getElementById('audioUrl');
+          const correctAnswerInput = document.getElementById('correctAnswer');
+
+          if (questionTextInput) questionTextInput.value = question.question || '';
+          if (chineseTextInput) chineseTextInput.value = question.chinese_text || '';
+          if (audioUrlInput) audioUrlInput.value = question.audio_url || '';
+          if (correctAnswerInput) correctAnswerInput.value = question.correct_answer || '';
+
+          // Load multiple choice options
+          if (options && typeof options === 'object') {
+            ['a', 'b', 'c', 'd'].forEach(key => {
+              const optionInput = document.getElementById(`option_${key}`);
+              if (optionInput && options[key]) {
+                optionInput.value = options[key];
+              }
+            });
+          }
+
+          // Update Save button to indicate editing
+          const saveBtn = document.querySelector('button[onclick="saveQuestion()"]');
+          if (saveBtn) {
+            saveBtn.textContent = '💾 Update Question';
+            saveBtn.setAttribute('data-edit-id', editId);
+          }
+        }, 500); // Wait for form to render
+
+      } catch (error) {
+        console.error('Error loading question:', error);
+        alert('❌ Failed to load question: ' + error.message);
+      }
+    }
+
+    // Get admin password helper
+    async function getAdminPassword() {
+      let adminPassword = localStorage.getItem('adminPassword');
+      if (!adminPassword) {
+        adminPassword = prompt('Enter admin password:');
+        if (!adminPassword) return null;
+        localStorage.setItem('adminPassword', adminPassword);
+      }
+      return adminPassword;
+    }
+
+    // Modify saveQuestion to handle updates
+    const originalSaveQuestion = saveQuestion;
+    saveQuestion = async function() {
+      const saveBtn = document.querySelector('button[onclick="saveQuestion()"]');
+      const editId = saveBtn?.getAttribute('data-edit-id');
+
+      if (editId) {
+        // Update existing question
+        if (!selectedType) {
+          alert('Please select a question type first!');
+          return;
+        }
+
+        const questionData = collectCompleteFormData();
+        if (!questionData) {
+          alert('❌ Please fill in all required fields!');
+          return;
+        }
+
+        try {
+          const adminPassword = await getAdminPassword();
+          if (!adminPassword) return;
+
+          const response = await fetch(`/api/admin/quizzes/${editId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Admin-Password': adminPassword
+            },
+            body: JSON.stringify(questionData)
+          });
+
+          if (!response.ok) {
+            if (response.status === 403) {
+              localStorage.removeItem('adminPassword');
+              throw new Error('Invalid admin password');
+            }
+            throw new Error(`Server error: ${response.status}`);
+          }
+
+          alert('✅ Question updated successfully!');
+          window.location.href = '/admin/admin-questions-list.html';
+        } catch (error) {
+          console.error('❌ Error updating question:', error);
+          alert('❌ Failed to update question: ' + error.message);
+        }
+      } else {
+        // Create new question (original behavior)
+        await originalSaveQuestion();
+      }
+    };
+
+    // Load question if editing
+    loadQuestionForEdit();
   </script>
 </body>
 </html>
