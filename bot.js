@@ -609,10 +609,22 @@ app.get('/api/study-time/:telegram_user_id/summary', async (req, res) => {
 // Simple admin authentication middleware
 const adminAuth = (req, res, next) => {
   const adminPassword = req.headers['x-admin-password'];
-  if (adminPassword === 'admin123') { // Match the password in admin.js
+  const expectedPassword = 'admin123';
+  
+  console.log('[AUTH] Admin auth attempt:', {
+    received: adminPassword ? `${adminPassword.substring(0, 3)}...` : 'none',
+    expected: `${expectedPassword.substring(0, 3)}...`,
+    match: adminPassword === expectedPassword
+  });
+  
+  if (adminPassword === expectedPassword) {
     next();
   } else {
-    res.status(401).json({ error: 'Unauthorized' });
+    console.log('[AUTH] Authentication failed');
+    res.status(401).json({ 
+      error: 'Unauthorized',
+      message: 'Invalid or missing admin password'
+    });
   }
 };
 
