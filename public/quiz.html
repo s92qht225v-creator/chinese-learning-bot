@@ -190,6 +190,8 @@
 
         const data = await response.json();
 
+        console.log('Question loaded:', data.id, 'Previously used:', usedQuestionIds);
+
         questionChinese.textContent = data.question;
         questionPinyin.textContent = data.pinyin;
         currentAnswer = data.correctAnswer;
@@ -198,6 +200,9 @@
         // Track this question ID to avoid duplicates
         if (data.id && !usedQuestionIds.includes(data.id)) {
           usedQuestionIds.push(data.id);
+          console.log('Added to used list. Total used:', usedQuestionIds.length);
+        } else if (data.id) {
+          console.warn('DUPLICATE DETECTED! Question ID:', data.id, 'already in list:', usedQuestionIds);
         }
 
         // Clear options container
