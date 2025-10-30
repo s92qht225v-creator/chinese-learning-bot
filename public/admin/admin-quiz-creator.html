@@ -11,7 +11,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
   
   <script src="https://cdn.tailwindcss.com"></script>
-  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
     tailwind.config = {
       darkMode: "class",
@@ -324,8 +325,55 @@
   </main>
 
   <script>
+    // Initialize Supabase
+    const SUPABASE_URL = 'https://aveoqedskzbbgcazpskn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2ZW9xZWRza3piYmdjYXpwc2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAwMzA4MjcsImV4cCI6MjA0NTYwNjgyN30.U-b1_1K8LMvOW6hLWzLmNLqxb_G6x05uLKpW0gKRykg';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     let selectedType = null;
     let currentQuestion = {};
+
+    // Handle audio file upload to Supabase
+    async function handleAudioUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById('audioUploadStatus');
+      statusDiv.innerHTML = '<span style="color: #448fe4;">⏳ Uploading...</span>';
+
+      try {
+        // Generate unique filename
+        const fileExt = file.name.split('.').pop();
+        const fileName = `audio_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `quiz-audio/${fileName}`;
+
+        // Upload to Supabase storage
+        const { data, error } = await supabase.storage
+          .from('audio')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('audio')
+          .getPublicUrl(filePath);
+
+        const publicUrl = urlData.publicUrl;
+
+        // Set the hidden input value
+        document.getElementById('audioUrl').value = publicUrl;
+        statusDiv.innerHTML = `<span style="color: #4CAF50;">✓ Uploaded successfully!</span>`;
+
+        console.log('Audio uploaded:', publicUrl);
+      } catch (error) {
+        console.error('Upload error:', error);
+        statusDiv.innerHTML = `<span style="color: #ef4444;">❌ Upload failed: ${error.message}</span>`;
+      }
+    }
 
     // Select question type
     function selectQuestionType(type) {
@@ -934,15 +982,18 @@
       return `
         <section class="form-card">
           <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
-          
+
           <div class="mb-4">
             <label class="block text-sm font-semibold mb-2">Question Text *</label>
             <input type="text" id="questionText" class="input-field" placeholder="e.g., Listen and select the word you hear:">
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Audio URL *</label>
-            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/mama.mp3">
+            <label class="block text-sm font-semibold mb-2">Audio File *</label>
+            <input type="file" id="audioFile" accept="audio/*" class="input-field" onchange="handleAudioUpload(this)">
+            <input type="hidden" id="audioUrl">
+            <div id="audioUploadStatus" class="text-sm mt-2"></div>
+            <p class="text-xs text-gray-500 mt-1">Upload MP3, WAV, or OGG audio file</p>
           </div>
         </section>
 
