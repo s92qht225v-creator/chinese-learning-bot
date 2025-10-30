@@ -112,196 +112,347 @@
 
     <!-- Questions List -->
     <div id="questionsList">
-      <!-- Sample questions (in real app, load from database) -->
-      
-      <!-- Question 1 -->
-      <div class="question-card">
-        <div class="flex items-start justify-between">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">HSK 3</span>
-              <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded">📝 Multiple Choice</span>
-            </div>
-            <h3 class="font-bold text-lg mb-1">What does 手表 mean?</h3>
-            <p class="text-sm text-gray-600 mb-2">Options: A) Newspaper B) Watch ✓ C) Book D) Phone</p>
-            <div class="flex items-center gap-3 text-xs text-gray-500">
-              <span>Created: Oct 28, 2025</span>
-              <span>•</span>
-              <span>Used in 24 quizzes</span>
-              <span>•</span>
-              <span>Avg accuracy: 87%</span>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="previewQuestion(1)" class="p-2 hover:bg-blue-100 rounded-lg" title="Preview">
-              <span class="material-symbols-outlined text-primary">visibility</span>
-            </button>
-            <button onclick="editQuestion(1)" class="p-2 hover:bg-gray-100 rounded-lg" title="Edit">
-              <span class="material-symbols-outlined text-gray-600">edit</span>
-            </button>
-            <button onclick="duplicateQuestion(1)" class="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
-              <span class="material-symbols-outlined text-gray-600">content_copy</span>
-            </button>
-            <button onclick="deleteQuestion(1)" class="p-2 hover:bg-red-100 rounded-lg" title="Delete">
-              <span class="material-symbols-outlined text-red-500">delete</span>
-            </button>
-          </div>
-        </div>
+      <!-- Loading indicator -->
+      <div class="text-center py-12">
+        <div class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+        <p class="text-gray-500 mt-4">Loading questions...</p>
       </div>
-
-      <!-- Question 2 -->
-      <div class="question-card">
-        <div class="flex items-start justify-between">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">HSK 2</span>
-              <span class="px-2 py-1 bg-teal-100 text-teal-700 text-xs font-bold rounded">✏️ Fill in Gap</span>
-            </div>
-            <h3 class="font-bold text-lg mb-1">Complete: 我 ___ 学生。</h3>
-            <p class="text-sm text-gray-600 mb-2">Answer: 是</p>
-            <div class="flex items-center gap-3 text-xs text-gray-500">
-              <span>Created: Oct 27, 2025</span>
-              <span>•</span>
-              <span>Used in 18 quizzes</span>
-              <span>•</span>
-              <span>Avg accuracy: 92%</span>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="previewQuestion(2)" class="p-2 hover:bg-blue-100 rounded-lg" title="Preview">
-              <span class="material-symbols-outlined text-primary">visibility</span>
-            </button>
-            <button onclick="editQuestion(2)" class="p-2 hover:bg-gray-100 rounded-lg" title="Edit">
-              <span class="material-symbols-outlined text-gray-600">edit</span>
-            </button>
-            <button onclick="duplicateQuestion(2)" class="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
-              <span class="material-symbols-outlined text-gray-600">content_copy</span>
-            </button>
-            <button onclick="deleteQuestion(2)" class="p-2 hover:bg-red-100 rounded-lg" title="Delete">
-              <span class="material-symbols-outlined text-red-500">delete</span>
-            </button>
-          </div>
-      <div class="question-card">
-        <div class="flex items-start justify-between">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">HSK 3</span>
-              <span class="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-bold rounded">🎧 Audio Comprehension</span>
-            </div>
-            <h3 class="font-bold text-lg mb-1">Where is person B going?</h3>
-            <p class="text-sm text-gray-600 mb-2">Audio: conversation-library.mp3 • Answer: Library</p>
-            <div class="flex items-center gap-3 text-xs text-gray-500">
-              <span>Created: Oct 26, 2025</span>
-              <span>•</span>
-              <span>Used in 15 quizzes</span>
-              <span>•</span>
-              <span>Avg accuracy: 68%</span>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="previewQuestion(3)" class="p-2 hover:bg-blue-100 rounded-lg" title="Preview">
-              <span class="material-symbols-outlined text-primary">visibility</span>
-            </button>
-            <button onclick="editQuestion(3)" class="p-2 hover:bg-gray-100 rounded-lg" title="Edit">
-              <span class="material-symbols-outlined text-gray-600">edit</span>
-            </button>
-            <button onclick="duplicateQuestion(3)" class="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
-              <span class="material-symbols-outlined text-gray-600">content_copy</span>
-            </button>
-            <button onclick="deleteQuestion(3)" class="p-2 hover:bg-red-100 rounded-lg" title="Delete">
-              <span class="material-symbols-outlined text-red-500">delete</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Question 4 -->
-      <div class="question-card">
-        <div class="flex items-start justify-between">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">HSK 3</span>
-              <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">🔍 Error Correction</span>
-            </div>
-            <h3 class="font-bold text-lg mb-1">Find error: 他学生也是</h3>
-            <p class="text-sm text-gray-600 mb-2">Error at position 2 (也) • Correct: 他也是学生</p>
-            <div class="flex items-center gap-3 text-xs text-gray-500">
-              <span>Created: Oct 25, 2025</span>
-              <span>•</span>
-              <span>Used in 21 quizzes</span>
-              <span>•</span>
-              <span>Avg accuracy: 54%</span>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="previewQuestion(4)" class="p-2 hover:bg-blue-100 rounded-lg" title="Preview">
-              <span class="material-symbols-outlined text-primary">visibility</span>
-            </button>
-            <button onclick="editQuestion(4)" class="p-2 hover:bg-gray-100 rounded-lg" title="Edit">
-              <span class="material-symbols-outlined text-gray-600">edit</span>
-            </button>
-            <button onclick="duplicateQuestion(4)" class="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
-              <span class="material-symbols-outlined text-gray-600">content_copy</span>
-            </button>
-            <button onclick="deleteQuestion(4)" class="p-2 hover:bg-red-100 rounded-lg" title="Delete">
-              <span class="material-symbols-outlined text-red-500">delete</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- More questions... -->
-      <div class="text-center py-8">
-        <p class="text-gray-500 mb-4">Showing 4 of 156 questions</p>
-        <button class="px-6 py-2 rounded-lg border-2 border-gray-300 font-semibold hover:bg-gray-50">
-          Load More
-        </button>
-      </div>
-
     </div>
 
   </main>
 
   <script>
+    // State management
+    let allQuestions = [];
+    let filteredQuestions = [];
+    let adminPassword = null;
+
+    // Question type display mapping
+    const questionTypeIcons = {
+      multiple_choice: '📝',
+      fill_gap: '✏️',
+      true_false: '✓',
+      matching: '🔗',
+      image_association: '🖼️',
+      sentence_ordering: '📋',
+      grammar_choice: '📖',
+      error_correction: '🔍',
+      cloze_test: '📄',
+      dictation: '✍️',
+      audio_comprehension: '🎧',
+      audio_to_word: '👂'
+    };
+
+    const questionTypeNames = {
+      multiple_choice: 'Multiple Choice',
+      fill_gap: 'Fill in Gap',
+      true_false: 'True/False',
+      matching: 'Matching',
+      image_association: 'Image Association',
+      sentence_ordering: 'Sentence Ordering',
+      grammar_choice: 'Grammar Choice',
+      error_correction: 'Error Correction',
+      cloze_test: 'Cloze Test',
+      dictation: 'Dictation',
+      audio_comprehension: 'Audio Comprehension',
+      audio_to_word: 'Audio to Word'
+    };
+
+    const questionTypeColors = {
+      multiple_choice: 'purple',
+      fill_gap: 'teal',
+      true_false: 'green',
+      matching: 'indigo',
+      image_association: 'pink',
+      sentence_ordering: 'yellow',
+      grammar_choice: 'blue',
+      error_correction: 'orange',
+      cloze_test: 'cyan',
+      dictation: 'lime',
+      audio_comprehension: 'fuchsia',
+      audio_to_word: 'rose'
+    };
+
+    // Load questions on page load
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadQuestions();
+    });
+
+    // Get admin password from localStorage or prompt
+    async function getAdminPassword() {
+      if (adminPassword) return adminPassword;
+      
+      adminPassword = localStorage.getItem('adminPassword');
+      if (!adminPassword) {
+        adminPassword = prompt('Enter admin password:');
+        if (adminPassword) {
+          localStorage.setItem('adminPassword', adminPassword);
+        }
+      }
+      return adminPassword;
+    }
+
+    // Load all questions from API
+    async function loadQuestions() {
+      try {
+        const password = await getAdminPassword();
+        if (!password) return;
+
+        const response = await fetch('/api/admin/quizzes', {
+          headers: {
+            'X-Admin-Password': password
+          }
+        });
+
+        if (!response.ok) {
+          if (response.status === 403) {
+            localStorage.removeItem('adminPassword');
+            adminPassword = null;
+            throw new Error('Invalid admin password');
+          }
+          throw new Error('Failed to load questions');
+        }
+
+        allQuestions = await response.json();
+        filteredQuestions = allQuestions;
+        renderQuestions();
+        updateTotalCount();
+      } catch (error) {
+        console.error('Error loading questions:', error);
+        document.getElementById('questionsList').innerHTML = `
+          <div class="text-center py-12">
+            <span class="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
+            <p class="text-red-500 mb-4">${error.message}</p>
+            <button onclick="location.reload()" class="px-6 py-2 rounded-lg bg-primary text-white font-semibold">
+              Retry
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // Render questions list
+    function renderQuestions() {
+      const container = document.getElementById('questionsList');
+      
+      if (filteredQuestions.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <span class="material-symbols-outlined text-6xl text-gray-400 mb-4">quiz</span>
+            <p class="text-gray-500 text-lg">No questions found</p>
+            <p class="text-gray-400 text-sm mb-6">Try adjusting your filters or create a new question</p>
+            <button onclick="createNew()" class="px-6 py-2 rounded-lg bg-primary text-white font-semibold">
+              Create First Question
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filteredQuestions.map(q => renderQuestionCard(q)).join('');
+    }
+
+    // Render individual question card
+    function renderQuestionCard(question) {
+      const type = question.question_type || 'multiple_choice';
+      const icon = questionTypeIcons[type] || '❓';
+      const typeName = questionTypeNames[type] || type;
+      const color = questionTypeColors[type] || 'gray';
+      const level = question.hsk_level || 'N/A';
+      
+      // Parse question to extract main text
+      let questionText = question.question || 'Untitled Question';
+      // Remove audio URLs from display
+      questionText = questionText.replace(/\[audio:.*?\]/g, '🔊 ');
+      // Truncate if too long
+      if (questionText.length > 100) {
+        questionText = questionText.substring(0, 100) + '...';
+      }
+
+      // Get answer preview
+      let answerPreview = question.correct_answer;
+      if (answerPreview && answerPreview.length > 50) {
+        answerPreview = answerPreview.substring(0, 50) + '...';
+      }
+
+      const createdDate = question.created_at ? new Date(question.created_at).toLocaleDateString() : 'Unknown';
+
+      return `
+        <div class="question-card" data-question-id="${question.id}">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">${level}</span>
+                <span class="px-2 py-1 bg-${color}-100 text-${color}-700 text-xs font-bold rounded">${icon} ${typeName}</span>
+                ${question.lesson_id ? '<span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">📚 Linked to Lesson</span>' : ''}
+              </div>
+              <h3 class="font-bold text-lg mb-1">${escapeHtml(questionText)}</h3>
+              ${answerPreview ? `<p class="text-sm text-gray-600 mb-2">Answer: ${escapeHtml(answerPreview)}</p>` : ''}
+              <div class="flex items-center gap-3 text-xs text-gray-500">
+                <span>Created: ${createdDate}</span>
+                <span>•</span>
+                <span>ID: ${question.id}</span>
+                ${question.explanation ? '<span>•</span><span>Has explanation ✓</span>' : ''}
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="previewQuestion(${question.id})" class="p-2 hover:bg-blue-100 rounded-lg" title="Preview">
+                <span class="material-symbols-outlined text-primary">visibility</span>
+              </button>
+              <button onclick="editQuestion(${question.id})" class="p-2 hover:bg-gray-100 rounded-lg" title="Edit">
+                <span class="material-symbols-outlined text-gray-600">edit</span>
+              </button>
+              <button onclick="duplicateQuestion(${question.id})" class="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
+                <span class="material-symbols-outlined text-gray-600">content_copy</span>
+              </button>
+              <button onclick="deleteQuestion(${question.id})" class="p-2 hover:bg-red-100 rounded-lg" title="Delete">
+                <span class="material-symbols-outlined text-red-500">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Update total count display
+    function updateTotalCount() {
+      document.getElementById('totalCount').textContent = filteredQuestions.length;
+    }
+
+    // Filter questions
     function filterQuestions() {
       const search = document.getElementById('searchInput').value.toLowerCase();
       const level = document.getElementById('levelFilter').value;
       const type = document.getElementById('typeFilter').value;
       
-      console.log('Filtering:', { search, level, type });
-      // In real app: filter questions from database
+      filteredQuestions = allQuestions.filter(q => {
+        const matchesSearch = !search || 
+          q.question?.toLowerCase().includes(search) ||
+          q.correct_answer?.toLowerCase().includes(search) ||
+          q.explanation?.toLowerCase().includes(search);
+        
+        const matchesLevel = !level || q.hsk_level === level;
+        const matchesType = !type || q.question_type === type;
+        
+        return matchesSearch && matchesLevel && matchesType;
+      });
+
+      renderQuestions();
+      updateTotalCount();
     }
 
+    // Create new question
     function createNew() {
-      window.location.href = '/admin-quiz-creator.html';
+      window.location.href = '/admin/admin-quiz-creator.html';
     }
 
-    function previewQuestion(id) {
-      // In real app: fetch question data from database
-      alert('Preview for question ID: ' + id + '\n\nThis would show a modal with the question exactly as students see it.\n\nClick the Preview button in the creator page to see the full preview!');
+    // Preview question
+    async function previewQuestion(id) {
+      const question = allQuestions.find(q => q.id === id);
+      if (!question) return;
+
+      alert(
+        `Question Preview\n\n` +
+        `Type: ${questionTypeNames[question.question_type] || question.question_type}\n` +
+        `HSK Level: ${question.hsk_level}\n\n` +
+        `Question: ${question.question}\n\n` +
+        `Answer: ${question.correct_answer}\n\n` +
+        `${question.explanation ? 'Explanation: ' + question.explanation : ''}\n\n` +
+        `For full preview, edit the question in the creator.`
+      );
     }
 
+    // Edit question
     function editQuestion(id) {
-      window.location.href = `/admin-quiz-creator.html?edit=${id}`;
+      // Redirect to quiz creator with edit parameter
+      window.location.href = `/admin/admin-quiz-creator.html?edit=${id}`;
     }
 
-    function duplicateQuestion(id) {
-      if (confirm('Create a copy of this question?')) {
-        alert('✓ Question duplicated! ID: ' + id);
-        // In real app: duplicate in database
+    // Duplicate question
+    async function duplicateQuestion(id) {
+      if (!confirm('Create a copy of this question?')) return;
+
+      try {
+        const password = await getAdminPassword();
+        if (!password) return;
+
+        const original = allQuestions.find(q => q.id === id);
+        if (!original) throw new Error('Question not found');
+
+        // Create copy without ID
+        const copy = {
+          question_type: original.question_type,
+          hsk_level: original.hsk_level,
+          question: original.question + ' (Copy)',
+          options: original.options,
+          correct_answer: original.correct_answer,
+          explanation: original.explanation,
+          tags: original.tags,
+          lesson_id: original.lesson_id,
+          quiz_order: original.quiz_order
+        };
+
+        const response = await fetch('/api/admin/quizzes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Password': password
+          },
+          body: JSON.stringify(copy)
+        });
+
+        if (!response.ok) throw new Error('Failed to duplicate question');
+
+        alert('✓ Question duplicated successfully!');
+        await loadQuestions();
+      } catch (error) {
+        alert('Error: ' + error.message);
       }
     }
 
-    function deleteQuestion(id) {
-      if (confirm('Are you sure you want to delete this question? This cannot be undone.')) {
-        alert('✓ Question deleted! ID: ' + id);
-        // In real app: delete from database
+    // Delete question
+    async function deleteQuestion(id) {
+      if (!confirm('Are you sure you want to delete this question? This cannot be undone.')) return;
+
+      try {
+        const password = await getAdminPassword();
+        if (!password) return;
+
+        const response = await fetch(`/api/admin/quizzes/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'X-Admin-Password': password
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to delete question');
+
+        alert('✓ Question deleted successfully!');
+        await loadQuestions();
+      } catch (error) {
+        alert('Error: ' + error.message);
       }
     }
 
+    // Export questions to JSON
     function exportQuestions() {
-      alert('Exporting questions as JSON...\n\nThis would download all questions to a file.');
-      // In real app: export to JSON/CSV
+      const dataStr = JSON.stringify(filteredQuestions, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `quiz-questions-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
   </script>
 </body>
