@@ -327,6 +327,90 @@
     let selectedType = null;
     let currentQuestion = {};
 
+    // Handle audio file upload via backend API
+    async function handleAudioUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById('audioUploadStatus');
+      statusDiv.innerHTML = '<span style="color: #448fe4;">⏳ Uploading...</span>';
+
+      try {
+        const password = await getAdminPassword();
+        if (!password) {
+          statusDiv.innerHTML = '<span style="color: #ef4444;">❌ Admin password required</span>';
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('audio', file);
+
+        const response = await fetch('/api/admin/upload-audio', {
+          method: 'POST',
+          headers: { 'X-Admin-Password': password },
+          body: formData
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Upload failed');
+        }
+
+        const data = await response.json();
+        document.getElementById('audioUrl').value = data.url;
+        statusDiv.innerHTML = '<span style="color: #4CAF50;">✓ Uploaded successfully!</span>';
+      } catch (error) {
+        console.error('Upload error:', error);
+        statusDiv.innerHTML = '<span style="color: #ef4444;">❌ Upload failed: ' + error.message + '</span>';
+      }
+    }
+
+    // Handle image file upload via backend API
+    async function handleImageUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById('imageUploadStatus');
+      const imagePreview = document.getElementById('imagePreview');
+      const imagePreviewPlaceholder = document.getElementById('imagePreviewPlaceholder');
+
+      statusDiv.innerHTML = '<span style="color: #448fe4;">⏳ Uploading...</span>';
+
+      try {
+        const password = await getAdminPassword();
+        if (!password) {
+          statusDiv.innerHTML = '<span style="color: #ef4444;">❌ Admin password required</span>';
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch('/api/admin/upload-image', {
+          method: 'POST',
+          headers: { 'X-Admin-Password': password },
+          body: formData
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Upload failed');
+        }
+
+        const data = await response.json();
+        document.getElementById('imageUrl').value = data.url;
+        statusDiv.innerHTML = '<span style="color: #4CAF50;">✓ Uploaded successfully!</span>';
+
+        // Show preview
+        imagePreview.src = data.url;
+        imagePreview.classList.remove('hidden');
+        imagePreviewPlaceholder.classList.add('hidden');
+      } catch (error) {
+        console.error('Upload error:', error);
+        statusDiv.innerHTML = '<span style="color: #ef4444;">❌ Upload failed: ' + error.message + '</span>';
+      }
+    }
+
     // Select question type
     function selectQuestionType(type) {
       selectedType = type;
@@ -402,9 +486,11 @@
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Audio URL (optional)</label>
-            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/shoubiao.mp3">
-            <p class="text-xs text-gray-500 mt-1">Upload audio file and paste URL here</p>
+            <label class="block text-sm font-semibold mb-2">Audio File (optional)</label>
+            <input type="file" id="audioFileInput" class="input-field" accept="audio/*" onchange="handleAudioUpload(this)">
+            <input type="hidden" id="audioUrl">
+            <div id="audioUploadStatus" class="text-sm mt-2"></div>
+            <p class="text-xs text-gray-500 mt-1">Upload audio file to Supabase</p>
           </div>
         </section>
 
@@ -581,15 +667,18 @@
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Image URL *</label>
-            <input type="text" id="imageUrl" class="input-field" placeholder="/images/watch.jpg">
-            <p class="text-xs text-gray-500 mt-1">Upload image and paste URL here</p>
+            <label class="block text-sm font-semibold mb-2">Image File *</label>
+            <input type="file" id="imageFileInput" class="input-field" accept="image/*" onchange="handleImageUpload(this)">
+            <input type="hidden" id="imageUrl">
+            <div id="imageUploadStatus" class="text-sm mt-2"></div>
+            <p class="text-xs text-gray-500 mt-1">Upload image file to Supabase</p>
           </div>
 
           <div class="mb-4">
             <label class="block text-sm font-semibold mb-2">Image Preview</label>
-            <div class="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
-              <span class="text-gray-400">No image</span>
+            <div class="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
+              <span class="text-gray-400" id="imagePreviewPlaceholder">No image</span>
+              <img id="imagePreview" src="" alt="Preview" class="hidden w-full h-full object-cover">
             </div>
           </div>
         </section>
