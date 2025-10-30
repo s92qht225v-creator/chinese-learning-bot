@@ -333,7 +333,8 @@
       const typeMapping = {
         'match_pairs': 'matching',
         'chinese_to_uzbek': 'multiple_choice',
-        'uzbek_to_chinese': 'multiple_choice'
+        'uzbek_to_chinese': 'multiple_choice',
+        'pinyin_to_chinese': 'multiple_choice'
       };
 
       const normalizedType = typeMapping[type] || type;
@@ -404,6 +405,10 @@
           break;
         case 'uzbek_to_chinese':
           // Uzbek to Chinese translation - use multiple choice form
+          container.innerHTML = getMultipleChoiceForm();
+          break;
+        case 'pinyin_to_chinese':
+          // Pinyin to Chinese translation - use multiple choice form
           container.innerHTML = getMultipleChoiceForm();
           break;
         default:
