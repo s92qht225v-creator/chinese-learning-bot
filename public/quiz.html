@@ -141,6 +141,11 @@
     let currentAnswer = null;
     let currentQuestionData = null;
     let answered = false;
+    let usedQuestionIds = []; // Track used questions to avoid duplicates
+
+    // Get HSK level from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const hskLevel = urlParams.get('level');
 
     // Elements
     const questionChinese = document.getElementById('questionChinese');
@@ -160,7 +165,19 @@
           throw new Error('API_CONFIG not loaded yet');
         }
 
-        const url = API_CONFIG.url(API_CONFIG.endpoints.quiz);
+        // Build URL with level parameter and used question IDs
+        let url = API_CONFIG.url(API_CONFIG.endpoints.quiz);
+        const params = new URLSearchParams();
+        if (hskLevel) {
+          params.append('level', hskLevel);
+        }
+        if (usedQuestionIds.length > 0) {
+          params.append('exclude', usedQuestionIds.join(','));
+        }
+        if (params.toString()) {
+          url += '?' + params.toString();
+        }
+
         console.log('Fetching quiz from:', url);
 
         const response = await fetch(url, {
@@ -177,6 +194,11 @@
         questionPinyin.textContent = data.pinyin;
         currentAnswer = data.correctAnswer;
         currentQuestionData = data;
+
+        // Track this question ID to avoid duplicates
+        if (data.id && !usedQuestionIds.includes(data.id)) {
+          usedQuestionIds.push(data.id);
+        }
 
         // Clear options container
         optionsContainer.innerHTML = '';

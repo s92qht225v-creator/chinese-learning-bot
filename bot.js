@@ -146,16 +146,30 @@ app.get('/api/quiz', async (req, res) => {
   try {
     console.log('[API] Quiz request received');
 
+    // Get HSK level from query parameter
+    const hskLevel = req.query.level ? parseInt(req.query.level) : null;
+    console.log(`[API] Requested HSK level: ${hskLevel || 'all levels'}`);
+
+    // Get excluded question IDs from query parameter
+    const excludeIds = req.query.exclude ? req.query.exclude.split(',').map(id => parseInt(id)) : [];
+    console.log(`[API] Excluding question IDs: ${excludeIds.length > 0 ? excludeIds.join(', ') : 'none'}`);
+
     // Get quiz questions from the quizzes table
-    const quizQuestions = await Promise.race([
-      db.getQuizzes(),
+    let quizQuestions = await Promise.race([
+      db.getQuizzes(hskLevel),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Database timeout')), 5000))
     ]);
+
+    // Filter out already used questions
+    if (excludeIds.length > 0) {
+      quizQuestions = quizQuestions.filter(q => !excludeIds.includes(q.id));
+    }
 
     console.log(`[API] Quiz questions loaded: ${quizQuestions ? quizQuestions.length : 0} questions`);
 
     if (!quizQuestions || quizQuestions.length === 0) {
-      return res.status(500).json({ error: 'No quiz questions available. Please create questions in the admin panel.' });
+      const levelMsg = hskLevel ? ` for HSK level ${hskLevel}` : '';
+      return res.status(500).json({ error: `No quiz questions available${levelMsg}. Please create questions in the admin panel.` });
     }
 
     // Get a random question

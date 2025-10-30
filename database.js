@@ -401,15 +401,23 @@ const db = {
   },
 
   // ========== QUIZZES ==========
-  async getQuizzes() {
+  async getQuizzes(hskLevel = null) {
     if (!supabase) return [];
-    const { data, error } = await supabase
+    let query = supabase
       .from('quizzes')
       .select(`
         *,
         lessons (id, title, hsk_level, lesson_number)
-      `)
-      .order('id', { ascending: false });
+      `);
+
+    // Filter by HSK level if provided
+    if (hskLevel !== null && hskLevel !== undefined) {
+      query = query.eq('hsk_level', hskLevel);
+    }
+
+    query = query.order('id', { ascending: false });
+
+    const { data, error } = await query;
     if (error) throw error;
     return data || [];
   },
