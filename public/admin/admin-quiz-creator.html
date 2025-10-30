@@ -1755,19 +1755,69 @@
           const audioUrlInput = document.getElementById('audioUrl');
           const correctAnswerInput = document.getElementById('correctAnswer');
 
-          if (questionTextInput) questionTextInput.value = question.question || '';
-          if (chineseTextInput) chineseTextInput.value = question.chinese_text || '';
-          if (audioUrlInput) audioUrlInput.value = question.audio_url || '';
+          // Parse question text that might contain " - 中文" or "[audio: url]"
+          let questionText = question.question || '';
+          let chineseText = '';
+          let audioUrl = '';
+
+          // Extract audio URL from [audio: url] format
+          const audioMatch = questionText.match(/\[audio:\s*(.+?)\]/);
+          if (audioMatch) {
+            audioUrl = audioMatch[1];
+            questionText = questionText.replace(/\[audio:\s*.+?\]/, '').trim();
+          }
+
+          // Extract Chinese text from " - 中文" format
+          const chineseMatch = questionText.match(/\s+-\s+(.+)$/);
+          if (chineseMatch) {
+            chineseText = chineseMatch[1];
+            questionText = questionText.replace(/\s+-\s+.+$/, '').trim();
+          }
+
+          if (questionTextInput) questionTextInput.value = questionText;
+          if (chineseTextInput) chineseTextInput.value = chineseText || question.chinese_text || '';
+          if (audioUrlInput) audioUrlInput.value = audioUrl || question.audio_url || '';
           if (correctAnswerInput) correctAnswerInput.value = question.correct_answer || '';
 
-          // Load multiple choice options
-          if (options && typeof options === 'object') {
+          // Load multiple choice options - handle both array and object formats
+          if (Array.isArray(options)) {
+            // Array format: ["Hello", "Goodbye", "Thanks", "Sorry"]
+            const letters = ['a', 'b', 'c', 'd'];
+            options.forEach((optionText, index) => {
+              const optionInput = document.getElementById(`option_${letters[index]}`);
+              if (optionInput && optionText) {
+                optionInput.value = optionText;
+              }
+            });
+
+            // Set correct answer radio button
+            const correctAnswer = question.correct_answer;
+            if (correctAnswer) {
+              const correctIndex = options.indexOf(correctAnswer);
+              if (correctIndex >= 0) {
+                const radioButton = document.getElementById(`correct_${letters[correctIndex]}`);
+                if (radioButton) radioButton.checked = true;
+              }
+            }
+          } else if (options && typeof options === 'object') {
+            // Object format: {a: "Hello", b: "Goodbye", ...}
             ['a', 'b', 'c', 'd'].forEach(key => {
               const optionInput = document.getElementById(`option_${key}`);
               if (optionInput && options[key]) {
                 optionInput.value = options[key];
               }
             });
+
+            // Set correct answer radio button
+            const correctAnswer = question.correct_answer;
+            if (correctAnswer) {
+              ['a', 'b', 'c', 'd'].forEach(key => {
+                if (options[key] === correctAnswer) {
+                  const radioButton = document.getElementById(`correct_${key}`);
+                  if (radioButton) radioButton.checked = true;
+                }
+              });
+            }
           }
 
           // Load matching pairs
