@@ -1396,11 +1396,14 @@
 
     // Collect complete form data for database
     function collectCompleteFormData() {
-      const hskLevel = document.getElementById('hskLevel')?.value;
+      const hskLevelString = document.getElementById('hskLevel')?.value;
       const tags = document.getElementById('tags')?.value.split(',').map(t => t.trim()).filter(t => t);
       const explanation = document.getElementById('explanation')?.value;
 
-      if (!hskLevel) return null;
+      if (!hskLevelString) return null;
+
+      // Convert HSK level from 'HSK1' to integer 1
+      const hskLevel = parseInt(hskLevelString.replace('HSK', ''));
 
       let questionData = {
         question_type: selectedType,
