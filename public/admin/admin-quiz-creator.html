@@ -329,20 +329,26 @@
 
     // Select question type
     function selectQuestionType(type) {
-      selectedType = type;
+      // Normalize legacy type names
+      const typeMapping = {
+        'match_pairs': 'matching'
+      };
+
+      const normalizedType = typeMapping[type] || type;
+      selectedType = normalizedType;
 
       // Update UI
       document.querySelectorAll('.question-type-card').forEach(card => {
         card.classList.remove('selected');
       });
 
-      const typeCard = document.querySelector(`[data-type="${type}"]`);
+      const typeCard = document.querySelector(`[data-type="${normalizedType}"]`);
       if (typeCard) {
         typeCard.classList.add('selected');
       }
 
       // Load appropriate form
-      loadFormForType(type);
+      loadFormForType(normalizedType);
     }
 
     // Load form based on type
@@ -385,6 +391,20 @@
           break;
         case 'audio_to_word':
           container.innerHTML = getAudioToWordForm();
+          break;
+        case 'match_pairs':
+          // Legacy type - redirect to matching
+          container.innerHTML = getMatchingForm();
+          break;
+        default:
+          // Unknown type - show error message
+          container.innerHTML = `
+            <div style="padding: 40px; text-align: center; background: #fff3cd; border: 2px solid #ffc107; border-radius: 12px;">
+              <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">⚠️ Unsupported Question Type</h3>
+              <p style="color: #856404; margin-bottom: 20px;">Question type "${type}" is not supported in this editor.</p>
+              <p style="color: #856404;">Supported types: multiple_choice, fill_gap, true_false, matching, image_association, sentence_ordering, grammar_choice, error_correction, cloze_test, dictation, audio_comprehension, audio_to_word</p>
+            </div>
+          `;
           break;
       }
     }
