@@ -50,6 +50,54 @@
       color: white;
       border-color: #ef4444;
     }
+
+    /* Custom Audio Player Styling */
+    audio {
+      width: 100%;
+      height: 50px;
+      border-radius: 12px;
+      outline: none;
+    }
+
+    audio::-webkit-media-controls-panel {
+      background: linear-gradient(135deg, #4A90E2 0%, #50E3C2 100%);
+      border-radius: 12px;
+    }
+
+    audio::-webkit-media-controls-play-button,
+    audio::-webkit-media-controls-pause-button {
+      background-color: white;
+      border-radius: 50%;
+    }
+
+    audio::-webkit-media-controls-current-time-display,
+    audio::-webkit-media-controls-time-remaining-display {
+      color: white;
+      text-shadow: none;
+      font-weight: 500;
+    }
+
+    audio::-webkit-media-controls-timeline {
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 25px;
+      margin: 0 10px;
+    }
+
+    audio::-webkit-media-controls-volume-slider {
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 25px;
+    }
+
+    /* Firefox */
+    audio::-moz-range-track {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 25px;
+    }
+
+    audio::-moz-range-thumb {
+      background: white;
+      border-radius: 50%;
+    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
@@ -87,7 +135,11 @@
         <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-3 break-words" id="questionChinese"></h1>
         <p class="text-lg sm:text-xl text-center text-primary mb-4 break-words" id="questionPinyin"></p>
         <!-- Audio Player (shown only when audio exists) -->
-        <div id="audioPlayerContainer" class="hidden mt-4">
+        <div id="audioPlayerContainer" class="hidden mt-6 p-4 bg-gradient-to-r from-primary to-secondary rounded-xl shadow-md">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-white text-2xl">volume_up</span>
+            <span class="text-white font-semibold text-sm">Listen to the audio</span>
+          </div>
           <audio id="questionAudio" controls class="w-full">
             <source id="audioSource" type="audio/mpeg">
             Your browser does not support the audio element.
