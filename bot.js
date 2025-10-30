@@ -146,41 +146,54 @@ app.get('/api/quiz', async (req, res) => {
   try {
     console.log('[API] Quiz request received');
 
-    const vocabulary = await Promise.race([
-      db.getVocabulary(),
+    // Get quiz questions from the quizzes table
+    const quizQuestions = await Promise.race([
+      db.getQuizzes(),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Database timeout')), 5000))
     ]);
 
-    console.log(`[API] Vocabulary loaded: ${vocabulary ? vocabulary.length : 0} words`);
+    console.log(`[API] Quiz questions loaded: ${quizQuestions ? quizQuestions.length : 0} questions`);
 
-    if (!vocabulary || vocabulary.length === 0) {
-      return res.status(500).json({ error: 'No vocabulary data available' });
+    if (!quizQuestions || quizQuestions.length === 0) {
+      return res.status(500).json({ error: 'No quiz questions available. Please create questions in the admin panel.' });
     }
 
-    if (vocabulary.length < 4) {
-      return res.status(500).json({ error: 'Not enough vocabulary data (need at least 4 words)' });
-    }
+    // Get a random question
+    const question = quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
 
-    const question = vocabulary[Math.floor(Math.random() * vocabulary.length)];
-    const options = [question.english];
-
-    // Add 3 random wrong answers
-    while (options.length < 4) {
-      const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
-      if (!options.includes(randomWord.english)) {
-        options.push(randomWord.english);
+    // Parse options from JSONB if it's a string
+    let options = question.options;
+    if (typeof options === 'string') {
+      try {
+        options = JSON.parse(options);
+      } catch (e) {
+        console.error('Failed to parse options:', e);
+        return res.status(500).json({ error: 'Invalid question format' });
       }
     }
 
+    // Handle different question formats
+    let optionsArray = [];
+    if (Array.isArray(options)) {
+      // If options is already an array of strings or objects
+      optionsArray = options.map(opt => typeof opt === 'string' ? opt : opt.text);
+    } else if (options && typeof options === 'object') {
+      // If options is an object with a, b, c, d keys
+      optionsArray = Object.values(options).filter(Boolean);
+    }
+
     // Shuffle options
-    options.sort(() => Math.random() - 0.5);
+    optionsArray.sort(() => Math.random() - 0.5);
 
     res.json({
       id: question.id,
-      question: question.chinese,
-      pinyin: question.pinyin,
-      options: options,
-      correctAnswer: question.english
+      question: question.question || question.chinese_text,
+      pinyin: question.pinyin || '',
+      options: optionsArray,
+      correctAnswer: question.correct_answer,
+      questionType: question.question_type,
+      audioUrl: question.audio_url,
+      imageUrl: question.image_url
     });
   } catch (error) {
     console.error('[API] Error generating quiz:', error.message);
