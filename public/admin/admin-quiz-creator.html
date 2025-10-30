@@ -384,7 +384,8 @@
         'uzbek_to_chinese': 'multiple_choice',
         'pinyin_to_chinese': 'multiple_choice',
         'chinese_to_pinyin': 'multiple_choice',
-        'audio_to_character': 'audio_to_word'
+        'audio_to_character': 'audio_to_word',
+        'fill_blank': 'fill_gap'
       };
 
       const normalizedType = typeMapping[type] || type;
@@ -468,6 +469,10 @@
         case 'audio_to_character':
           // Audio to Character - use audio_to_word form
           container.innerHTML = getAudioToWordForm();
+          break;
+        case 'fill_blank':
+          // Fill blank - use fill_gap form
+          container.innerHTML = getFillGapForm();
           break;
         default:
           // Unknown type - show error message
