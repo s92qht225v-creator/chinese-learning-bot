@@ -174,16 +174,22 @@ app.get('/api/quiz', async (req, res) => {
 
     // Handle different question formats
     let optionsArray = [];
-    if (Array.isArray(options)) {
-      // If options is already an array of strings or objects
-      optionsArray = options.map(opt => typeof opt === 'string' ? opt : opt.text);
-    } else if (options && typeof options === 'object') {
-      // If options is an object with a, b, c, d keys
-      optionsArray = Object.values(options).filter(Boolean);
-    }
 
-    // Shuffle options
-    optionsArray.sort(() => Math.random() - 0.5);
+    // For matching questions, preserve the pairs structure
+    if (question.question_type === 'matching') {
+      optionsArray = options; // Keep pairs as-is for matching questions
+    } else {
+      // For other question types, extract text values
+      if (Array.isArray(options)) {
+        // If options is already an array of strings or objects
+        optionsArray = options.map(opt => typeof opt === 'string' ? opt : opt.text);
+      } else if (options && typeof options === 'object') {
+        // If options is an object with a, b, c, d keys
+        optionsArray = Object.values(options).filter(Boolean);
+      }
+      // Shuffle options for non-matching questions
+      optionsArray.sort(() => Math.random() - 0.5);
+    }
 
     res.json({
       id: question.id,

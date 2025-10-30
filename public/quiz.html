@@ -159,39 +159,46 @@
         if (typeof API_CONFIG === 'undefined') {
           throw new Error('API_CONFIG not loaded yet');
         }
-        
+
         const url = API_CONFIG.url(API_CONFIG.endpoints.quiz);
         console.log('Fetching quiz from:', url);
-        
+
         const response = await fetch(url, {
           headers: telegramAuth.getHeaders()
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         questionChinese.textContent = data.question;
         questionPinyin.textContent = data.pinyin;
         currentAnswer = data.correctAnswer;
         currentQuestionData = data;
-        
-        // Clear and populate options
+
+        // Clear options container
         optionsContainer.innerHTML = '';
-        data.options.forEach(option => {
-          const btn = document.createElement('button');
-          btn.className = 'option-btn w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 font-medium text-text-light dark:text-text-dark transition-colors';
-          btn.textContent = option;
-          btn.onclick = () => selectOption(btn, option);
-          optionsContainer.appendChild(btn);
-        });
-        
+
+        // Check question type and render accordingly
+        if (data.questionType === 'matching') {
+          renderMatchingQuestion(data);
+        } else {
+          // Default: render as multiple choice
+          data.options.forEach(option => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 font-medium text-text-light dark:text-text-dark transition-colors';
+            btn.textContent = option;
+            btn.onclick = () => selectOption(btn, option);
+            optionsContainer.appendChild(btn);
+          });
+        }
+
         // Update progress
         progress.textContent = `Question ${currentQuestion} / ${totalQuestions}`;
         progressBar.style.width = `${(currentQuestion / totalQuestions) * 100}%`;
-        
+
         answered = false;
         nextBtn.disabled = true;
       } catch (error) {
@@ -204,6 +211,134 @@
         });
         alert(`Failed to load question: ${error.message}\n\nPlease check your internet connection and try again.`);
       }
+    }
+
+    // Render matching question with dropdown pairs
+    function renderMatchingQuestion(data) {
+      // Parse options as pairs if they're a string
+      let pairs = data.options;
+      if (typeof pairs === 'string') {
+        try {
+          pairs = JSON.parse(pairs);
+        } catch (e) {
+          console.error('Failed to parse matching pairs:', e);
+          return;
+        }
+      }
+
+      if (!Array.isArray(pairs) || pairs.length === 0) {
+        console.error('Invalid matching pairs data');
+        return;
+      }
+
+      // Shuffle the right side options
+      const rightOptions = pairs.map(p => p.right || p.english).sort(() => Math.random() - 0.5);
+
+      pairs.forEach((pair, index) => {
+        const pairContainer = document.createElement('div');
+        pairContainer.className = 'flex items-center gap-3 mb-3';
+
+        // Left side (Chinese or term)
+        const leftBox = document.createElement('div');
+        leftBox.className = 'flex-1 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 font-bold text-xl text-center border-2 border-blue-200 dark:border-blue-800';
+        leftBox.textContent = pair.left || pair.chinese;
+
+        // Right side (dropdown)
+        const select = document.createElement('select');
+        select.id = `match_${index}`;
+        select.className = 'flex-1 p-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-light dark:text-text-dark font-medium';
+        select.onchange = checkMatchingComplete;
+
+        // Add placeholder option
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = 'Select...';
+        select.appendChild(placeholderOption);
+
+        // Add all options
+        rightOptions.forEach(rightText => {
+          const option = document.createElement('option');
+          option.value = rightText;
+          option.textContent = rightText;
+          select.appendChild(option);
+        });
+
+        pairContainer.appendChild(leftBox);
+        pairContainer.appendChild(select);
+        optionsContainer.appendChild(pairContainer);
+      });
+    }
+
+    // Check if all matching pairs are selected
+    function checkMatchingComplete() {
+      const selects = optionsContainer.querySelectorAll('select');
+      let allSelected = true;
+      selects.forEach(select => {
+        if (!select.value) allSelected = false;
+      });
+
+      if (allSelected) {
+        nextBtn.disabled = false;
+        // Auto-submit matching answer
+        submitMatchingAnswer();
+      }
+    }
+
+    // Submit matching answer
+    async function submitMatchingAnswer() {
+      if (answered) return;
+      answered = true;
+
+      // Parse pairs from original data
+      let pairs = currentQuestionData.options;
+      if (typeof pairs === 'string') {
+        pairs = JSON.parse(pairs);
+      }
+
+      // Check each match
+      const selects = optionsContainer.querySelectorAll('select');
+      let allCorrect = true;
+
+      selects.forEach((select, index) => {
+        const correctAnswer = pairs[index].right || pairs[index].english;
+        const userAnswer = select.value;
+        const isCorrect = userAnswer === correctAnswer;
+
+        if (!isCorrect) allCorrect = false;
+
+        // Visual feedback
+        if (isCorrect) {
+          select.classList.add('!border-green-500', '!bg-green-50', 'dark:!bg-green-900/20');
+        } else {
+          select.classList.add('!border-red-500', '!bg-red-50', 'dark:!bg-red-900/20');
+        }
+        select.disabled = true;
+      });
+
+      // Update stats
+      if (allCorrect) {
+        stats.correct++;
+      } else {
+        stats.incorrect++;
+      }
+
+      // Save progress
+      if (currentQuestionData && telegramAuth.isAuthenticated()) {
+        try {
+          await fetch(API_CONFIG.url('/api/progress/quiz'), {
+            method: 'POST',
+            headers: telegramAuth.getHeaders(),
+            body: JSON.stringify({
+              vocabularyId: currentQuestionData.id,
+              correct: allCorrect
+            })
+          });
+        } catch (error) {
+          console.error('Failed to save progress:', error);
+        }
+      }
+
+      updateStats();
     }
 
     // Handle option selection
