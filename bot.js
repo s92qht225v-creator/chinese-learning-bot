@@ -714,6 +714,44 @@ app.post('/api/admin/upload-audio', adminAuth, upload.single('audio'), async (re
   }
 });
 
+// Image upload endpoint
+app.post('/api/admin/upload-image', adminAuth, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Generate unique filename
+    const fileExt = req.file.originalname.split('.').pop();
+    const fileName = `image_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `quiz-images/${fileName}`;
+
+    // Upload to Supabase storage
+    const { data, error } = await supabase.storage
+      .from('images')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('images')
+      .getPublicUrl(filePath);
+
+    res.json({ url: urlData.publicUrl });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get all vocabulary (admin)
 app.get('/api/admin/vocabulary', adminAuth, async (req, res) => {
   try {

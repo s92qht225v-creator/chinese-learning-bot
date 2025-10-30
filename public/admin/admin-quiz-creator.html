@@ -374,6 +374,61 @@
       }
     }
 
+    // Handle image file upload via backend API
+    async function handleImageUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById('imageUploadStatus');
+      const imagePreview = document.getElementById('imagePreview');
+      const imagePreviewPlaceholder = document.getElementById('imagePreviewPlaceholder');
+
+      statusDiv.innerHTML = '<span style="color: #448fe4;">⏳ Uploading...</span>';
+
+      try {
+        const password = await getAdminPassword();
+        if (!password) {
+          statusDiv.innerHTML = '<span style="color: #ef4444;">❌ Admin password required</span>';
+          return;
+        }
+
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('image', file);
+
+        // Upload via backend API
+        const response = await fetch('/api/admin/upload-image', {
+          method: 'POST',
+          headers: {
+            'X-Admin-Password': password
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Upload failed');
+        }
+
+        const data = await response.json();
+        const publicUrl = data.url;
+
+        // Set the hidden input value
+        document.getElementById('imageUrl').value = publicUrl;
+        statusDiv.innerHTML = `<span style="color: #4CAF50;">✓ Uploaded successfully!</span>`;
+
+        // Show preview
+        imagePreview.src = publicUrl;
+        imagePreview.classList.remove('hidden');
+        imagePreviewPlaceholder.classList.add('hidden');
+
+        console.log('Image uploaded:', publicUrl);
+      } catch (error) {
+        console.error('Upload error:', error);
+        statusDiv.innerHTML = `<span style="color: #ef4444;">❌ Upload failed: ${error.message}</span>`;
+      }
+    }
+
     // Select question type
     function selectQuestionType(type) {
       console.log('selectQuestionType called with:', type);
@@ -691,15 +746,18 @@
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Image URL *</label>
-            <input type="text" id="imageUrl" class="input-field" placeholder="/images/watch.jpg">
-            <p class="text-xs text-gray-500 mt-1">Upload image and paste URL here</p>
+            <label class="block text-sm font-semibold mb-2">Image File *</label>
+            <input type="file" id="imageFileInput" class="input-field" accept="image/*" onchange="handleImageUpload(this)">
+            <input type="hidden" id="imageUrl">
+            <div id="imageUploadStatus" class="text-sm mt-2"></div>
+            <p class="text-xs text-gray-500 mt-1">Upload image file to Supabase</p>
           </div>
 
           <div class="mb-4">
             <label class="block text-sm font-semibold mb-2">Image Preview</label>
-            <div class="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
-              <span class="text-gray-400">No image</span>
+            <div id="imagePreviewContainer" class="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
+              <span class="text-gray-400" id="imagePreviewPlaceholder">No image</span>
+              <img id="imagePreview" src="" alt="Preview" class="hidden w-full h-full object-cover">
             </div>
           </div>
         </section>
