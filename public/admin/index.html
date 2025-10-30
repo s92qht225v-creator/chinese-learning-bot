@@ -1296,90 +1296,12 @@
         </div>
 
         <!-- Quizzes Tab -->
-        <div id="quizzesPanel" class="panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0;">Quiz Management</h2>
-                <a href="/admin/admin-quiz-creator.html" target="_blank" class="btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 20px;">✨</span>
-                    Open Advanced Quiz Creator
-                </a>
-            </div>
-            <div id="quizMessage"></div>
-            
-            <div style="background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 8px 0; color: #0c4a6e; font-size: 16px;">💡 Two Ways to Create Quizzes:</h3>
-                <ol style="margin: 0; padding-left: 20px; color: #075985;">
-                    <li><strong>Quick Create (below):</strong> Simple form for basic quizzes</li>
-                    <li><strong>Advanced Creator (button above):</strong> Full-featured editor with 12 question types, preview, and rich formatting</li>
-                </ol>
-            </div>
-            
-            <form id="quizForm" onsubmit="saveQuiz(event)">
-                <div class="form-group">
-                    <label>Select Lesson</label>
-                    <select id="quizLesson" required>
-                        <option value="">Loading...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Question</label>
-                    <input type="text" id="quizQuestion" required>
-                </div>
-                <div class="form-group">
-                    <label>Type</label>
-                    <select id="quizType" required onchange="updateQuizFormFields()">
-                        <option value="">Select quiz type...</option>
-                        <option value="chinese_to_uzbek">Chinese to Uzbek</option>
-                        <option value="uzbek_to_chinese">Uzbek to Chinese</option>
-                        <option value="pinyin_to_chinese">Pinyin to Chinese</option>
-                        <option value="chinese_to_pinyin">Chinese to Pinyin</option>
-                        <option value="audio_to_character">Audio to Character</option>
-                        <option value="fill_blank">Fill in the Blank</option>
-                        <option value="multiple_choice">Multiple Choice</option>
-                        <option value="true_false">True/False</option>
-                        <option value="typing">Typing</option>
-                        <option value="match_pairs">Match Pairs</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Correct Answer</label>
-                    <input type="text" id="quizAnswer" required>
-                </div>
-                <div id="quizOptionsField" class="form-group" style="display:none;">
-                    <label>Options (comma-separated)</label>
-                    <input type="text" id="quizOptions" placeholder="Option1, Option2, Option3, Option4">
-                    <small style="color: #666; font-size: 12px;">For multiple choice, separate options with commas</small>
-                </div>
-                <div id="quizAudioField" class="form-group" style="display:none;">
-                    <label>Audio URL</label>
-                    <input type="url" id="quizAudioUrl" placeholder="https://example.com/audio.mp3">
-                    <small style="color: #666; font-size: 12px;">For audio quizzes</small>
-                </div>
-                <div id="quizPairsField" class="form-group" style="display:none;">
-                    <label>Pairs (JSON format)</label>
-                    <textarea id="quizPairs" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;" placeholder='[{"left":"你好","right":"Salom"}]'></textarea>
-                    <small style="color: #666; font-size: 12px;">For match pairs - JSON format</small>
-                </div>
-                <div class="form-group">
-                    <label>Explanation (optional)</label>
-                    <textarea id="quizExplanation" rows="2" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;"></textarea>
-                </div>
-                <button type="submit" class="btn">Add Quiz</button>
-            </form>
-
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Question</th>
-                            <th>Type</th>
-                            <th>Lesson</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="quizzesTable"></tbody>
-                </table>
-            </div>
+        <div id="quizzesPanel" class="panel" style="padding: 0; background: transparent;">
+            <iframe 
+                src="/admin/admin-quiz-creator.html" 
+                style="width: 100%; height: calc(100vh - 140px); border: none; border-radius: 10px; background: white;"
+                title="Quiz Creator"
+            ></iframe>
         </div>
 
         <!-- Users Tab -->
@@ -1461,7 +1383,7 @@
             if (tabName === 'lessons') loadLessons();
             if (tabName === 'dialogues') { loadMultiLineDialogues(); }
             if (tabName === 'grammar') { loadLessonsForSelect(); loadGrammar(); }
-            if (tabName === 'quizzes') { loadLessonsForSelect(); loadQuizzes(); }
+            // Quiz management is now in embedded iframe, no loading needed
             if (tabName === 'users') loadUsers();
         }
 
@@ -2267,137 +2189,8 @@
         }
 
         // ========== QUIZZES ==========
-        async function loadQuizzes() {
-            try {
-                const { data, error } = await supabase
-                    .from('quizzes')
-                    .select(`
-                        *,
-                        lessons (title)
-                    `)
-                    .order('id', { ascending: false });
-
-                if (error) throw error;
-
-                const tbody = document.getElementById('quizzesTable');
-                tbody.innerHTML = data?.map(quiz => `
-                    <tr>
-                        <td>${quiz.question}</td>
-                        <td>${quiz.question_type}</td>
-                        <td>${quiz.lessons?.title || 'N/A'}</td>
-                        <td class="actions">
-                            <button class="btn btn-danger btn-small" onclick="deleteQuiz(${quiz.id})">Delete</button>
-                        </td>
-                    </tr>
-                `).join('') || '<tr><td colspan="4">No quizzes yet</td></tr>';
-            } catch (error) {
-                console.error('Error loading quizzes:', error);
-            }
-        }
-
-        async function saveQuiz(event) {
-            event.preventDefault();
-            const messageEl = document.getElementById('quizMessage');
-            
-            try {
-                const quizType = document.getElementById('quizType').value;
-                const quizData = {
-                    lesson_id: parseInt(document.getElementById('quizLesson').value),
-                    question: document.getElementById('quizQuestion').value,
-                    question_type: quizType,
-                    correct_answer: document.getElementById('quizAnswer').value,
-                    explanation: document.getElementById('quizExplanation').value || null
-                };
-                
-                // Add options if provided
-                const optionsInput = document.getElementById('quizOptions').value;
-                if (optionsInput) {
-                    quizData.options = optionsInput.split(',').map(o => o.trim());
-                }
-                
-                // Add audio URL if provided
-                const audioUrl = document.getElementById('quizAudioUrl').value;
-                if (audioUrl) {
-                    quizData.audio_url = audioUrl;
-                }
-                
-                // Add pairs if provided
-                const pairsInput = document.getElementById('quizPairs').value;
-                if (pairsInput) {
-                    try {
-                        quizData.pairs = JSON.parse(pairsInput);
-                    } catch (e) {
-                        throw new Error('Invalid JSON format for pairs');
-                    }
-                }
-
-                const { error } = await supabase
-                    .from('quizzes')
-                    .insert([quizData]);
-
-                if (error) throw error;
-
-                messageEl.innerHTML = '<div class="message success">Quiz added!</div>';
-                setTimeout(() => messageEl.innerHTML = '', 3000);
-                
-                event.target.reset();
-                updateQuizFormFields(); // Reset field visibility
-                await loadQuizzes();
-            } catch (error) {
-                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
-                setTimeout(() => messageEl.innerHTML = '', 3000);
-            }
-        }
-
-        async function deleteQuiz(id) {
-            if (!confirm('Delete this quiz?')) return;
-            try {
-                const { error } = await supabase.from('quizzes').delete().eq('id', id);
-                if (error) throw error;
-                await loadQuizzes();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        // Update quiz form fields based on quiz type
-        function updateQuizFormFields() {
-            const quizType = document.getElementById('quizType').value;
-            const optionsField = document.getElementById('quizOptionsField');
-            const audioField = document.getElementById('quizAudioField');
-            const pairsField = document.getElementById('quizPairsField');
-            
-            // Hide all optional fields
-            optionsField.style.display = 'none';
-            audioField.style.display = 'none';
-            pairsField.style.display = 'none';
-            
-            // Show fields based on quiz type
-            const typesNeedingOptions = ['multiple_choice', 'chinese_to_uzbek', 'uzbek_to_chinese', 
-                                         'pinyin_to_chinese', 'chinese_to_pinyin', 'fill_blank', 
-                                         'true_false', 'audio_to_character'];
-            
-            if (typesNeedingOptions.includes(quizType)) {
-                optionsField.style.display = 'block';
-                document.getElementById('quizOptions').required = true;
-            } else {
-                document.getElementById('quizOptions').required = false;
-            }
-            
-            if (quizType === 'audio_to_character') {
-                audioField.style.display = 'block';
-                document.getElementById('quizAudioUrl').required = true;
-            } else {
-                document.getElementById('quizAudioUrl').required = false;
-            }
-            
-            if (quizType === 'match_pairs') {
-                pairsField.style.display = 'block';
-                document.getElementById('quizPairs').required = true;
-            } else {
-                document.getElementById('quizPairs').required = false;
-            }
-        }
+        // Quiz management is now handled in the embedded quiz creator iframe
+        // No JavaScript functions needed here
         
         // ========== PAGINATION STATE ==========
         let currentPage = 1;
