@@ -890,9 +890,11 @@
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Audio URL *</label>
-            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/wo-shi-xuesheng.mp3">
-            <p class="text-xs text-gray-500 mt-1">Upload audio file and paste URL</p>
+            <label class="block text-sm font-semibold mb-2">Audio File *</label>
+            <input type="file" id="audioFile" accept="audio/*" class="input-field" onchange="handleAudioUpload(this)">
+            <input type="hidden" id="audioUrl">
+            <div id="audioUploadStatus" class="text-sm mt-2"></div>
+            <p class="text-xs text-gray-500 mt-1">Upload MP3, WAV, or OGG audio file</p>
           </div>
 
           <div class="mb-4">
@@ -925,8 +927,11 @@
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Audio URL *</label>
-            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/conversation-library.mp3">
+            <label class="block text-sm font-semibold mb-2">Audio File *</label>
+            <input type="file" id="audioFile" accept="audio/*" class="input-field" onchange="handleAudioUpload(this)">
+            <input type="hidden" id="audioUrl">
+            <div id="audioUploadStatus" class="text-sm mt-2"></div>
+            <p class="text-xs text-gray-500 mt-1">Upload MP3, WAV, or OGG audio file</p>
           </div>
 
           <div class="mb-4">
