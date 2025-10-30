@@ -686,12 +686,11 @@ app.post('/api/admin/upload-audio', adminAuth, upload.single('audio'), async (re
     // Generate unique filename
     const fileExt = req.file.originalname.split('.').pop();
     const fileName = `audio_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const filePath = `quiz-audio/${fileName}`;
 
-    // Upload to Supabase storage
+    // Upload to Supabase storage (quiz-audio bucket)
     const { data, error } = await supabase.storage
-      .from('audio')
-      .upload(filePath, req.file.buffer, {
+      .from('quiz-audio')
+      .upload(fileName, req.file.buffer, {
         contentType: req.file.mimetype,
         cacheControl: '3600',
         upsert: false
@@ -704,8 +703,8 @@ app.post('/api/admin/upload-audio', adminAuth, upload.single('audio'), async (re
 
     // Get public URL
     const { data: urlData } = supabase.storage
-      .from('audio')
-      .getPublicUrl(filePath);
+      .from('quiz-audio')
+      .getPublicUrl(fileName);
 
     res.json({ url: urlData.publicUrl });
   } catch (error) {
@@ -724,12 +723,11 @@ app.post('/api/admin/upload-image', adminAuth, upload.single('image'), async (re
     // Generate unique filename
     const fileExt = req.file.originalname.split('.').pop();
     const fileName = `image_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const filePath = `quiz-images/${fileName}`;
 
-    // Upload to Supabase storage
+    // Upload to Supabase storage (quiz-images bucket)
     const { data, error } = await supabase.storage
-      .from('images')
-      .upload(filePath, req.file.buffer, {
+      .from('quiz-images')
+      .upload(fileName, req.file.buffer, {
         contentType: req.file.mimetype,
         cacheControl: '3600',
         upsert: false
@@ -742,8 +740,8 @@ app.post('/api/admin/upload-image', adminAuth, upload.single('image'), async (re
 
     // Get public URL
     const { data: urlData } = supabase.storage
-      .from('images')
-      .getPublicUrl(filePath);
+      .from('quiz-images')
+      .getPublicUrl(fileName);
 
     res.json({ url: urlData.publicUrl });
   } catch (error) {
@@ -1046,10 +1044,10 @@ app.delete('/api/admin/quizzes/:id', adminAuth, async (req, res) => {
         const audioMatch = quiz.question.match(/\[audio:\s*(.+?)\]/);
         if (audioMatch) {
           const audioUrl = audioMatch[1];
-          // Extract path from full URL (e.g., https://...supabase.co/storage/v1/object/public/audio/quiz-audio/file.mp3)
-          const audioPathMatch = audioUrl.match(/\/audio\/(.+)$/);
+          // Extract filename from full URL (e.g., https://...supabase.co/storage/v1/object/public/quiz-audio/file.mp3)
+          const audioPathMatch = audioUrl.match(/\/quiz-audio\/(.+)$/);
           if (audioPathMatch) {
-            filesToDelete.push({ bucket: 'audio', path: audioPathMatch[1] });
+            filesToDelete.push({ bucket: 'quiz-audio', path: audioPathMatch[1] });
           }
         }
       }
@@ -1067,9 +1065,9 @@ app.delete('/api/admin/quizzes/:id', adminAuth, async (req, res) => {
 
         // Check if there's an imageUrl field (might be stored differently)
         const questionData = quiz.question || '';
-        const imageUrlMatch = questionData.match(/https:\/\/[^\s]+\/images\/(.+?)[\s\]"']|$/);
+        const imageUrlMatch = questionData.match(/\/quiz-images\/(.+?)[\s\]"']|$/);
         if (imageUrlMatch && imageUrlMatch[1]) {
-          filesToDelete.push({ bucket: 'images', path: imageUrlMatch[1] });
+          filesToDelete.push({ bucket: 'quiz-images', path: imageUrlMatch[1] });
         }
       }
 
