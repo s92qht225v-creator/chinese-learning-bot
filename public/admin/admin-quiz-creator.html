@@ -330,13 +330,17 @@
     // Select question type
     function selectQuestionType(type) {
       selectedType = type;
-      
+
       // Update UI
       document.querySelectorAll('.question-type-card').forEach(card => {
         card.classList.remove('selected');
       });
-      document.querySelector(`[data-type="${type}"]`).classList.add('selected');
-      
+
+      const typeCard = document.querySelector(`[data-type="${type}"]`);
+      if (typeCard) {
+        typeCard.classList.add('selected');
+      }
+
       // Load appropriate form
       loadFormForType(type);
     }
