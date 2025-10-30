@@ -1297,8 +1297,22 @@
 
         <!-- Quizzes Tab -->
         <div id="quizzesPanel" class="panel">
-            <h2 style="margin-bottom: 20px;">Quiz Management</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">Quiz Management</h2>
+                <a href="/admin/admin-quiz-creator.html" target="_blank" class="btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">✨</span>
+                    Open Advanced Quiz Creator
+                </a>
+            </div>
             <div id="quizMessage"></div>
+            
+            <div style="background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 8px 0; color: #0c4a6e; font-size: 16px;">💡 Two Ways to Create Quizzes:</h3>
+                <ol style="margin: 0; padding-left: 20px; color: #075985;">
+                    <li><strong>Quick Create (below):</strong> Simple form for basic quizzes</li>
+                    <li><strong>Advanced Creator (button above):</strong> Full-featured editor with 12 question types, preview, and rich formatting</li>
+                </ol>
+            </div>
             
             <form id="quizForm" onsubmit="saveQuiz(event)">
                 <div class="form-group">

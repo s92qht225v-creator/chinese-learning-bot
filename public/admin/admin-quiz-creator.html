@@ -1326,29 +1326,197 @@
     }
 
     // Save question
-    function saveQuestion() {
+    async function saveQuestion() {
       if (!selectedType) {
         alert('Please select a question type first!');
         return;
       }
 
-      // Collect form data
-      const questionData = {
-        type: selectedType,
-        level: document.getElementById('hskLevel').value,
-        tags: document.getElementById('tags').value.split(',').map(t => t.trim()),
-        // ... collect all other fields based on type
+      // Validate required fields
+      const hskLevel = document.getElementById('hskLevel')?.value;
+      if (!hskLevel) {
+        alert('❌ Please select an HSK level!');
+        return;
+      }
+
+      // Collect form data based on question type
+      const questionData = collectCompleteFormData();
+      
+      if (!questionData) {
+        alert('❌ Please fill in all required fields!');
+        return;
+      }
+
+      console.log('Saving question data:', questionData);
+      
+      try {
+        // Get admin password from localStorage or prompt
+        let adminPassword = localStorage.getItem('adminPassword');
+        if (!adminPassword) {
+          adminPassword = prompt('Enter admin password:');
+          if (!adminPassword) return;
+          localStorage.setItem('adminPassword', adminPassword);
+        }
+
+        // Send to backend API
+        const response = await fetch('/api/admin/quizzes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Password': adminPassword
+          },
+          body: JSON.stringify(questionData)
+        });
+
+        if (!response.ok) {
+          if (response.status === 403) {
+            localStorage.removeItem('adminPassword');
+            throw new Error('Invalid admin password');
+          }
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('✅ Question saved:', result);
+        
+        alert('✅ Question saved successfully!\n\nQuestion ID: ' + result.id);
+        
+        // Reset form
+        if (confirm('Question saved! Create another one?')) {
+          location.reload();
+        } else {
+          // Redirect to questions list
+          window.location.href = '/admin/admin-questions-list.html';
+        }
+      } catch (error) {
+        console.error('❌ Error saving question:', error);
+        alert('❌ Failed to save question: ' + error.message);
+      }
+    }
+
+    // Collect complete form data for database
+    function collectCompleteFormData() {
+      const hskLevel = document.getElementById('hskLevel')?.value;
+      const tags = document.getElementById('tags')?.value.split(',').map(t => t.trim()).filter(t => t);
+      const explanation = document.getElementById('explanation')?.value;
+
+      if (!hskLevel) return null;
+
+      let questionData = {
+        question_type: selectedType,
+        hsk_level: hskLevel,
+        tags: tags.length > 0 ? tags.join(',') : null,
+        explanation: explanation || null,
+        quiz_order: 1,
+        lesson_id: null // Can be updated later to link to specific lesson
       };
 
-      console.log('Question data:', questionData);
-      
-      // In real app: send to Supabase
-      alert('✓ Question saved successfully!\n\nThis would save to your database.');
-      
-      // Reset form
-      if (confirm('Question saved! Create another one?')) {
-        location.reload();
+      // Collect type-specific data
+      switch(selectedType) {
+        case 'multiple_choice':
+        case 'grammar_choice':
+        case 'image_association':
+        case 'audio_comprehension':
+        case 'audio_to_word':
+          const questionText = document.getElementById('questionText')?.value;
+          const chineseText = document.getElementById('chineseText')?.value;
+          const audioUrl = document.getElementById('audioUrl')?.value;
+          
+          if (!questionText) return null;
+
+          const options = [
+            { id: 'a', text: document.getElementById('option_a')?.value || '' },
+            { id: 'b', text: document.getElementById('option_b')?.value || '' },
+            { id: 'c', text: document.getElementById('option_c')?.value || '' },
+            { id: 'd', text: document.getElementById('option_d')?.value || '' }
+          ];
+
+          // Find correct answer
+          let correctAnswer = '';
+          if (document.getElementById('correct_a')?.checked) correctAnswer = options[0].text;
+          else if (document.getElementById('correct_b')?.checked) correctAnswer = options[1].text;
+          else if (document.getElementById('correct_c')?.checked) correctAnswer = options[2].text;
+          else if (document.getElementById('correct_d')?.checked) correctAnswer = options[3].text;
+
+          if (!correctAnswer) return null;
+
+          questionData.question = questionText;
+          if (chineseText) questionData.question += ' - ' + chineseText;
+          if (audioUrl) questionData.question += ' [audio: ' + audioUrl + ']';
+          questionData.options = JSON.stringify(options.map(o => o.text));
+          questionData.correct_answer = correctAnswer;
+          break;
+
+        case 'fill_gap':
+          const sentence = document.getElementById('sentenceText')?.value;
+          const translation = document.getElementById('translation')?.value;
+          const fillCorrect = document.getElementById('correctAnswer')?.value;
+          
+          if (!sentence || !fillCorrect) return null;
+
+          questionData.question = sentence + (translation ? ' (' + translation + ')' : '');
+          questionData.correct_answer = fillCorrect;
+          questionData.options = JSON.stringify([fillCorrect]); // Store for reference
+          break;
+
+        case 'true_false':
+          const statement = document.getElementById('statement')?.value;
+          const tfAnswer = document.querySelector('input[name="trueFalse"]:checked')?.value;
+          
+          if (!statement || !tfAnswer) return null;
+
+          questionData.question = statement;
+          questionData.correct_answer = tfAnswer;
+          questionData.options = JSON.stringify(['true', 'false']);
+          break;
+
+        case 'sentence_ordering':
+          const orderQuestion = document.getElementById('questionText')?.value;
+          const correctSentence = document.getElementById('correctSentence')?.value;
+          const orderTranslation = document.getElementById('translation')?.value;
+          
+          if (!orderQuestion || !correctSentence) return null;
+
+          questionData.question = orderQuestion + (orderTranslation ? ' (' + orderTranslation + ')' : '');
+          questionData.correct_answer = correctSentence;
+          questionData.options = JSON.stringify(correctSentence.split(' '));
+          break;
+
+        case 'error_correction':
+          const errorQuestion = document.getElementById('questionText')?.value;
+          const incorrectSentence = document.getElementById('incorrectSentence')?.value;
+          const correctFixed = document.getElementById('correctSentence')?.value;
+          const errorIndex = document.getElementById('errorIndex')?.value;
+          
+          if (!errorQuestion || !incorrectSentence || !correctFixed) return null;
+
+          questionData.question = errorQuestion + ' - ' + incorrectSentence;
+          questionData.correct_answer = correctFixed;
+          questionData.options = JSON.stringify({ errorIndex: errorIndex, incorrect: incorrectSentence });
+          break;
+
+        case 'dictation':
+          const dictQuestion = document.getElementById('questionText')?.value;
+          const dictAudio = document.getElementById('audioUrl')?.value;
+          const dictAnswer = document.getElementById('correctAnswer')?.value;
+          
+          if (!dictQuestion || !dictAudio || !dictAnswer) return null;
+
+          questionData.question = dictQuestion + ' [audio: ' + dictAudio + ']';
+          questionData.correct_answer = dictAnswer;
+          questionData.options = JSON.stringify([dictAnswer]);
+          break;
+
+        default:
+          // For other types, use basic structure
+          const basicQuestion = document.getElementById('questionText')?.value;
+          if (!basicQuestion) return null;
+          questionData.question = basicQuestion;
+          questionData.correct_answer = 'N/A';
+          questionData.options = JSON.stringify([]);
       }
+
+      return questionData;
     }
 
     // View all questions
