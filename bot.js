@@ -1034,6 +1034,65 @@ app.put('/api/admin/quizzes/:id', adminAuth, async (req, res) => {
 
 app.delete('/api/admin/quizzes/:id', adminAuth, async (req, res) => {
   try {
+    // First, get the quiz data to extract file URLs
+    const quizzes = await db.getQuizzes();
+    const quiz = quizzes.find(q => q.id == req.params.id);
+
+    if (quiz) {
+      const filesToDelete = [];
+
+      // Extract audio URL from question text [audio: url] format
+      if (quiz.question) {
+        const audioMatch = quiz.question.match(/\[audio:\s*(.+?)\]/);
+        if (audioMatch) {
+          const audioUrl = audioMatch[1];
+          // Extract path from full URL (e.g., https://...supabase.co/storage/v1/object/public/audio/quiz-audio/file.mp3)
+          const audioPathMatch = audioUrl.match(/\/audio\/(.+)$/);
+          if (audioPathMatch) {
+            filesToDelete.push({ bucket: 'audio', path: audioPathMatch[1] });
+          }
+        }
+      }
+
+      // Extract image URL from options (for image_association questions)
+      if (quiz.options) {
+        let options = quiz.options;
+        if (typeof options === 'string') {
+          try {
+            options = JSON.parse(options);
+          } catch (e) {
+            // ignore parse error
+          }
+        }
+
+        // Check if there's an imageUrl field (might be stored differently)
+        const questionData = quiz.question || '';
+        const imageUrlMatch = questionData.match(/https:\/\/[^\s]+\/images\/(.+?)[\s\]"']|$/);
+        if (imageUrlMatch && imageUrlMatch[1]) {
+          filesToDelete.push({ bucket: 'images', path: imageUrlMatch[1] });
+        }
+      }
+
+      // Delete files from Supabase storage
+      for (const file of filesToDelete) {
+        try {
+          const { error } = await supabase.storage
+            .from(file.bucket)
+            .remove([file.path]);
+
+          if (error) {
+            console.error(`Failed to delete file ${file.path} from ${file.bucket}:`, error);
+          } else {
+            console.log(`Successfully deleted file ${file.path} from ${file.bucket}`);
+          }
+        } catch (err) {
+          console.error(`Error deleting file ${file.path}:`, err);
+          // Continue even if file deletion fails
+        }
+      }
+    }
+
+    // Delete the quiz record from database
     await db.deleteQuiz(req.params.id);
     res.json({ success: true });
   } catch (error) {
