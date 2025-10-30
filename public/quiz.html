@@ -86,6 +86,13 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg mb-6 overflow-hidden">
         <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-3 break-words" id="questionChinese"></h1>
         <p class="text-lg sm:text-xl text-center text-primary mb-4 break-words" id="questionPinyin"></p>
+        <!-- Audio Player (shown only when audio exists) -->
+        <div id="audioPlayerContainer" class="hidden mt-4">
+          <audio id="questionAudio" controls class="w-full">
+            <source id="audioSource" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>
+        </div>
       </div>
 
       <!-- Options -->
@@ -178,8 +185,40 @@
 
         console.log('Question loaded:', data.id, 'Previously used:', usedQuestionIds);
 
-        questionChinese.textContent = data.question;
+        // Parse question text to extract audio URL and Chinese text if present
+        let questionText = data.question || '';
+        let audioUrl = '';
+
+        // Extract audio URL from [audio: url] format
+        const audioMatch = questionText.match(/\[audio:\s*(.+?)\]/);
+        if (audioMatch) {
+          audioUrl = audioMatch[1];
+          questionText = questionText.replace(/\[audio:\s*.+?\]/, '').trim();
+        }
+
+        // Extract Chinese text from " - 中文" format if present
+        const chineseMatch = questionText.match(/\s+-\s+(.+)$/);
+        if (chineseMatch) {
+          questionText = questionText.replace(/\s+-\s+.+$/, '').trim();
+        }
+
+        // Set question text
+        questionChinese.textContent = questionText;
         questionPinyin.textContent = data.pinyin;
+
+        // Handle audio player
+        const audioPlayerContainer = document.getElementById('audioPlayerContainer');
+        const audioSource = document.getElementById('audioSource');
+        const questionAudio = document.getElementById('questionAudio');
+
+        if (audioUrl) {
+          audioSource.src = audioUrl;
+          questionAudio.load();
+          audioPlayerContainer.classList.remove('hidden');
+        } else {
+          audioPlayerContainer.classList.add('hidden');
+        }
+
         currentAnswer = data.correctAnswer;
         currentQuestionData = data;
 
