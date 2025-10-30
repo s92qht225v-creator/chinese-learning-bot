@@ -383,7 +383,8 @@
         'chinese_to_uzbek': 'multiple_choice',
         'uzbek_to_chinese': 'multiple_choice',
         'pinyin_to_chinese': 'multiple_choice',
-        'chinese_to_pinyin': 'multiple_choice'
+        'chinese_to_pinyin': 'multiple_choice',
+        'audio_to_character': 'audio_to_word'
       };
 
       const normalizedType = typeMapping[type] || type;
@@ -463,6 +464,10 @@
         case 'chinese_to_pinyin':
           // Chinese to Pinyin translation - use multiple choice form
           container.innerHTML = getMultipleChoiceForm();
+          break;
+        case 'audio_to_character':
+          // Audio to Character - use audio_to_word form
+          container.innerHTML = getAudioToWordForm();
           break;
         default:
           // Unknown type - show error message
