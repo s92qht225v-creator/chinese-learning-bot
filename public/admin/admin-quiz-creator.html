@@ -331,7 +331,8 @@
     function selectQuestionType(type) {
       // Normalize legacy type names
       const typeMapping = {
-        'match_pairs': 'matching'
+        'match_pairs': 'matching',
+        'chinese_to_uzbek': 'multiple_choice'
       };
 
       const normalizedType = typeMapping[type] || type;
@@ -395,6 +396,10 @@
         case 'match_pairs':
           // Legacy type - redirect to matching
           container.innerHTML = getMatchingForm();
+          break;
+        case 'chinese_to_uzbek':
+          // Chinese to Uzbek translation - use multiple choice form
+          container.innerHTML = getMultipleChoiceForm();
           break;
         default:
           // Unknown type - show error message
