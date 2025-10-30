@@ -1526,12 +1526,37 @@
           const dictQuestion = document.getElementById('questionText')?.value;
           const dictAudio = document.getElementById('audioUrl')?.value;
           const dictAnswer = document.getElementById('correctAnswer')?.value;
-          
+
           if (!dictQuestion || !dictAudio || !dictAnswer) return null;
 
           questionData.question = dictQuestion + ' [audio: ' + dictAudio + ']';
           questionData.correct_answer = dictAnswer;
           questionData.options = JSON.stringify([dictAnswer]);
+          break;
+
+        case 'matching':
+          const matchQuestion = document.getElementById('questionText')?.value;
+          const pairs = [];
+
+          // Collect all chinese_X and english_X pairs
+          let pairIndex = 1;
+          while (document.getElementById(`chinese_${pairIndex}`)) {
+            const leftInput = document.getElementById(`chinese_${pairIndex}`);
+            const rightInput = document.getElementById(`english_${pairIndex}`);
+            if (leftInput && rightInput && leftInput.value && rightInput.value) {
+              pairs.push({
+                left: leftInput.value.trim(),
+                right: rightInput.value.trim()
+              });
+            }
+            pairIndex++;
+          }
+
+          if (!matchQuestion || pairs.length < 3) return null;
+
+          questionData.question = matchQuestion;
+          questionData.correct_answer = 'matches';
+          questionData.options = JSON.stringify(pairs);
           break;
 
         default:
@@ -1637,6 +1662,19 @@
               const optionInput = document.getElementById(`option_${key}`);
               if (optionInput && options[key]) {
                 optionInput.value = options[key];
+              }
+            });
+          }
+
+          // Load matching pairs
+          if (selectedType === 'matching' && Array.isArray(options)) {
+            options.forEach((pair, index) => {
+              const pairNum = index + 1;
+              const leftInput = document.getElementById(`chinese_${pairNum}`);
+              const rightInput = document.getElementById(`english_${pairNum}`);
+              if (leftInput && rightInput) {
+                leftInput.value = pair.left || '';
+                rightInput.value = pair.right || '';
               }
             });
           }
