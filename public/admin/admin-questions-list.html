@@ -184,14 +184,10 @@
       
       adminPassword = localStorage.getItem('adminPassword');
       if (!adminPassword) {
-        adminPassword = prompt('Enter admin password (default: admin123):');
-        if (!adminPassword) {
-          throw new Error('Password is required to access admin panel');
+        adminPassword = prompt('Enter admin password:');
+        if (adminPassword) {
+          localStorage.setItem('adminPassword', adminPassword);
         }
-        // Trim any whitespace
-        adminPassword = adminPassword.trim();
-        localStorage.setItem('adminPassword', adminPassword);
-        console.log('Password saved to localStorage');
       }
       return adminPassword;
     }
