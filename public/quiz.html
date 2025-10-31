@@ -344,6 +344,8 @@
         // Check question type and render accordingly
         if (data.questionType === 'matching') {
           renderMatchingQuestion(data);
+        } else if (data.questionType === 'cloze_test') {
+          renderClozeTestQuestion(data);
         } else {
           // Default: render as multiple choice
           data.options.forEach(option => {
@@ -429,6 +431,85 @@
       });
     }
 
+    // Render cloze test question
+    function renderClozeTestQuestion(data) {
+      // Extract passage from question text
+      const passageMatch = data.question.match(/\[passage:\s*([^\]]+)\]/);
+      if (!passageMatch) {
+        console.error('No passage found in cloze test question');
+        return;
+      }
+
+      const passage = passageMatch[1];
+
+      // Parse blanks from options
+      let blanks = [];
+      if (typeof data.options === 'string') {
+        try {
+          blanks = JSON.parse(data.options);
+        } catch (e) {
+          console.error('Failed to parse blanks:', e);
+          return;
+        }
+      } else {
+        blanks = data.options;
+      }
+
+      if (!Array.isArray(blanks) || blanks.length === 0) {
+        console.error('Invalid blanks data');
+        return;
+      }
+
+      // Split passage by ___ to get parts
+      const parts = passage.split('___');
+
+      // Create passage container
+      const passageContainer = document.createElement('div');
+      passageContainer.className = 'p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 mb-6';
+      passageContainer.style.fontSize = '20px';
+      passageContainer.style.lineHeight = '2';
+
+      // Build passage with input fields
+      parts.forEach((part, index) => {
+        // Add text part
+        const textSpan = document.createElement('span');
+        textSpan.textContent = part;
+        passageContainer.appendChild(textSpan);
+
+        // Add input field if not the last part
+        if (index < parts.length - 1) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.id = `blank_${index + 1}`;
+          input.className = 'inline-block px-3 py-1 mx-1 border-b-2 border-blue-500 bg-transparent focus:outline-none focus:border-blue-600 text-center';
+          input.style.minWidth = '80px';
+          input.style.fontSize = '20px';
+          input.oninput = checkClozeComplete;
+          passageContainer.appendChild(input);
+        }
+      });
+
+      optionsContainer.appendChild(passageContainer);
+
+      // Store blanks data for validation
+      window.clozeTestBlanks = blanks;
+    }
+
+    // Check if all cloze test blanks are filled
+    function checkClozeComplete() {
+      const inputs = optionsContainer.querySelectorAll('input[type="text"]');
+      let allFilled = true;
+      inputs.forEach(input => {
+        if (!input.value.trim()) allFilled = false;
+      });
+
+      if (allFilled) {
+        nextBtn.disabled = false;
+        // Auto-submit cloze test answer
+        submitClozeTestAnswer();
+      }
+    }
+
     // Check if all matching pairs are selected
     function checkMatchingComplete() {
       const selects = optionsContainer.querySelectorAll('select');
@@ -473,6 +554,74 @@
           select.classList.add('!border-red-500', '!bg-red-50', 'dark:!bg-red-900/20');
         }
         select.disabled = true;
+      });
+
+      // Update stats
+      if (allCorrect) {
+        stats.correct++;
+      } else {
+        stats.incorrect++;
+      }
+
+      // Save progress
+      if (currentQuestionData && telegramAuth.isAuthenticated()) {
+        try {
+          await fetch(API_CONFIG.url('/api/progress/quiz'), {
+            method: 'POST',
+            headers: telegramAuth.getHeaders(),
+            body: JSON.stringify({
+              vocabularyId: currentQuestionData.id,
+              correct: allCorrect
+            })
+          });
+        } catch (error) {
+          console.error('Failed to save progress:', error);
+        }
+      }
+
+      updateStats();
+    }
+
+    // Submit cloze test answer
+    async function submitClozeTestAnswer() {
+      if (answered) return;
+      answered = true;
+
+      const blanks = window.clozeTestBlanks || [];
+      const inputs = optionsContainer.querySelectorAll('input[type="text"]');
+      let allCorrect = true;
+
+      inputs.forEach((input, index) => {
+        const userAnswer = input.value.trim().toLowerCase();
+        const blankData = blanks[index];
+
+        if (!blankData) {
+          allCorrect = false;
+          return;
+        }
+
+        const correctAnswer = blankData.correct.toLowerCase();
+        const acceptableAnswers = (blankData.acceptable || []).map(a => a.toLowerCase());
+
+        // Check if user answer matches correct answer or any acceptable alternatives
+        const isCorrect = userAnswer === correctAnswer || acceptableAnswers.includes(userAnswer);
+
+        if (!isCorrect) allCorrect = false;
+
+        // Visual feedback
+        if (isCorrect) {
+          input.classList.remove('border-blue-500');
+          input.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+        } else {
+          input.classList.remove('border-blue-500');
+          input.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+          // Show correct answer
+          const correctSpan = document.createElement('span');
+          correctSpan.className = 'ml-2 text-green-600 dark:text-green-400 font-bold';
+          correctSpan.textContent = `✓ ${blankData.correct}`;
+          input.parentNode.insertBefore(correctSpan, input.nextSibling);
+        }
+        input.disabled = true;
       });
 
       // Update stats
