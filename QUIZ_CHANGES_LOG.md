@@ -220,20 +220,23 @@ Before deploying changes, test:
 ## Recent Changes History
 
 ### 2025-01-31: Improve Question Tag Display on Student Quiz Page
-- **Commit**: 7a9d4a6
+- **Commits**: 7a9d4a6, 1c0943c
 - **Files**: `public/quiz.html`
 - **Changes**:
   - Improved regex patterns for tag extraction using `[^\]]*` and `[^\]]+` patterns
   - More robust handling of multi-line content within tags
-  - Fixed transcript tag removal for audio_comprehension (lines 263-265)
-  - Fixed compQuestion extraction and display (lines 267-278)
-  - Fixed sentence extraction and display for grammar_choice (lines 280-291)
-  - Added passage tag removal for cloze_test (line 293-294)
-- **Why**: Previous regex patterns `.+?` were too greedy and could fail with special characters or newlines. Improved patterns handle edge cases better.
+  - **Fixed extraction order** (commit 1c0943c): Moved Chinese text extraction to happen BEFORE sentence/compQuestion append
+    - The pattern `\s+-\s+(.+)$` was matching and removing the appended sentence/compQuestion
+    - Now extracts Chinese text first (line 263-267), then processes tags, then appends sentence/compQuestion
+  - Fixed transcript tag removal for audio_comprehension (lines 269-271)
+  - Fixed compQuestion extraction and display (lines 273-284)
+  - Fixed sentence extraction and display for grammar_choice (lines 286-297)
+  - Added passage tag removal for cloze_test (line 299-300)
+- **Why**: Previous regex patterns `.+?` were too greedy and could fail with special characters or newlines. Also, the Chinese text extraction was removing appended sentences/questions because it ran after the append logic.
 - **Known Issue**: Cloze test question rendering on quiz page not yet implemented (only shows question text, needs input fields for blanks and answer validation logic)
 - **Testing**:
-  - Audio comprehension should not show transcript tags
-  - Grammar choice should show sentence with gap
+  - Audio comprehension should not show transcript tags and should show comprehension question
+  - Grammar choice should show sentence with gap (fixed in 1c0943c)
   - Cloze test should not show passage tags (but won't have input fields yet)
 
 ### 2025-01-31: Fix Audio Comprehension Question Type
