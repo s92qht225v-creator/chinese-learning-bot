@@ -573,8 +573,14 @@
     function getTrueFalseForm() {
       return `
         <section class="form-card">
-          <h2 class="text-xl font-bold mb-4">3. Statement</h2>
-          
+          <h2 class="text-xl font-bold mb-4">3. Question Content</h2>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Question Text *</label>
+            <input type="text" id="questionText" class="input-field" placeholder="e.g., Is this statement true or false?" value="Is this statement true or false?">
+            <p class="text-xs text-gray-500 mt-1">The text that appears at the top of the question</p>
+          </div>
+
           <div class="mb-4">
             <label class="block text-sm font-semibold mb-2">Statement *</label>
             <input type="text" id="statement" class="input-field" placeholder="e.g., 手表 means 'newspaper'">
@@ -1786,12 +1792,14 @@
           break;
 
         case 'true_false':
+          const tfQuestionText = document.getElementById('questionText')?.value;
           const statement = document.getElementById('statement')?.value;
           const tfAnswer = document.querySelector('input[name="trueFalse"]:checked')?.value;
-          
-          if (!statement || !tfAnswer) return null;
 
-          questionData.question = statement;
+          if (!tfQuestionText || !statement || !tfAnswer) return null;
+
+          // Store as "question text - statement"
+          questionData.question = tfQuestionText + ' - ' + statement;
           questionData.correct_answer = tfAnswer;
           questionData.options = JSON.stringify(['true', 'false']);
           break;
@@ -2176,10 +2184,31 @@
 
           // Load true/false data
           if (selectedType === 'true_false') {
+            // Format: "question text - statement"
+            let tfQuestionText = question.question || '';
+            let tfStatement = '';
+
+            // Split on " - " to separate question text from statement
+            const tfDashMatch = tfQuestionText.match(/^(.+?)\s*-\s*(.+)$/);
+            if (tfDashMatch) {
+              tfQuestionText = tfDashMatch[1].trim();
+              tfStatement = tfDashMatch[2].trim();
+            } else {
+              // Fallback: use entire question as statement
+              tfStatement = tfQuestionText;
+              tfQuestionText = 'Is this statement true or false?';
+            }
+
+            const questionTextInput = document.getElementById('questionText');
+            if (questionTextInput) {
+              questionTextInput.value = tfQuestionText;
+              console.log('  ✓ Set question text to:', tfQuestionText);
+            }
+
             const statementInput = document.getElementById('statement');
             if (statementInput) {
-              statementInput.value = question.question || '';
-              console.log('  ✓ Set statement to:', question.question);
+              statementInput.value = tfStatement;
+              console.log('  ✓ Set statement to:', tfStatement);
             }
 
             // Set the correct radio button

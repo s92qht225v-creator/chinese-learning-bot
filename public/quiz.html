@@ -527,6 +527,18 @@
           }
         }
 
+        // For true_false questions, extract statement (shown in card) from heading
+        // Format: "Is this statement true or false? - 手表 means 'newspaper'"
+        if (data.questionType === 'true_false') {
+          const trueFalseMatch = questionText.match(/^(.+?)\s*-\s*(.+)$/);
+          if (trueFalseMatch) {
+            // Keep only the heading part, statement will be shown in renderTrueFalseQuestion
+            questionText = trueFalseMatch[1].trim();
+            // Store statement for use in render function
+            data.statement = trueFalseMatch[2].trim();
+          }
+        }
+
         // Remove passage tag from cloze_test (passage is shown in the question rendering)
         questionText = questionText.replace(/\[passage:.+?\]$/g, '').trim();
 
