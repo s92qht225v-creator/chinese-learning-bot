@@ -260,6 +260,22 @@
           questionText = questionText.replace(/\[image:\s*.+?\]/, '').trim();
         }
 
+        // Remove transcript tag from audio_comprehension (transcript is shown after answer)
+        questionText = questionText.replace(/\[transcript:.*?\]/, '').trim();
+
+        // Extract and display comprehension question if present (for audio_comprehension type)
+        const compQuestionMatch = questionText.match(/\[compQuestion:\s*(.+?)\]/);
+        if (compQuestionMatch) {
+          const compQuestion = compQuestionMatch[1];
+          questionText = questionText.replace(/\[compQuestion:.*?\]/, '').trim();
+          // Append comprehension question to the main question text
+          if (questionText) {
+            questionText += ' - ' + compQuestion;
+          } else {
+            questionText = compQuestion;
+          }
+        }
+
         // Extract Chinese text from " - 中文" format if present
         const chineseMatch = questionText.match(/\s+-\s+(.+)$/);
         if (chineseMatch) {
