@@ -1646,7 +1646,6 @@
       switch(selectedType) {
         case 'multiple_choice':
         case 'image_association':
-        case 'audio_comprehension':
         case 'audio_to_word':
           const questionText = document.getElementById('questionText')?.value;
           const chineseText = document.getElementById('chineseText')?.value;
@@ -1677,6 +1676,36 @@
           if (imageUrl) questionData.question += ' [image: ' + imageUrl + ']';
           questionData.options = JSON.stringify(options.map(o => o.text));
           questionData.correct_answer = correctAnswer;
+          break;
+
+        case 'audio_comprehension':
+          const acQuestionText = document.getElementById('questionText')?.value;
+          const acAudioUrl = document.getElementById('audioUrl')?.value;
+          const transcript = document.getElementById('transcript')?.value;
+          const comprehensionQuestion = document.getElementById('comprehensionQuestion')?.value;
+
+          if (!acQuestionText || !acAudioUrl || !transcript || !comprehensionQuestion) return null;
+
+          const acOptions = [
+            { id: 'a', text: document.getElementById('option_a')?.value || '' },
+            { id: 'b', text: document.getElementById('option_b')?.value || '' },
+            { id: 'c', text: document.getElementById('option_c')?.value || '' },
+            { id: 'd', text: document.getElementById('option_d')?.value || '' }
+          ];
+
+          // Find correct answer
+          let acCorrectAnswer = '';
+          if (document.getElementById('correct_a')?.checked) acCorrectAnswer = acOptions[0].text;
+          else if (document.getElementById('correct_b')?.checked) acCorrectAnswer = acOptions[1].text;
+          else if (document.getElementById('correct_c')?.checked) acCorrectAnswer = acOptions[2].text;
+          else if (document.getElementById('correct_d')?.checked) acCorrectAnswer = acOptions[3].text;
+
+          if (!acCorrectAnswer) return null;
+
+          // Store with tags: [audio: url] [transcript: text] [compQuestion: text]
+          questionData.question = acQuestionText + ' [audio: ' + acAudioUrl + '] [transcript: ' + transcript + '] [compQuestion: ' + comprehensionQuestion + ']';
+          questionData.options = JSON.stringify(acOptions.map(o => o.text));
+          questionData.correct_answer = acCorrectAnswer;
           break;
 
         case 'grammar_choice':
@@ -2120,6 +2149,80 @@
               if (falseRadio) {
                 falseRadio.checked = true;
                 console.log('  ✓ Checked FALSE radio button');
+              }
+            }
+          }
+
+          // Load audio_comprehension data
+          if (selectedType === 'audio_comprehension') {
+            // Extract audio, transcript, and comprehension question from tags
+            let acQuestionText = question.question || '';
+            let acAudioUrl = '';
+            let acTranscript = '';
+            let acCompQuestion = '';
+
+            const audioMatch = acQuestionText.match(/\[audio:\s*(.+?)\]/);
+            if (audioMatch) {
+              acAudioUrl = audioMatch[1];
+              acQuestionText = acQuestionText.replace(/\[audio:\s*.+?\]/, '').trim();
+            }
+
+            const transcriptMatch = acQuestionText.match(/\[transcript:\s*(.+?)\]/);
+            if (transcriptMatch) {
+              acTranscript = transcriptMatch[1];
+              acQuestionText = acQuestionText.replace(/\[transcript:\s*.+?\]/, '').trim();
+            }
+
+            const compQuestionMatch = acQuestionText.match(/\[compQuestion:\s*(.+?)\]/);
+            if (compQuestionMatch) {
+              acCompQuestion = compQuestionMatch[1];
+              acQuestionText = acQuestionText.replace(/\[compQuestion:\s*.+?\]/, '').trim();
+            }
+
+            if (questionTextInput) {
+              questionTextInput.value = acQuestionText;
+              console.log('  ✓ Set audio comp question to:', acQuestionText);
+            }
+
+            const audioUrlInput = document.getElementById('audioUrl');
+            if (audioUrlInput) {
+              audioUrlInput.value = acAudioUrl;
+              console.log('  ✓ Set audio URL to:', acAudioUrl);
+            }
+
+            const transcriptInput = document.getElementById('transcript');
+            if (transcriptInput) {
+              transcriptInput.value = acTranscript;
+              console.log('  ✓ Set transcript to:', acTranscript);
+            }
+
+            const compQuestionInput = document.getElementById('comprehensionQuestion');
+            if (compQuestionInput) {
+              compQuestionInput.value = acCompQuestion;
+              console.log('  ✓ Set comprehension question to:', acCompQuestion);
+            }
+
+            // Load options (A, B, C, D)
+            if (Array.isArray(options)) {
+              const letters = ['a', 'b', 'c', 'd'];
+              options.forEach((optionText, index) => {
+                const optionInput = document.getElementById(`option_${letters[index]}`);
+                if (optionInput && optionText) {
+                  optionInput.value = optionText;
+                }
+              });
+
+              // Set correct answer radio button
+              const correctAnswer = question.correct_answer;
+              if (correctAnswer) {
+                const correctIndex = options.indexOf(correctAnswer);
+                if (correctIndex >= 0) {
+                  const radioButton = document.getElementById(`correct_${letters[correctIndex]}`);
+                  if (radioButton) {
+                    radioButton.checked = true;
+                    console.log('  ✓ Checked correct option:', letters[correctIndex]);
+                  }
+                }
               }
             }
           }
