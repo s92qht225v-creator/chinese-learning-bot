@@ -195,6 +195,16 @@ Before deploying changes, test:
 
 ## Recent Changes History
 
+### 2025-01-31: True/False Edit Support
+- **Commit**: TBD (current)
+- **Files**: `public/admin/admin-quiz-creator.html`
+- **Changes**:
+  - Added true/false data loading in edit mode (lines 1883-1906)
+  - Sets statement field from question.question
+  - Checks correct radio button (true/false) based on correct_answer
+- **Why**: True/false questions showed empty form when editing - missing type-specific handler
+- **Testing**: Edit a true/false question - statement and correct answer radio should be populated
+
 ### 2025-01-31: Audio Preview in Edit Mode
 - **Commit**: b23dbff
 - **Files**: `public/admin/admin-quiz-creator.html`

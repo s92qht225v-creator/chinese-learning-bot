@@ -1880,6 +1880,31 @@
             });
           }
 
+          // Load true/false data
+          if (selectedType === 'true_false') {
+            const statementInput = document.getElementById('statement');
+            if (statementInput) {
+              statementInput.value = question.question || '';
+              console.log('  ✓ Set statement to:', question.question);
+            }
+
+            // Set the correct radio button
+            const correctAnswer = question.correct_answer; // "true" or "false"
+            if (correctAnswer === 'true') {
+              const trueRadio = document.getElementById('true');
+              if (trueRadio) {
+                trueRadio.checked = true;
+                console.log('  ✓ Checked TRUE radio button');
+              }
+            } else if (correctAnswer === 'false') {
+              const falseRadio = document.getElementById('false');
+              if (falseRadio) {
+                falseRadio.checked = true;
+                console.log('  ✓ Checked FALSE radio button');
+              }
+            }
+          }
+
           // Update Save button to indicate editing
           const saveBtn = document.querySelector('button[onclick="saveQuestion()"]');
           if (saveBtn) {
