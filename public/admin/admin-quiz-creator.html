@@ -1657,14 +1657,13 @@
       if (!hskLevel) return null;
 
       // Convert HSK level from "HSK1" to 1
-      const hskLevelNumber = parseInt(hskLevel.replace('HSK', ''));
-
       let questionData = {
         question_type: selectedType,
-        hsk_level: hskLevelNumber,
+        hsk_level: hskLevel, // Keep as 'HSK1', 'HSK2', etc.
         tags: tags.length > 0 ? tags.join(',') : null,
         explanation: explanation || null,
-        quiz_order: 1,
+        difficulty: 'medium', // Default difficulty
+        status: 'active', // Default status
         lesson_id: null // Can be updated later to link to specific lesson
       };
 
