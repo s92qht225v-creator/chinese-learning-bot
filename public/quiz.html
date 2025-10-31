@@ -1022,8 +1022,9 @@
       });
       if (allFilled) {
         nextBtn.disabled = false;
-        // Auto-submit cloze test answer
-        submitClozeTestAnswer();
+        // Don't auto-submit - let user review answers and click Next button
+      } else {
+        nextBtn.disabled = true;
       }
     }
 
@@ -1346,6 +1347,16 @@
       if (quizComplete) {
         finishQuiz();
         return;
+      }
+
+      // If this is a cloze test and not yet answered, submit the answer first
+      if (currentQuestionData?.questionType === 'cloze_test' && !answered) {
+        await submitClozeTestAnswer();
+      }
+
+      // If this is a matching question and not yet answered, submit the answer first
+      if (currentQuestionData?.questionType === 'matching' && !answered) {
+        await submitMatchingAnswer();
       }
 
       currentQuestion++;
