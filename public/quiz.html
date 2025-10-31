@@ -326,7 +326,7 @@
       </div>
 
       <!-- Question Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg mb-6 overflow-hidden">
+      <div id="questionCard" class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg mb-6 overflow-hidden">
         <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-3 break-words" id="questionChinese"></h1>
         <p class="text-lg sm:text-xl text-center text-primary mb-4 break-words" id="questionPinyin"></p>
         <!-- Image (shown only when image exists) -->
@@ -536,48 +536,65 @@
         // Clear options container
         optionsContainer.innerHTML = '';
 
+        // Get question card element
+        const questionCard = document.getElementById('questionCard');
+
         // Check question type and render accordingly
         switch(data.questionType) {
           case 'matching':
+            questionCard.classList.remove('hidden');
             renderMatchingQuestion(data);
             break;
           case 'cloze_test':
+            // Hide the main question card for cloze tests (heading is in render function)
+            questionCard.classList.add('hidden');
             renderClozeTestQuestion(data);
             break;
           case 'fill_gap':
           case 'fill_in_gap':
+            questionCard.classList.remove('hidden');
             renderFillGapQuestion(data);
             break;
           case 'true_false':
+            questionCard.classList.remove('hidden');
             renderTrueFalseQuestion(data);
             break;
           case 'sentence_ordering':
+            questionCard.classList.remove('hidden');
             renderSentenceOrderingQuestion(data);
             break;
           case 'grammar_choice':
+            questionCard.classList.remove('hidden');
             renderGrammarChoiceQuestion(data);
             break;
           case 'error_correction':
+            questionCard.classList.remove('hidden');
             renderErrorCorrectionQuestion(data);
             break;
           case 'dictation':
+            questionCard.classList.remove('hidden');
             renderDictationQuestion(data);
             break;
           case 'audio_comprehension':
+            questionCard.classList.remove('hidden');
             renderAudioComprehensionQuestion(data);
             break;
           case 'audio_to_word':
+            questionCard.classList.remove('hidden');
             renderAudioToWordQuestion(data);
             break;
           case 'repeat_after_me':
+            questionCard.classList.remove('hidden');
             renderRepeatAfterMeQuestion(data);
             break;
           case 'image_association':
+            questionCard.classList.remove('hidden');
             renderImageAssociationQuestion(data);
             break;
           case 'multiple_choice':
           default:
             // Default: render as multiple choice
+            questionCard.classList.remove('hidden');
             renderMultipleChoiceQuestion(data);
             break;
         }
@@ -686,6 +703,9 @@
 
       const passage = passageMatch[1];
 
+      // Extract question heading (text before [passage:...])
+      const questionHeading = data.question.replace(/\[passage:.+?\]$/g, '').trim();
+
       // Parse blanks from options
       let blanks = [];
       if (typeof data.options === 'string') {
@@ -704,8 +724,11 @@
         return;
       }
 
-      // Build HTML - passage at top, then input fields below
+      // Build HTML - heading card, passage card, then input fields
       let html = `<div class="space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+          <h2 class="text-xl font-bold text-center">${questionHeading}</h2>
+        </div>
         <div class="p-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl">
           <p class="text-2xl leading-relaxed">${passage}</p>
         </div>
