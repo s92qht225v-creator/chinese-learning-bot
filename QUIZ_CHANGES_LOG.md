@@ -219,6 +219,23 @@ Before deploying changes, test:
 
 ## Recent Changes History
 
+### 2025-01-31: Improve Question Tag Display on Student Quiz Page
+- **Commit**: 7a9d4a6
+- **Files**: `public/quiz.html`
+- **Changes**:
+  - Improved regex patterns for tag extraction using `[^\]]*` and `[^\]]+` patterns
+  - More robust handling of multi-line content within tags
+  - Fixed transcript tag removal for audio_comprehension (lines 263-265)
+  - Fixed compQuestion extraction and display (lines 267-278)
+  - Fixed sentence extraction and display for grammar_choice (lines 280-291)
+  - Added passage tag removal for cloze_test (line 293-294)
+- **Why**: Previous regex patterns `.+?` were too greedy and could fail with special characters or newlines. Improved patterns handle edge cases better.
+- **Known Issue**: Cloze test question rendering on quiz page not yet implemented (only shows question text, needs input fields for blanks and answer validation logic)
+- **Testing**:
+  - Audio comprehension should not show transcript tags
+  - Grammar choice should show sentence with gap
+  - Cloze test should not show passage tags (but won't have input fields yet)
+
 ### 2025-01-31: Fix Audio Comprehension Question Type
 - **Commits**: 76fe081, a6a5352, 23318c3, 16a8032, 9a2740d
 - **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`, `public/quiz.html`
