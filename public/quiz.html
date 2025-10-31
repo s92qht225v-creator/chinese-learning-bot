@@ -331,13 +331,12 @@
         </div>
         <!-- Audio Player (shown only when audio exists) -->
         <div id="audioPlayerContainer" class="hidden mt-6">
-          <div class="flex items-center gap-3 mb-2">
-            <span class="material-symbols-outlined text-primary text-2xl">volume_up</span>
-            <span class="text-text-light dark:text-text-dark font-semibold text-sm">Listen to the audio</span>
-          </div>
-          <audio id="questionAudio" controls class="w-full">
+          <button onclick="document.getElementById('questionAudio').play()" class="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-all">
+            <span class="material-symbols-outlined">volume_up</span>
+            <span class="font-semibold">Play Audio</span>
+          </button>
+          <audio id="questionAudio" class="hidden">
             <source id="audioSource" type="audio/mpeg">
-            Your browser does not support the audio element.
           </audio>
         </div>
       </div>
