@@ -433,75 +433,53 @@
 
     // Render cloze test question
     function renderClozeTestQuestion(data) {
-      // Extract passage from question text (match until end of string)
+      // Extract passage from question text
       const passageMatch = data.question.match(/\[passage:\s*(.+?)\]$/);
       if (!passageMatch) {
         console.error('No passage found in cloze test question');
-        console.error('Question text:', data.question);
         return;
       }
 
       const passage = passageMatch[1];
-      console.log('Extracted passage:', passage);
 
       // Parse blanks from options
       let blanks = [];
       if (typeof data.options === 'string') {
         try {
           blanks = JSON.parse(data.options);
-          console.log('Parsed blanks from string:', blanks);
         } catch (e) {
           console.error('Failed to parse blanks:', e);
-          console.error('Options string:', data.options);
           return;
         }
       } else {
         blanks = data.options;
-        console.log('Using blanks array directly:', blanks);
       }
 
       if (!Array.isArray(blanks) || blanks.length === 0) {
-        console.error('Invalid blanks data:', blanks);
+        console.error('Invalid blanks data');
         return;
       }
 
-      console.log('Number of blanks:', blanks.length);
+      // Build HTML using exact reference structure
+      let html = `<div class="space-y-4">
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800">
+          <p class="text-2xl leading-relaxed mb-4">${passage}</p>
+        </div>
+        <div class="space-y-3">`;
 
-      // Split passage by ___ to get parts
-      const parts = passage.split('___');
-
-      // Create passage container
-      const passageContainer = document.createElement('div');
-      passageContainer.className = 'p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 mb-6';
-      passageContainer.style.fontSize = '20px';
-      passageContainer.style.lineHeight = '2';
-
-      // Build passage with input fields
-      parts.forEach((part, index) => {
-        // Add text part
-        const textSpan = document.createElement('span');
-        textSpan.textContent = part;
-        passageContainer.appendChild(textSpan);
-
-        // Add input field if not the last part
-        if (index < parts.length - 1) {
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.id = `blank_${index + 1}`;
-          input.className = 'inline-block px-3 py-1 mx-1 border-b-2 border-blue-500 bg-transparent focus:outline-none focus:border-blue-600 text-center';
-          input.style.minWidth = '80px';
-          input.style.fontSize = '20px';
-          input.oninput = checkClozeComplete;
-          passageContainer.appendChild(input);
-        }
+      blanks.forEach((blank, index) => {
+        html += `<div>
+          <label class="block text-sm font-medium mb-1">Blank ${index + 1}:</label>
+          <input type="text" id="blank_${index + 1}" class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-lg focus:outline-none focus:border-blue-500" placeholder="Type answer..." oninput="checkClozeComplete()" />
+        </div>`;
       });
 
-      optionsContainer.appendChild(passageContainer);
-      console.log('Passage container added to DOM');
+      html += '</div></div>';
+
+      optionsContainer.innerHTML = html;
 
       // Store blanks data for validation
       window.clozeTestBlanks = blanks;
-      console.log('Cloze test rendering complete');
     }
 
     // Check if all cloze test blanks are filled
