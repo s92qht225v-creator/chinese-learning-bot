@@ -219,6 +219,35 @@ Before deploying changes, test:
 
 ## Recent Changes History
 
+### 2025-01-31: Implement Cloze Test on Student Quiz Page
+- **Commit**: 439ca74
+- **Files**: `public/quiz.html`
+- **Changes**:
+  - **Rendering** (function renderClozeTestQuestion, lines 434-496):
+    - Extract passage from `[passage: ...]` tag in question text
+    - Split passage by `___` to identify blank positions
+    - Render passage with inline input fields for each blank
+    - Styled input fields with blue underline border (border-b-2 border-blue-500)
+    - Large font size (20px) for better readability
+    - Input fields expand with content (min-width: 80px)
+  - **Completion Check** (function checkClozeComplete, lines 498-511):
+    - Monitor all input fields for changes
+    - Enable Next button and auto-submit when all blanks are filled
+  - **Validation** (function submitClozeTestAnswer, lines 585-651):
+    - Compare user answers with correct answers (case-insensitive)
+    - Support acceptable alternative answers from blank data
+    - Visual feedback: green border for correct, red for incorrect
+    - Display correct answer next to incorrect blanks
+    - Track correct/incorrect stats
+    - Save progress to backend API
+- **Why**: Cloze test was only saving/editing in admin but had no student-facing quiz page implementation. Students couldn't take cloze test quizzes.
+- **Testing**:
+  - Create cloze test with passage and blanks in admin
+  - Start quiz and verify passage displays with input fields
+  - Fill in blanks and verify validation works
+  - Check that acceptable alternatives are accepted
+  - Verify correct/incorrect feedback shows properly
+
 ### 2025-01-31: Improve Question Tag Display on Student Quiz Page
 - **Commits**: 7a9d4a6, 1c0943c
 - **Files**: `public/quiz.html`
@@ -233,11 +262,11 @@ Before deploying changes, test:
   - Fixed sentence extraction and display for grammar_choice (lines 286-297)
   - Added passage tag removal for cloze_test (line 299-300)
 - **Why**: Previous regex patterns `.+?` were too greedy and could fail with special characters or newlines. Also, the Chinese text extraction was removing appended sentences/questions because it ran after the append logic.
-- **Known Issue**: Cloze test question rendering on quiz page not yet implemented (only shows question text, needs input fields for blanks and answer validation logic)
+- **Note**: Cloze test rendering was implemented later in commit 439ca74
 - **Testing**:
   - Audio comprehension should not show transcript tags and should show comprehension question
   - Grammar choice should show sentence with gap (fixed in 1c0943c)
-  - Cloze test should not show passage tags (but won't have input fields yet)
+  - Cloze test should not show passage tags in title (passage shown in input area)
 
 ### 2025-01-31: Fix Audio Comprehension Question Type
 - **Commits**: 76fe081, a6a5352, 23318c3, 16a8032, 9a2740d
