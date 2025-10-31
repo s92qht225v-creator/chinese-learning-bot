@@ -736,8 +736,8 @@
 
       blanks.forEach((blank, index) => {
         html += `<div>
-          <label class="block text-sm font-semibold mb-2">Blank ${index + 1}:</label>
-          <input type="text" id="blank_${index + 1}" class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-lg focus:outline-none focus:border-blue-500" placeholder="Type answer..." oninput="checkClozeComplete()" />
+          <label class="block text-sm font-medium mb-1">Blank ${index + 1}:</label>
+          <input type="text" id="blank_${index}" class="input-box" placeholder="Type answer..." oninput="handleClozeChange()">
         </div>`;
       });
 
@@ -953,19 +953,24 @@
       optionsContainer.innerHTML = html;
     }
 
-    // Check if all cloze test blanks are filled
-    function checkClozeComplete() {
-      const inputs = optionsContainer.querySelectorAll('input[type="text"]');
+    // Handle cloze test input change (check if all blanks filled)
+    function handleClozeChange() {
+      const blanks = window.clozeTestBlanks || [];
       let allFilled = true;
-      inputs.forEach(input => {
-        if (!input.value.trim()) allFilled = false;
+      blanks.forEach((_, index) => {
+        const input = document.getElementById(`blank_${index}`);
+        if (!input || !input.value.trim()) allFilled = false;
       });
-
       if (allFilled) {
         nextBtn.disabled = false;
         // Auto-submit cloze test answer
         submitClozeTestAnswer();
       }
+    }
+
+    // Legacy alias
+    function checkClozeComplete() {
+      handleClozeChange();
     }
 
     // Check if all matching pairs are selected
