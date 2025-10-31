@@ -31,24 +31,195 @@
     }
   </script>
   <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
-    
+
+    .option-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .option-card:active {
+      transform: scale(0.98);
+    }
+
+    .option-card.selected {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+    }
+
+    .option-card.correct {
+      border-color: #4CAF50;
+      background: rgba(76, 175, 80, 0.05);
+    }
+
+    .option-card.wrong {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.05);
+    }
+
     .option-btn {
       transition: all 0.3s ease;
     }
-    
+
     .option-btn.correct {
       background-color: #50E3C2;
       color: white;
       border-color: #50E3C2;
     }
-    
+
     .option-btn.incorrect {
       background-color: #ef4444;
       color: white;
       border-color: #ef4444;
+    }
+
+    .progress-bar {
+      background: #e5e7eb;
+      height: 6px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, #448fe4, #50b8e4);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .audio-player {
+      background: linear-gradient(135deg, rgba(68, 143, 228, 0.1), rgba(80, 227, 194, 0.1));
+      border: 2px solid rgba(68, 143, 228, 0.2);
+    }
+
+    .reading-passage {
+      background: #f8f9fa;
+      border-left: 4px solid #448fe4;
+      padding: 16px;
+      border-radius: 12px;
+    }
+
+    .input-box {
+      background: white;
+      border: 2px solid #e5e7eb;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 18px;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+
+    .input-box:focus {
+      outline: none;
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+    }
+
+    .word-chip {
+      background: white;
+      border: 2px solid #e5e7eb;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: move;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .word-chip.selected {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.1);
+    }
+
+    .word-chip:active {
+      transform: scale(0.95);
+    }
+
+    .drop-zone {
+      min-height: 60px;
+      border: 2px dashed #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .drop-zone.active {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+    }
+
+    .error-text {
+      position: relative;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .error-text.error {
+      background: rgba(239, 68, 68, 0.1);
+      border-bottom: 2px wavy #ef4444;
+    }
+
+    .error-text.selected {
+      background: rgba(68, 143, 228, 0.2);
+    }
+
+    .record-button {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .record-button:active {
+      transform: scale(0.95);
+    }
+
+    .record-button.recording {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+      50% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); }
+    }
+
+    .image-option {
+      border: 3px solid #e5e7eb;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .image-option.selected {
+      border-color: #448fe4;
+      box-shadow: 0 4px 12px rgba(68, 143, 228, 0.3);
+    }
+
+    .image-option:active {
+      transform: scale(0.97);
     }
 
     /* Custom Audio Player Styling */
@@ -97,6 +268,30 @@
     audio::-moz-range-thumb {
       background: white;
       border-radius: 50%;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .option-card, .input-box, .word-chip {
+        background: #1e2732;
+        border-color: #2d3748;
+      }
+
+      .option-card.selected, .input-box:focus {
+        background: rgba(68, 143, 228, 0.15);
+      }
+
+      .reading-passage {
+        background: #1e2732;
+        border-left-color: #448fe4;
+      }
+
+      .drop-zone {
+        border-color: #2d3748;
+      }
+
+      .image-option {
+        border-color: #2d3748;
+      }
     }
   </style>
 </head>
@@ -342,19 +537,49 @@
         optionsContainer.innerHTML = '';
 
         // Check question type and render accordingly
-        if (data.questionType === 'matching') {
-          renderMatchingQuestion(data);
-        } else if (data.questionType === 'cloze_test') {
-          renderClozeTestQuestion(data);
-        } else {
-          // Default: render as multiple choice
-          data.options.forEach(option => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 font-medium text-text-light dark:text-text-dark transition-colors';
-            btn.textContent = option;
-            btn.onclick = () => selectOption(btn, option);
-            optionsContainer.appendChild(btn);
-          });
+        switch(data.questionType) {
+          case 'matching':
+            renderMatchingQuestion(data);
+            break;
+          case 'cloze_test':
+            renderClozeTestQuestion(data);
+            break;
+          case 'fill_gap':
+          case 'fill_in_gap':
+            renderFillGapQuestion(data);
+            break;
+          case 'true_false':
+            renderTrueFalseQuestion(data);
+            break;
+          case 'sentence_ordering':
+            renderSentenceOrderingQuestion(data);
+            break;
+          case 'grammar_choice':
+            renderGrammarChoiceQuestion(data);
+            break;
+          case 'error_correction':
+            renderErrorCorrectionQuestion(data);
+            break;
+          case 'dictation':
+            renderDictationQuestion(data);
+            break;
+          case 'audio_comprehension':
+            renderAudioComprehensionQuestion(data);
+            break;
+          case 'audio_to_word':
+            renderAudioToWordQuestion(data);
+            break;
+          case 'repeat_after_me':
+            renderRepeatAfterMeQuestion(data);
+            break;
+          case 'image_association':
+            renderImageAssociationQuestion(data);
+            break;
+          case 'multiple_choice':
+          default:
+            // Default: render as multiple choice
+            renderMultipleChoiceQuestion(data);
+            break;
         }
 
         // Update progress
@@ -373,6 +598,25 @@
         });
         alert(`Failed to load question: ${error.message}\n\nPlease check your internet connection and try again.`);
       }
+    }
+
+    // Render multiple choice question
+    function renderMultipleChoiceQuestion(data) {
+      const options = data.options;
+
+      let html = '<div class="space-y-3">';
+      options.forEach((opt, index) => {
+        const optId = String.fromCharCode(97 + index); // a, b, c, d
+        html += `<div onclick="selectOption(this, '${opt}')" class="option-card rounded-xl p-4 flex items-center gap-3" data-option="${opt}">
+          <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center">
+            <span class="font-semibold text-gray-600">${optId.toUpperCase()}</span>
+          </div>
+          <span class="text-base font-medium">${opt}</span>
+        </div>`;
+      });
+      html += '</div>';
+
+      optionsContainer.innerHTML = html;
     }
 
     // Render matching question with dropdown pairs
@@ -480,6 +724,210 @@
 
       // Store blanks data for validation
       window.clozeTestBlanks = blanks;
+    }
+
+    // Render fill in the gap question
+    function renderFillGapQuestion(data) {
+      const sentence = data.sentence || data.question;
+      const translation = data.translation || '';
+
+      let html = `<div class="space-y-4">
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center mb-4">
+          <p class="text-3xl font-bold mb-2">${sentence}</p>
+          ${translation ? `<p class="text-sm text-gray-500">${translation}</p>` : ''}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Your answer:</label>
+          <input type="text" id="gapInput" class="input-box" placeholder="Type your answer here..." oninput="handleInputChange()">
+        </div>
+      </div>`;
+
+      optionsContainer.innerHTML = html;
+    }
+
+    // Render true/false question
+    function renderTrueFalseQuestion(data) {
+      const statement = data.statement || data.question;
+
+      let html = `<div class="space-y-4">
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center mb-6">
+          <p class="text-2xl font-bold">${statement}</p>
+        </div>
+        <div class="space-y-3">
+          <div onclick="selectTrueFalse(true)" class="option-card rounded-xl p-5 flex items-center gap-3" data-option="true">
+            <span class="material-symbols-outlined text-green-500 text-3xl">check_circle</span>
+            <span class="text-lg font-semibold">True</span>
+          </div>
+          <div onclick="selectTrueFalse(false)" class="option-card rounded-xl p-5 flex items-center gap-3" data-option="false">
+            <span class="material-symbols-outlined text-red-500 text-3xl">cancel</span>
+            <span class="text-lg font-semibold">False</span>
+          </div>
+        </div>
+      </div>`;
+
+      optionsContainer.innerHTML = html;
+    }
+
+    // Render sentence ordering question
+    function renderSentenceOrderingQuestion(data) {
+      const words = data.words || data.options;
+      const translation = data.translation || '';
+
+      // Shuffle words
+      const shuffled = [...words].sort(() => Math.random() - 0.5);
+
+      let html = `<div class="space-y-4">
+        ${translation ? `<p class="text-sm text-gray-500 mb-2">${translation}</p>` : ''}
+        <div class="drop-zone mb-4" id="dropZone" ondrop="drop(event)" ondragover="allowDrop(event)">
+          <p class="text-gray-400 text-sm">Drop words here in correct order</p>
+        </div>
+        <div class="flex flex-wrap gap-3" id="wordBank">`;
+
+      shuffled.forEach((word, index) => {
+        html += `<div class="word-chip" draggable="true" ondragstart="drag(event)" id="word_${index}" data-word="${word}">
+          <span class="text-lg font-bold">${word}</span>
+        </div>`;
+      });
+
+      html += '</div></div>';
+      optionsContainer.innerHTML = html;
+    }
+
+    // Render grammar choice question
+    function renderGrammarChoiceQuestion(data) {
+      const sentence = data.sentence || data.question;
+      const options = data.options;
+
+      let html = `<div class="space-y-4">
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center mb-6">
+          <p class="text-3xl font-bold">${sentence}</p>
+        </div>
+        <div class="space-y-3">`;
+
+      options.forEach((opt, index) => {
+        html += `<div onclick="selectOption(this, '${opt}')" class="option-card rounded-xl p-5 text-center" data-option="${opt}">
+          <span class="text-2xl font-bold">${opt}</span>
+        </div>`;
+      });
+
+      html += '</div></div>';
+      optionsContainer.innerHTML = html;
+    }
+
+    // Render error correction question
+    function renderErrorCorrectionQuestion(data) {
+      const sentence = data.sentence || data.options;
+
+      let html = `<div class="space-y-4">
+        <p class="text-sm text-gray-500 mb-4">Tap the word that is in the wrong position:</p>
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center">
+          <div class="flex justify-center gap-2 flex-wrap">`;
+
+      sentence.forEach((word, index) => {
+        html += `<span class="error-text text-2xl font-bold px-2 py-1" onclick="selectError(${index})" data-index="${index}">${word}</span>`;
+      });
+
+      html += `</div></div>
+        <div id="correctionInput" class="hidden mt-4">
+          <p class="text-sm font-medium mb-2">Drag to reorder:</p>
+          <div class="drop-zone" id="correctionZone"></div>
+        </div>
+      </div>`;
+
+      optionsContainer.innerHTML = html;
+    }
+
+    // Render dictation question
+    function renderDictationQuestion(data) {
+      let html = `<div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Type what you hear:</label>
+          <input type="text" id="dictationInput" class="input-box" placeholder="Type here..." oninput="handleInputChange()">
+        </div>
+      </div>`;
+
+      optionsContainer.innerHTML = html;
+    }
+
+    // Render audio comprehension question
+    function renderAudioComprehensionQuestion(data) {
+      const comprehensionQuestion = data.comprehensionQuestion || data.question;
+      const options = data.options;
+
+      let html = `<div class="space-y-4">
+        <p class="font-semibold mb-3">${comprehensionQuestion}</p>
+        <div class="space-y-3">`;
+
+      options.forEach((opt, index) => {
+        const optId = String.fromCharCode(97 + index); // a, b, c, d
+        html += `<div onclick="selectOption(this, '${opt}')" class="option-card rounded-xl p-4 flex items-center gap-3" data-option="${opt}">
+          <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center">
+            <span class="font-semibold text-gray-600">${optId.toUpperCase()}</span>
+          </div>
+          <span class="text-base font-medium">${opt}</span>
+        </div>`;
+      });
+
+      html += '</div></div>';
+      optionsContainer.innerHTML = html;
+    }
+
+    // Render audio to word question (listen and select the word you hear)
+    function renderAudioToWordQuestion(data) {
+      const options = data.options;
+
+      let html = `<div class="space-y-4">
+        <div class="space-y-3">`;
+
+      options.forEach(opt => {
+        const parts = opt.split(' - ');
+        const chinese = parts[0];
+        const rest = parts.slice(1).join(' - ');
+
+        html += `<div onclick="selectOption(this, '${opt}')" class="option-card rounded-xl p-4" data-option="${opt}">
+          <p class="text-2xl font-bold mb-1">${chinese}</p>
+          ${rest ? `<p class="text-sm text-gray-500">${rest}</p>` : ''}
+        </div>`;
+      });
+
+      html += '</div></div>';
+      optionsContainer.innerHTML = html;
+    }
+
+    // Render repeat after me question
+    function renderRepeatAfterMeQuestion(data) {
+      const targetPhrase = data.targetPhrase || data.chinese || data.question;
+      const pinyin = data.pinyin || '';
+      const translation = data.translation || '';
+
+      let html = `<div class="space-y-4">
+        <div class="flex flex-col items-center gap-4 my-8">
+          <p class="text-sm font-medium">Now you try! Press and hold to record:</p>
+          <button id="recordBtn" class="record-button" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()">
+            <span class="material-symbols-outlined text-white text-4xl">mic</span>
+          </button>
+          <p id="recordStatus" class="text-xs text-gray-500">Press to start recording</p>
+        </div>
+      </div>`;
+
+      optionsContainer.innerHTML = html;
+    }
+
+    // Render image association question
+    function renderImageAssociationQuestion(data) {
+      const options = data.options;
+
+      let html = `<div class="space-y-4">
+        <div class="space-y-3">`;
+
+      options.forEach((opt, index) => {
+        html += `<div onclick="selectOption(this, '${opt}')" class="option-card rounded-xl p-4 flex items-center justify-center gap-3" data-option="${opt}">
+          <span class="text-2xl font-bold">${opt}</span>
+        </div>`;
+      });
+
+      html += '</div></div>';
+      optionsContainer.innerHTML = html;
     }
 
     // Check if all cloze test blanks are filled
@@ -638,15 +1086,23 @@
     }
 
     // Handle option selection
-    async function selectOption(selectedBtn, selectedAnswer) {
+    async function selectOption(selectedElement, selectedAnswer) {
       if (answered) return;
-      
+
+      // Remove previous selection
+      document.querySelectorAll('.option-card, .option-btn').forEach(card => {
+        card.classList.remove('selected');
+      });
+
+      // Mark as selected
+      selectedElement.classList.add('selected');
+
       answered = true;
       nextBtn.disabled = false;
-      
+
       // Check answer
       const isCorrect = selectedAnswer === currentAnswer;
-      
+
       // Save progress to backend
       if (currentQuestionData && telegramAuth.isAuthenticated()) {
         try {
@@ -662,31 +1118,124 @@
           console.error('Failed to save progress:', error);
         }
       }
-      
+
       if (isCorrect) {
-        selectedBtn.classList.add('correct');
+        selectedElement.classList.remove('selected');
+        selectedElement.classList.add('correct');
         stats.correct++;
       } else {
-        selectedBtn.classList.add('incorrect');
+        selectedElement.classList.remove('selected');
+        selectedElement.classList.add('wrong');
         stats.incorrect++;
-        
+
         // Highlight correct answer
-        const optionBtns = optionsContainer.querySelectorAll('.option-btn');
-        optionBtns.forEach(btn => {
-          if (btn.textContent === currentAnswer) {
-            btn.classList.add('correct');
+        const options = optionsContainer.querySelectorAll('.option-btn, .option-card');
+        options.forEach(opt => {
+          const optText = opt.textContent.trim();
+          // Remove letter prefix (A, B, C, D) if present
+          const cleanText = optText.replace(/^[A-Z]\s*/, '').trim();
+          if (cleanText === currentAnswer || optText === currentAnswer) {
+            opt.classList.add('correct');
           }
         });
       }
-      
-      // Disable all buttons
-      const optionBtns = optionsContainer.querySelectorAll('.option-btn');
-      optionBtns.forEach(btn => {
-        btn.disabled = true;
-        btn.style.cursor = 'default';
+
+      // Disable all options
+      const options = optionsContainer.querySelectorAll('.option-btn, .option-card');
+      options.forEach(opt => {
+        opt.style.pointerEvents = 'none';
       });
-      
+
       updateStats();
+    }
+
+    // Select true/false option
+    function selectTrueFalse(value) {
+      const element = document.querySelector(`[data-option="${value}"]`);
+      if (element) {
+        selectOption(element, value.toString());
+      }
+    }
+
+    // Handle input change for fill gap and dictation
+    function handleInputChange() {
+      const input = document.getElementById('gapInput') || document.getElementById('dictationInput');
+      if (input && input.value.trim()) {
+        nextBtn.disabled = false;
+      }
+    }
+
+    // Select error for error correction
+    let selectedErrorIndex = null;
+    function selectError(index) {
+      document.querySelectorAll('.error-text').forEach(el => el.classList.remove('selected'));
+      document.querySelector(`[data-index="${index}"]`).classList.add('selected');
+      selectedErrorIndex = index;
+      nextBtn.disabled = false;
+    }
+
+    // Drag and drop handlers for sentence ordering
+    let draggedElement = null;
+    let orderedWords = [];
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+      ev.target.closest('.drop-zone')?.classList.add('active');
+    }
+
+    function drag(ev) {
+      draggedElement = ev.target;
+      ev.dataTransfer.effectAllowed = 'move';
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const dropZone = document.getElementById('dropZone');
+      if (!dropZone) return;
+
+      dropZone.classList.remove('active');
+
+      if (draggedElement) {
+        // Clear placeholder text if present
+        const placeholder = dropZone.querySelector('p');
+        if (placeholder) placeholder.remove();
+
+        dropZone.appendChild(draggedElement);
+        draggedElement.style.cursor = 'move';
+
+        // Update ordered words
+        orderedWords = Array.from(dropZone.querySelectorAll('.word-chip')).map(chip => chip.dataset.word);
+
+        // Check if all words are in drop zone
+        const wordBank = document.getElementById('wordBank');
+        if (wordBank && wordBank.children.length === 0) {
+          nextBtn.disabled = false;
+        }
+      }
+    }
+
+    // Recording functions for repeat after me
+    let isRecording = false;
+    function startRecording() {
+      isRecording = true;
+      const recordBtn = document.getElementById('recordBtn');
+      const recordStatus = document.getElementById('recordStatus');
+      if (recordBtn) recordBtn.classList.add('recording');
+      if (recordStatus) recordStatus.textContent = 'Recording...';
+    }
+
+    function stopRecording() {
+      if (isRecording) {
+        isRecording = false;
+        const recordBtn = document.getElementById('recordBtn');
+        const recordStatus = document.getElementById('recordStatus');
+        if (recordBtn) recordBtn.classList.remove('recording');
+        if (recordStatus) recordStatus.textContent = 'Processing...';
+        nextBtn.disabled = false;
+        setTimeout(() => {
+          if (recordStatus) recordStatus.textContent = 'Recording complete!';
+        }, 1000);
+      }
     }
 
     // Update stats display
