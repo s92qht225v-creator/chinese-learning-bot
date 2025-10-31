@@ -513,6 +513,16 @@
           }
         }
 
+        // For fill_gap questions, extract sentence (shown in card) from heading
+        // Format: "Complete the sentence: - 我 ___ 学生 (I ___ a student.)"
+        if (data.questionType === 'fill_gap' || data.questionType === 'fill_in_gap') {
+          const fillGapMatch = questionText.match(/^(.+?)\s*-\s*(.+)$/);
+          if (fillGapMatch) {
+            // Keep only the heading part, sentence will be shown in renderFillGapQuestion
+            questionText = fillGapMatch[1].trim();
+          }
+        }
+
         // Remove passage tag from cloze_test (passage is shown in the question rendering)
         questionText = questionText.replace(/\[passage:.+?\]$/g, '').trim();
 
@@ -840,8 +850,15 @@
 
     // Render fill in the gap question
     function renderFillGapQuestion(data) {
-      const sentence = data.sentence || data.question;
-      const translation = data.translation || '';
+      // Extract sentence from question format: "heading - sentence"
+      let sentence = data.sentence || data.question;
+      let translation = data.translation || '';
+
+      // If question contains " - ", extract the sentence part after the dash
+      const dashMatch = sentence.match(/^.+?\s*-\s*(.+)$/);
+      if (dashMatch) {
+        sentence = dashMatch[1].trim();
+      }
 
       let html = `<div class="space-y-6">
         <div class="p-6 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700">
