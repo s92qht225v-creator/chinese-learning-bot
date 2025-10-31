@@ -266,6 +266,12 @@
       questionText = questionText.replace(/\[audio:.*?\]/g, '🔊 ');
       // Remove image URLs from display
       questionText = questionText.replace(/\[image:.*?\]/g, '🖼️ ');
+      // Remove sentence text from grammar_choice (show separately)
+      const sentenceMatch = questionText.match(/\[sentence:\s*(.+?)\]/);
+      if (sentenceMatch) {
+        const sentenceText = sentenceMatch[1];
+        questionText = questionText.replace(/\[sentence:.*?\]/, '').trim() + ' → ' + sentenceText;
+      }
       // Truncate if too long
       if (questionText.length > 100) {
         questionText = questionText.substring(0, 100) + '...';
