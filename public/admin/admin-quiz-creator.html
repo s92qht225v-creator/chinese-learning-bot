@@ -1740,11 +1740,14 @@
           let audioUrl = '';
           let imageUrl = '';
 
+          console.log('🔍 Original question text:', questionText);
+
           // Extract audio URL from [audio: url] format
           const audioMatch = questionText.match(/\[audio:\s*(.+?)\]/);
           if (audioMatch) {
             audioUrl = audioMatch[1];
             questionText = questionText.replace(/\[audio:\s*.+?\]/, '').trim();
+            console.log('🎵 Extracted audio URL:', audioUrl);
           }
 
           // Extract image URL from [image: url] format
@@ -1752,7 +1755,10 @@
           if (imageMatch) {
             imageUrl = imageMatch[1];
             questionText = questionText.replace(/\[image:\s*.+?\]/, '').trim();
+            console.log('🖼️ Extracted image URL:', imageUrl);
           }
+
+          console.log('📝 Final question text after extraction:', questionText);
 
           // Extract Chinese text from " - 中文" format
           const chineseMatch = questionText.match(/\s+-\s+(.+)$/);
