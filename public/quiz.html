@@ -794,8 +794,8 @@
 
       blanks.forEach((blank, index) => {
         html += `<div>
-          <label class="block text-sm font-medium mb-1">Blank ${index + 1}:</label>
-          <input type="text" id="blank_${index}" class="input-box" placeholder="Type answer..." oninput="handleClozeChange()">
+          <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Blank ${index + 1}:</label>
+          <input type="text" id="blank_${index}" class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-base" placeholder="Type answer..." oninput="handleClozeChange()">
         </div>`;
       });
 
