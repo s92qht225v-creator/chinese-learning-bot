@@ -220,8 +220,8 @@ Before deploying changes, test:
 ## Recent Changes History
 
 ### 2025-01-31: Fix Audio Comprehension Question Type
-- **Commits**: 76fe081, a6a5352, 23318c3, 16a8032
-- **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`
+- **Commits**: 76fe081, a6a5352, 23318c3, 16a8032, 9a2740d
+- **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`, `public/quiz.html`
 - **Changes**:
   - **Save**: Separated audio_comprehension from multiple_choice grouping (lines 1735-1767)
     - Collects questionText, audioUrl, transcript (optional), and comprehensionQuestion
@@ -248,7 +248,12 @@ Before deploying changes, test:
     - Strips `[transcript: ...]` tag completely
     - Extracts and shows `[compQuestion: ...]` as: `Question → Comp Question`
     - Truncates comp question to 60 chars if needed
-- **Why**: Audio comprehension was grouped with multiple_choice but has extra fields (transcript, comprehensionQuestion) that weren't being saved. Form had these fields but they were ignored during save. Preview wasn't showing transcript/comp question, and card showed raw tags. Transcript was bleeding into Question Text field when editing.
+  - **Quiz Display**: Clean display on student quiz page (quiz.html lines 263-277)
+    - Strips `[transcript:]` tag from display (transcript shown after answer)
+    - Extracts and displays `[compQuestion:]` as part of the question
+    - Format: `Question - Comprehension Question`
+    - Students see clean question with audio player
+- **Why**: Audio comprehension was grouped with multiple_choice but has extra fields (transcript, comprehensionQuestion) that weren't being saved. Form had these fields but they were ignored during save. Preview wasn't showing transcript/comp question, and card showed raw tags. Transcript was bleeding into Question Text field when editing. Student quiz page was showing raw tags.
 - **Testing**:
   - Create audio comprehension with all fields - all should save
   - Create audio comprehension without transcript (optional) - should save without error
@@ -257,6 +262,7 @@ Before deploying changes, test:
   - Audio URL, transcript, and comprehension question should be preserved
   - Preview shows audio icon, transcript (if present), comp question, and options
   - Question cards show clean format with → arrow, not raw tags
+  - Student quiz page shows clean question with comprehension question, no raw tags
 
 ### 2025-01-31: Fix Cloze Test Question Type
 - **Commits**: 569834e, e4c3f82
