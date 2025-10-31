@@ -825,17 +825,36 @@
     }
 
     function renderClozeTest(q) {
-      let html = `<div class="space-y-4">
-        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
-        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800">
-          <p class="text-2xl leading-relaxed mb-4">${q.passage}</p>
-        </div>
-        <div class="space-y-3">`;
+      // Split passage by ___ to insert inputs inline
+      const passageParts = q.passage.split('___');
       
+      let html = `<div class="space-y-6">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 mb-6">
+          <p class="text-2xl leading-loose mb-0">`;
+      
+      // Build passage with inline input fields
+      passageParts.forEach((part, index) => {
+        html += part;
+        if (index < passageParts.length - 1) {
+          html += `<span class="inline-flex mx-1 px-3 py-1 border-b-2 border-primary bg-white dark:bg-gray-700 rounded-sm" style="min-width: 80px; display: inline-block;">___</span>`;
+        }
+      });
+      
+      html += `</p>
+        </div>
+        <div class="space-y-4">`;
+      
+      // Show blank inputs below with labels
       q.blanks.forEach((blank, index) => {
         html += `<div>
-          <label class="block text-sm font-medium mb-1">Blank ${index + 1}:</label>
-          <input type="text" id="blank_${index}" class="input-box" placeholder="Type answer..." oninput="handleClozeChange()">
+          <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Blank ${index + 1}:</label>
+          <input type="text" 
+                 id="blank_${index}" 
+                 class="input-box" 
+                 placeholder="Type answer..." 
+                 oninput="handleClozeChange()"
+                 style="font-size: 16px;">
         </div>`;
       });
       
