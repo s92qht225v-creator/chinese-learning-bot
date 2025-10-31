@@ -433,32 +433,39 @@
 
     // Render cloze test question
     function renderClozeTestQuestion(data) {
-      // Extract passage from question text
-      const passageMatch = data.question.match(/\[passage:\s*([^\]]+)\]/);
+      // Extract passage from question text (match until end of string)
+      const passageMatch = data.question.match(/\[passage:\s*(.+?)\]$/);
       if (!passageMatch) {
         console.error('No passage found in cloze test question');
+        console.error('Question text:', data.question);
         return;
       }
 
       const passage = passageMatch[1];
+      console.log('Extracted passage:', passage);
 
       // Parse blanks from options
       let blanks = [];
       if (typeof data.options === 'string') {
         try {
           blanks = JSON.parse(data.options);
+          console.log('Parsed blanks from string:', blanks);
         } catch (e) {
           console.error('Failed to parse blanks:', e);
+          console.error('Options string:', data.options);
           return;
         }
       } else {
         blanks = data.options;
+        console.log('Using blanks array directly:', blanks);
       }
 
       if (!Array.isArray(blanks) || blanks.length === 0) {
-        console.error('Invalid blanks data');
+        console.error('Invalid blanks data:', blanks);
         return;
       }
+
+      console.log('Number of blanks:', blanks.length);
 
       // Split passage by ___ to get parts
       const parts = passage.split('___');
@@ -490,9 +497,11 @@
       });
 
       optionsContainer.appendChild(passageContainer);
+      console.log('Passage container added to DOM');
 
       // Store blanks data for validation
       window.clozeTestBlanks = blanks;
+      console.log('Cloze test rendering complete');
     }
 
     // Check if all cloze test blanks are filled
