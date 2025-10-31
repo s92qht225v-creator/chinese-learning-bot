@@ -1841,6 +1841,43 @@
           questionData.options = JSON.stringify([dictAnswer]);
           break;
 
+        case 'matching':
+          const matchingQuestion = document.getElementById('questionText')?.value;
+
+          if (!matchingQuestion) return null;
+
+          // Collect all matching pairs dynamically
+          const pairs = [];
+          let pairIndex = 1;
+
+          while (true) {
+            const chineseInput = document.getElementById(`chinese_${pairIndex}`);
+            const englishInput = document.getElementById(`english_${pairIndex}`);
+
+            if (!chineseInput || !chineseInput.value || !englishInput || !englishInput.value) {
+              if (pairIndex <= 3) {
+                // First 3 pairs are required
+                pairIndex++;
+                continue;
+              }
+              break; // No more pairs
+            }
+
+            pairs.push({
+              left: chineseInput.value.trim(),
+              right: englishInput.value.trim()
+            });
+
+            pairIndex++;
+          }
+
+          if (pairs.length < 3) return null; // Need at least 3 pairs
+
+          questionData.question = matchingQuestion;
+          questionData.options = JSON.stringify(pairs);
+          questionData.correct_answer = 'N/A'; // Matching doesn't have a single correct answer
+          break;
+
         case 'cloze_test':
           const clozeQuestionText = document.getElementById('questionText')?.value;
           const passage = document.getElementById('passage')?.value;
@@ -2123,6 +2160,18 @@
 
           // Load matching pairs
           if (selectedType === 'matching' && Array.isArray(options)) {
+            // Add extra pair inputs if needed (beyond the default 3)
+            const pairsContainer = document.getElementById('pairsContainer');
+            const neededPairs = options.length;
+            const existingPairs = pairsContainer?.children.length || 3;
+
+            if (pairsContainer && neededPairs > existingPairs) {
+              for (let i = existingPairs + 1; i <= neededPairs; i++) {
+                addPair();
+              }
+            }
+
+            // Populate all pairs
             options.forEach((pair, index) => {
               const pairNum = index + 1;
               const leftInput = document.getElementById(`chinese_${pairNum}`);
@@ -2130,6 +2179,7 @@
               if (leftInput && rightInput) {
                 leftInput.value = pair.left || '';
                 rightInput.value = pair.right || '';
+                console.log(`  ✓ Set pair ${pairNum}:`, pair.left, '→', pair.right);
               }
             });
           }
