@@ -219,6 +219,30 @@ Before deploying changes, test:
 
 ## Recent Changes History
 
+### 2025-01-31: Fix Grammar Choice Question Type
+- **Commits**: 2ceffe8
+- **Files**: `public/admin/admin-quiz-creator.html`
+- **Changes**:
+  - Separated grammar_choice from multiple_choice grouping in save logic (lines 1587-1611)
+  - Added grammar_choice specific handler in edit loader (lines 1924-1970)
+  - Saves both questionText and sentenceText in format: `Question [sentence: Sentence with gap]`
+  - Extracts sentence using regex `/\[sentence:\s*(.+?)\]/` when editing
+  - Only uses 3 options (A, B, C) instead of 4 for grammar questions
+- **Why**: Grammar choice was grouped with multiple choice, so sentenceText field wasn't saved or loaded
+- **Testing**:
+  - Create grammar choice with sentence - both fields should save
+  - Edit grammar choice - sentence field should populate
+
+### 2025-01-31: Fix Question Overwrite Bug
+- **Commits**: 778c0fe
+- **Files**: `public/admin/admin-quiz-creator.html`
+- **Changes**:
+  - Clear data-edit-id attribute after successful create (lines 1505-1509)
+  - Reset button text to "Save Question"
+  - Add console logging to track edit state (lines 1443-1446)
+- **Why**: After creating a question and choosing "Create another?", the edit-id might persist causing second question to overwrite first
+- **Testing**: Create two questions in a row - should create 2 separate questions, not overwrite
+
 ### 2025-01-31: Fix Image Display Issues
 - **Commits**: 0c53990, 8e631e4
 - **Files**:
