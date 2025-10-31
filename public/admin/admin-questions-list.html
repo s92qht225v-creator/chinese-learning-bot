@@ -264,6 +264,8 @@
       let questionText = question.question || 'Untitled Question';
       // Remove audio URLs from display
       questionText = questionText.replace(/\[audio:.*?\]/g, '🔊 ');
+      // Remove image URLs from display
+      questionText = questionText.replace(/\[image:.*?\]/g, '🖼️ ');
       // Truncate if too long
       if (questionText.length > 100) {
         questionText = questionText.substring(0, 100) + '...';
