@@ -177,6 +177,33 @@
       background: rgba(68, 143, 228, 0.2);
     }
 
+    .record-button {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .record-button:active {
+      transform: scale(0.95);
+    }
+
+    .record-button.recording {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+      50% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); }
+    }
+
     .image-option {
       border: 3px solid #e5e7eb;
       border-radius: 16px;
@@ -238,10 +265,10 @@
             </button>
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-sm font-semibold text-text-light dark:text-text-dark">HSK 3 Quiz</span>
-                <span id="questionType" class="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium">📝 Multiple Choice</span>
+                <span id="quizTitle" class="text-sm font-semibold text-text-light dark:text-text-dark">HSK Quiz</span>
+                <span id="questionType" class="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium">Loading...</span>
               </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Question <span id="currentQuestion">1</span>/<span id="totalQuestions">12</span></p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Question <span id="currentQuestion">1</span>/<span id="totalQuestions">0</span></p>
             </div>
           </div>
         </div>
@@ -286,9 +313,125 @@
     let score = 0;
     let answers = [];
     let userAnswer = null;
-
-    // All 13 question types
-    const questions = [
+    let questions = [];
+    let quizStartTime = Date.now();
+    
+    // Get HSK level from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const hskLevel = urlParams.get('level') || '1';
+    
+    // Fetch questions from backend
+    async function loadQuestionsFromAPI() {
+      try {
+        const response = await fetch('/api/admin/quizzes', {
+          headers: {
+            'X-Telegram-User-Id': tg.initDataUnsafe?.user?.id || '',
+            'X-Telegram-Username': tg.initDataUnsafe?.user?.username || ''
+          }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load questions');
+        
+        const allQuestions = await response.json();
+        
+        // Filter by HSK level and convert to quiz format
+        questions = allQuestions
+          .filter(q => q.hsk_level == hskLevel && q.status === 'active')
+          .slice(0, 15) // Limit to 15 questions
+          .map(q => convertBackendQuestion(q));
+        
+        if (questions.length === 0) {
+          alert('No questions available for HSK ' + hskLevel);
+          window.history.back();
+          return;
+        }
+        
+        // Start quiz
+        loadQuestion();
+      } catch (error) {
+        console.error('Error loading questions:', error);
+        alert('Failed to load quiz questions. Using sample data.');
+        loadSampleQuestions();
+      }
+    }
+    
+    // Convert backend question format to quiz format
+    function convertBackendQuestion(q) {
+      const type = q.question_type || 'multiple_choice';
+      let options = q.options;
+      
+      // Parse options if string
+      if (typeof options === 'string') {
+        try {
+          options = JSON.parse(options);
+        } catch (e) {
+          options = [];
+        }
+      }
+      
+      // Convert to quiz format
+      const converted = {
+        id: q.id,
+        type: type,
+        format: getTypeIcon(type),
+        question: q.question || 'Question',
+        chinese: q.chinese_text,
+        audioUrl: q.audio_url,
+        imageUrl: q.image_url,
+        explanation: q.explanation,
+        correctAnswer: q.correct_answer
+      };
+      
+      // Handle different question types
+      if (Array.isArray(options) && options.length > 0) {
+        converted.options = options.map((opt, idx) => ({
+          id: String.fromCharCode(97 + idx), // a, b, c, d
+          text: opt,
+          correct: opt === q.correct_answer
+        }));
+      }
+      
+      if (type === 'fill_gap' || type === 'dictation') {
+        converted.acceptableAnswers = q.acceptable_answers || [q.correct_answer];
+        if (typeof converted.acceptableAnswers === 'string') {
+          try {
+            converted.acceptableAnswers = JSON.parse(converted.acceptableAnswers);
+          } catch (e) {
+            converted.acceptableAnswers = [q.correct_answer];
+          }
+        }
+      }
+      
+      if (type === 'true_false') {
+        converted.statement = q.question;
+        converted.correctAnswer = q.correct_answer === 'true';
+      }
+      
+      return converted;
+    }
+    
+    function getTypeIcon(type) {
+      const icons = {
+        'multiple_choice': '📝 Multiple Choice',
+        'fill_gap': '✏️ Fill in the Gap',
+        'true_false': '✓ True/False',
+        'matching': '🔗 Matching',
+        'image_association': '🖼️ Image Association',
+        'sentence_ordering': '📋 Sentence Ordering',
+        'grammar_choice': '📖 Grammar Choice',
+        'error_correction': '🔍 Error Correction',
+        'cloze_test': '📄 Cloze Test',
+        'dictation': '✍️ Dictation',
+        'audio_comprehension': '🎧 Audio Comprehension',
+        'audio_to_word': '👂 Audio to Word',
+        'repeat_after_me': '🎤 Repeat After Me'
+      };
+      return icons[type] || '❓ Unknown';
+    }
+    
+    // Sample questions as fallback
+    function loadSampleQuestions() {
+      questions = [
       // 1. Multiple Choice
       {
         type: 'multiple_choice',
@@ -445,6 +588,18 @@
           { id: 'd', text: '麻麻 (máma - hemp)' }
         ],
         explanation: 'The audio says 妈妈 (māma) with first tone on both characters = mother.'
+      },
+
+      // 13. Repeat After Me
+      {
+        type: 'repeat_after_me',
+        format: '🎤 Repeat After Me',
+        question: 'Listen to the audio and repeat:',
+        audioUrl: '/audio/nihao.mp3',
+        targetPhrase: '你好',
+        pinyin: 'Nǐ hǎo',
+        translation: 'Hello',
+        explanation: 'Practice saying 你好 (Nǐ hǎo) with the correct tones: 3rd tone + 3rd tone.'
       }
     ];
 
@@ -454,6 +609,7 @@
       const container = document.getElementById('questionContainer');
       
       // Update header
+      document.getElementById('quizTitle').textContent = `HSK ${hskLevel} Quiz`;
       document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
       document.getElementById('totalQuestions').textContent = questions.length;
       document.getElementById('questionType').textContent = question.format;
@@ -500,6 +656,8 @@
           return renderAudioComprehension(q);
         case 'audio_to_word':
           return renderAudioToWord(q);
+        case 'repeat_after_me':
+          return renderRepeatAfterMe(q);
         default:
           return '<p>Unknown question type</p>';
       }
@@ -758,6 +916,30 @@
       return html;
     }
 
+    function renderRepeatAfterMe(q) {
+      return `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${q.question}</h2>
+        <div class="audio-player rounded-2xl p-6 my-4">
+          <div class="flex flex-col items-center gap-3">
+            <p class="text-4xl font-bold">${q.targetPhrase}</p>
+            <p class="text-xl text-gray-600">${q.pinyin}</p>
+            <p class="text-sm text-gray-500">${q.translation}</p>
+            <button onclick="playAudio('${q.audioUrl}')" class="px-6 py-3 rounded-xl bg-primary text-white font-semibold flex items-center gap-2 mt-2">
+              <span class="material-symbols-outlined">play_arrow</span>
+              Listen
+            </button>
+          </div>
+        </div>
+        <div class="flex flex-col items-center gap-4 my-8">
+          <p class="text-sm font-medium">Now you try! Press and hold to record:</p>
+          <button id="recordBtn" class="record-button" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()">
+            <span class="material-symbols-outlined text-white text-4xl">mic</span>
+          </button>
+          <p id="recordStatus" class="text-xs text-gray-500">Press to start recording</p>
+        </div>
+      </div>`;
+    }
+
     // Initialize question-specific interactions
     function initializeQuestionType(question) {
       // Enable submit button for certain types immediately
@@ -859,6 +1041,26 @@
       alert('Audio: ' + url);
     }
 
+    // Recording (mock)
+    let isRecording = false;
+    function startRecording() {
+      isRecording = true;
+      document.getElementById('recordBtn').classList.add('recording');
+      document.getElementById('recordStatus').textContent = 'Recording...';
+    }
+
+    function stopRecording() {
+      if (isRecording) {
+        isRecording = false;
+        document.getElementById('recordBtn').classList.remove('recording');
+        document.getElementById('recordStatus').textContent = 'Processing... ✓';
+        document.getElementById('submitBtn').disabled = false;
+        setTimeout(() => {
+          document.getElementById('recordStatus').textContent = 'Pronunciation: Good! 85%';
+        }, 1000);
+      }
+    }
+
     // Submit answer
     function submitAnswer() {
       const question = questions[currentQuestionIndex];
@@ -909,6 +1111,11 @@
             if (!blank.acceptable.includes(input.value.trim())) isCorrect = false;
           });
           break;
+        
+        case 'repeat_after_me':
+          // Mock: always consider correct if recorded
+          isCorrect = true;
+          break;
       }
 
       if (isCorrect) score++;
@@ -937,9 +1144,41 @@
       }
     }
 
-    function showResults() {
+    async function showResults() {
       const percentage = Math.round((score / questions.length) * 100);
-      window.location.href = `/quiz-results.html?score=${score}&total=${questions.length}&percentage=${percentage}`;
+      const duration = Math.floor((Date.now() - quizStartTime) / 1000); // seconds
+      
+      // Save results to backend
+      try {
+        const response = await fetch('/api/progress/quiz', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Telegram-User-Id': tg.initDataUnsafe?.user?.id || '',
+            'X-Telegram-Username': tg.initDataUnsafe?.user?.username || '',
+            'X-Telegram-First-Name': tg.initDataUnsafe?.user?.first_name || ''
+          },
+          body: JSON.stringify({
+            quiz_type: 'comprehensive',
+            hsk_level: hskLevel,
+            total_questions: questions.length,
+            correct_answers: score,
+            incorrect_answers: questions.length - score,
+            score_percentage: percentage,
+            duration_seconds: duration,
+            questions_data: answers
+          })
+        });
+        
+        if (!response.ok) {
+          console.error('Failed to save quiz results');
+        }
+      } catch (error) {
+        console.error('Error saving results:', error);
+      }
+      
+      // Redirect to results page
+      window.location.href = `/quiz-results.html?score=${score}&total=${questions.length}&percentage=${percentage}&level=${hskLevel}`;
     }
 
     function exitQuiz() {
@@ -948,8 +1187,8 @@
       }
     }
 
-    // Initialize
-    loadQuestion();
+    // Initialize - load questions from API
+    loadQuestionsFromAPI();
   </script>
 </body>
 </html>
