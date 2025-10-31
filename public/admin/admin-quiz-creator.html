@@ -940,15 +940,25 @@
       return `
         <section class="form-card">
           <h2 class="text-xl font-bold mb-4">3. Audio Content</h2>
-          
+
           <div class="mb-4">
             <label class="block text-sm font-semibold mb-2">Question Text *</label>
             <input type="text" id="questionText" class="input-field" placeholder="e.g., Listen to the conversation and answer:">
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Audio URL *</label>
-            <input type="text" id="audioUrl" class="input-field" placeholder="/audio/conversation-library.mp3">
+            <label class="block text-sm font-semibold mb-2">Upload Audio File *</label>
+            <div id="currentAudioDisplay" class="hidden mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p class="text-sm font-semibold text-blue-900 mb-2">Current Audio:</p>
+              <audio id="audioPreview" controls class="w-full mb-2">
+                <source type="audio/mpeg">
+              </audio>
+              <p class="text-xs text-blue-600 break-all" id="audioUrlDisplay"></p>
+            </div>
+            <input type="file" id="audioFileInput" class="input-field" accept="audio/*" onchange="handleAudioUpload(this)">
+            <input type="hidden" id="audioUrl">
+            <div id="audioUploadStatus" class="text-sm mt-2"></div>
+            <p class="text-xs text-gray-500 mt-1">Upload new audio file to replace existing (optional)</p>
           </div>
 
           <div class="mb-4">
