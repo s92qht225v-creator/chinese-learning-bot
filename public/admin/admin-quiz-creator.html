@@ -1932,7 +1932,14 @@
         // Set HSK level
         const hskLevelSelect = document.getElementById('hskLevel');
         if (hskLevelSelect) {
-          hskLevelSelect.value = 'HSK' + question.hsk_level;
+          // Handle both old format (number) and new format (HSK1, HSK2, etc.)
+          const hskValue = question.hsk_level;
+          if (hskValue && hskValue.toString().startsWith('HSK')) {
+            hskLevelSelect.value = hskValue; // Already in HSK1 format
+          } else {
+            hskLevelSelect.value = 'HSK' + hskValue; // Convert number to HSK1 format
+          }
+          console.log('✓ Set HSK level to:', hskLevelSelect.value);
         }
 
         // Set tags
