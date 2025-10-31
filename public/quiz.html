@@ -539,6 +539,18 @@
           }
         }
 
+        // For sentence_ordering questions, extract translation from heading
+        // Format: "Arrange these words in the correct order: (I am also a student)"
+        if (data.questionType === 'sentence_ordering') {
+          const orderTranslationMatch = questionText.match(/\s*\((.+?)\)\s*$/);
+          if (orderTranslationMatch) {
+            // Extract and store translation
+            data.translation = orderTranslationMatch[1].trim();
+            // Remove translation from heading
+            questionText = questionText.replace(/\s*\(.+?\)\s*$/, '').trim();
+          }
+        }
+
         // Remove passage tag from cloze_test (passage is shown in the question rendering)
         questionText = questionText.replace(/\[passage:.+?\]$/g, '').trim();
 
