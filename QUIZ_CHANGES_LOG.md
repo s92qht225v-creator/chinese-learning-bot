@@ -220,18 +220,20 @@ Before deploying changes, test:
 ## Recent Changes History
 
 ### 2025-01-31: Fix Audio Comprehension Question Type
-- **Commits**: 76fe081, a6a5352, 23318c3
+- **Commits**: 76fe081, a6a5352, 23318c3, 16a8032
 - **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`
 - **Changes**:
-  - **Save**: Separated audio_comprehension from multiple_choice grouping (lines 1681-1709)
-    - Collects questionText, audioUrl, transcript, and comprehensionQuestion
-    - Validates all required fields
+  - **Save**: Separated audio_comprehension from multiple_choice grouping (lines 1735-1767)
+    - Collects questionText, audioUrl, transcript (optional), and comprehensionQuestion
+    - Validates required fields (transcript is now optional)
     - Stores with tags: `Question [audio: url] [transcript: text] [compQuestion: text]`
+    - Only includes `[transcript:]` tag if transcript is not empty
     - Collects 4 options (A, B, C, D) and correct answer
-  - **Edit**: Added audio_comprehension handler in edit loader (lines 2156-2228)
-    - Extracts audio URL using regex `/\[audio:\s*(.+?)\]/`
-    - Extracts transcript using regex `/\[transcript:\s*(.+?)\]/`
-    - Extracts comprehension question using regex `/\[compQuestion:\s*(.+?)\]/`
+  - **Edit**: Added audio_comprehension handler in edit loader (lines 2214-2282)
+    - Extracts audio URL using regex `/\[audio:\s*([^\]]+)\]/`
+    - Extracts transcript using regex `/\[transcript:\s*(.+?)\]\s*\[compQuestion:/` (handles optional transcript)
+    - Extracts comprehension question using regex `/\[compQuestion:\s*(.+?)\]$/`
+    - Improved tag removal to prevent transcript bleeding into Question Text field
     - Loads all fields including options and checks correct radio button
   - **Upload**: Added audio file upload to form (lines 949-962)
     - File input with Supabase upload support
@@ -246,12 +248,14 @@ Before deploying changes, test:
     - Strips `[transcript: ...]` tag completely
     - Extracts and shows `[compQuestion: ...]` as: `Question → Comp Question`
     - Truncates comp question to 60 chars if needed
-- **Why**: Audio comprehension was grouped with multiple_choice but has extra fields (transcript, comprehensionQuestion) that weren't being saved. Form had these fields but they were ignored during save. Preview wasn't showing transcript/comp question, and card showed raw tags.
+- **Why**: Audio comprehension was grouped with multiple_choice but has extra fields (transcript, comprehensionQuestion) that weren't being saved. Form had these fields but they were ignored during save. Preview wasn't showing transcript/comp question, and card showed raw tags. Transcript was bleeding into Question Text field when editing.
 - **Testing**:
   - Create audio comprehension with all fields - all should save
-  - Edit audio comprehension - all fields including transcript and comp question should populate
+  - Create audio comprehension without transcript (optional) - should save without error
+  - Edit audio comprehension - all fields should populate correctly in their respective fields (no bleeding)
+  - Question Text field should only show the question, not transcript
   - Audio URL, transcript, and comprehension question should be preserved
-  - Preview shows audio icon, transcript, comp question, and options
+  - Preview shows audio icon, transcript (if present), comp question, and options
   - Question cards show clean format with → arrow, not raw tags
 
 ### 2025-01-31: Fix Cloze Test Question Type
