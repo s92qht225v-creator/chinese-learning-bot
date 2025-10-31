@@ -1819,9 +1819,13 @@
           // Show image preview if image URL exists
           if (imageUrl && imageUrlInput) {
             const imagePreview = document.getElementById('imagePreview');
+            const imagePreviewPlaceholder = document.getElementById('imagePreviewPlaceholder');
             if (imagePreview) {
               imagePreview.src = imageUrl;
               imagePreview.classList.remove('hidden');
+              if (imagePreviewPlaceholder) {
+                imagePreviewPlaceholder.classList.add('hidden');
+              }
               console.log('  🖼️ Image preview displayed');
             }
           }
