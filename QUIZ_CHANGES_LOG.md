@@ -219,6 +219,26 @@ Before deploying changes, test:
 
 ## Recent Changes History
 
+### 2025-01-31: Fix Audio Comprehension Question Type
+- **Commit**: 76fe081
+- **Files**: `public/admin/admin-quiz-creator.html`
+- **Changes**:
+  - **Save**: Separated audio_comprehension from multiple_choice grouping (lines 1681-1709)
+    - Collects questionText, audioUrl, transcript, and comprehensionQuestion
+    - Validates all required fields
+    - Stores with tags: `Question [audio: url] [transcript: text] [compQuestion: text]`
+    - Collects 4 options (A, B, C, D) and correct answer
+  - **Edit**: Added audio_comprehension handler in edit loader (lines 2156-2228)
+    - Extracts audio URL using regex `/\[audio:\s*(.+?)\]/`
+    - Extracts transcript using regex `/\[transcript:\s*(.+?)\]/`
+    - Extracts comprehension question using regex `/\[compQuestion:\s*(.+?)\]/`
+    - Loads all fields including options and checks correct radio button
+- **Why**: Audio comprehension was grouped with multiple_choice but has extra fields (transcript, comprehensionQuestion) that weren't being saved. Form had these fields but they were ignored during save.
+- **Testing**:
+  - Create audio comprehension with all fields - all should save
+  - Edit audio comprehension - all fields including transcript and comp question should populate
+  - Audio URL, transcript, and comprehension question should be preserved
+
 ### 2025-01-31: Fix Cloze Test Question Type
 - **Commits**: 569834e, e4c3f82
 - **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`
