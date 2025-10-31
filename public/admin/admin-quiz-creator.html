@@ -1440,6 +1440,11 @@
       const saveBtn = document.querySelector('button[onclick="saveQuestion()"]');
       const editId = saveBtn?.getAttribute('data-edit-id');
 
+      console.log('🔍 saveQuestion called');
+      console.log('  - Edit ID:', editId || 'NONE (creating new)');
+      console.log('  - Button text:', saveBtn?.textContent);
+      console.log('  - Selected type:', selectedType);
+
       if (!selectedType) {
         alert('Please select a question type first!');
         return;
@@ -1500,6 +1505,13 @@
           window.location.href = '/admin/admin-questions-list.html';
         } else {
           alert('✅ Question saved successfully!\n\nQuestion ID: ' + result.id);
+
+          // Clear any edit state before asking
+          const saveBtn = document.querySelector('button[onclick="saveQuestion()"]');
+          if (saveBtn) {
+            saveBtn.removeAttribute('data-edit-id');
+            saveBtn.textContent = '💾 Save Question';
+          }
 
           // Reset form
           if (confirm('Question saved! Create another one?')) {
