@@ -1337,8 +1337,52 @@
       // Type-specific rendering
       switch(data.type) {
         case 'multiple_choice':
-        case 'audio_comprehension':
         case 'audio_to_word':
+          if (data.options) {
+            html += '<div style="display: flex; flex-direction: column; gap: 12px;">';
+            data.options.forEach(opt => {
+              const isCorrect = opt.correct;
+              html += `
+                <div style="padding: 16px; border: 2px solid ${isCorrect ? '#4ade80' : '#e5e7eb'}; background: ${isCorrect ? 'rgba(74, 222, 128, 0.05)' : 'white'}; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+                  <span style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #d1d5db; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">${opt.id.toUpperCase()}</span>
+                  <span style="font-size: 16px; font-weight: 500;">${opt.text || '(empty)'}</span>
+                  ${isCorrect ? '<span style="margin-left: auto; color: #4ade80; font-weight: bold;">✓</span>' : ''}
+                </div>
+              `;
+            });
+            html += '</div>';
+          }
+          break;
+
+        case 'audio_comprehension':
+          // Show audio icon
+          if (data.audioUrl) {
+            html += `
+              <div style="padding: 24px; background: linear-gradient(135deg, rgba(68, 143, 228, 0.1), rgba(80, 227, 194, 0.1)); border: 2px solid rgba(68, 143, 228, 0.3); border-radius: 16px; text-align: center; margin-bottom: 16px;">
+                <span class="material-symbols-outlined" style="font-size: 48px; color: #448fe4;">headphones</span>
+                <p style="margin-top: 12px; font-weight: 600;">Audio Conversation</p>
+                <p style="font-size: 12px; color: #6b7280; margin-top: 4px;">Students will listen to audio</p>
+              </div>
+            `;
+          }
+          // Show transcript
+          if (data.transcript) {
+            html += `
+              <div style="padding: 16px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 16px;">
+                <p style="font-size: 12px; font-weight: bold; color: #6b7280; margin-bottom: 8px;">TRANSCRIPT (shown after answer):</p>
+                <p style="font-size: 14px; line-height: 1.6; white-space: pre-line;">${data.transcript}</p>
+              </div>
+            `;
+          }
+          // Show comprehension question
+          if (data.comprehensionQuestion) {
+            html += `
+              <div style="padding: 16px; background: #f0f9ff; border-left: 4px solid #448fe4; border-radius: 8px; margin-bottom: 16px;">
+                <p style="font-size: 16px; font-weight: bold;">${data.comprehensionQuestion}</p>
+              </div>
+            `;
+          }
+          // Show options
           if (data.options) {
             html += '<div style="display: flex; flex-direction: column; gap: 12px;">';
             data.options.forEach(opt => {

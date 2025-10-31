@@ -266,6 +266,14 @@
       questionText = questionText.replace(/\[audio:.*?\]/g, '🔊 ');
       // Remove image URLs from display
       questionText = questionText.replace(/\[image:.*?\]/g, '🖼️ ');
+      // Remove transcript and compQuestion from audio_comprehension
+      questionText = questionText.replace(/\[transcript:.*?\]/g, '');
+      const compQuestionMatch = questionText.match(/\[compQuestion:\s*(.+?)\]/);
+      if (compQuestionMatch) {
+        const compQuestion = compQuestionMatch[1];
+        const truncatedComp = compQuestion.length > 60 ? compQuestion.substring(0, 60) + '...' : compQuestion;
+        questionText = questionText.replace(/\[compQuestion:.*?\]/, '').trim() + ' → ' + truncatedComp;
+      }
       // Remove sentence text from grammar_choice (show separately)
       const sentenceMatch = questionText.match(/\[sentence:\s*(.+?)\]/);
       if (sentenceMatch) {
