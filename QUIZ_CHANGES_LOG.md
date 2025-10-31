@@ -220,18 +220,20 @@ Before deploying changes, test:
 ## Recent Changes History
 
 ### 2025-01-31: Fix Grammar Choice Question Type
-- **Commits**: 2ceffe8
-- **Files**: `public/admin/admin-quiz-creator.html`
+- **Commits**: 2ceffe8, ef74219
+- **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`
 - **Changes**:
   - Separated grammar_choice from multiple_choice grouping in save logic (lines 1587-1611)
   - Added grammar_choice specific handler in edit loader (lines 1924-1970)
   - Saves both questionText and sentenceText in format: `Question [sentence: Sentence with gap]`
   - Extracts sentence using regex `/\[sentence:\s*(.+?)\]/` when editing
   - Only uses 3 options (A, B, C) instead of 4 for grammar questions
-- **Why**: Grammar choice was grouped with multiple choice, so sentenceText field wasn't saved or loaded
+  - Clean display in question cards: `Question → Sentence` instead of showing `[sentence: ...]` tag
+- **Why**: Grammar choice was grouped with multiple choice, so sentenceText field wasn't saved or loaded, and tags showed in card display
 - **Testing**:
   - Create grammar choice with sentence - both fields should save
   - Edit grammar choice - sentence field should populate
+  - Question card shows clean format with → arrow
 
 ### 2025-01-31: Fix Question Overwrite Bug
 - **Commits**: 778c0fe
