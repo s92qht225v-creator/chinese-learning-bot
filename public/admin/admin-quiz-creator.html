@@ -1161,6 +1161,31 @@
         data.imageUrl = document.getElementById('imageUrl')?.value;
       }
 
+      if (selectedType === 'cloze_test') {
+        data.passage = document.getElementById('passage')?.value;
+
+        // Collect all blank answers
+        const blanks = [];
+        let blankIndex = 1;
+
+        while (true) {
+          const answerInput = document.getElementById(`blank_${blankIndex}_answer`);
+          const acceptableInput = document.getElementById(`blank_${blankIndex}_acceptable`);
+
+          if (!answerInput || !answerInput.value) break;
+
+          blanks.push({
+            blank_num: blankIndex,
+            correct: answerInput.value.trim(),
+            acceptable: acceptableInput?.value ? acceptableInput.value.split(',').map(a => a.trim()).filter(a => a) : []
+          });
+
+          blankIndex++;
+        }
+
+        data.blanks = blanks;
+      }
+
       return data;
     }
 
@@ -1444,6 +1469,43 @@
           `;
           break;
 
+        case 'cloze_test':
+          if (data.passage) {
+            // Display passage with blanks highlighted
+            const passageWithHighlight = data.passage.replace(/___/g, '<span style="display: inline-block; min-width: 80px; border-bottom: 2px solid #448fe4; padding: 0 8px; margin: 0 4px;">___</span>');
+
+            html += `
+              <div style="padding: 24px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 16px;">
+                <p style="font-size: 20px; line-height: 1.8; text-align: center;">${passageWithHighlight}</p>
+              </div>
+            `;
+
+            // Display answers for each blank
+            if (data.blanks && data.blanks.length > 0) {
+              html += '<div style="margin-top: 16px;">';
+              html += '<p style="font-size: 12px; font-weight: bold; color: #6b7280; margin-bottom: 12px;">CORRECT ANSWERS:</p>';
+
+              data.blanks.forEach((blank, index) => {
+                html += `
+                  <div style="padding: 12px 16px; background: rgba(74, 222, 128, 0.1); border-left: 4px solid #4ade80; border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: baseline; gap: 12px;">
+                      <span style="font-size: 14px; font-weight: bold; color: #15803d;">Blank ${blank.blank_num || (index + 1)}:</span>
+                      <span style="font-size: 18px; font-weight: bold;">${blank.correct}</span>
+                    </div>
+                    ${blank.acceptable && blank.acceptable.length > 0 ? `
+                      <p style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                        Also accepted: ${blank.acceptable.join(', ')}
+                      </p>
+                    ` : ''}
+                  </div>
+                `;
+              });
+
+              html += '</div>';
+            }
+          }
+          break;
+
         case 'image_association':
           html += `
             <div style="margin-bottom: 16px; text-align: center;">
@@ -1695,12 +1757,47 @@
           const dictQuestion = document.getElementById('questionText')?.value;
           const dictAudio = document.getElementById('audioUrl')?.value;
           const dictAnswer = document.getElementById('correctAnswer')?.value;
-          
+
           if (!dictQuestion || !dictAudio || !dictAnswer) return null;
 
           questionData.question = dictQuestion + ' [audio: ' + dictAudio + ']';
           questionData.correct_answer = dictAnswer;
           questionData.options = JSON.stringify([dictAnswer]);
+          break;
+
+        case 'cloze_test':
+          const clozeQuestionText = document.getElementById('questionText')?.value;
+          const passage = document.getElementById('passage')?.value;
+
+          if (!clozeQuestionText || !passage) return null;
+
+          // Collect all blank answers dynamically
+          const blanksData = [];
+          let blankIndex = 1;
+
+          while (true) {
+            const answerInput = document.getElementById(`blank_${blankIndex}_answer`);
+            const acceptableInput = document.getElementById(`blank_${blankIndex}_acceptable`);
+
+            if (!answerInput || !answerInput.value) break; // No more blanks
+
+            const blankData = {
+              blank_num: blankIndex,
+              correct: answerInput.value.trim(),
+              acceptable: acceptableInput?.value ? acceptableInput.value.split(',').map(a => a.trim()).filter(a => a) : []
+            };
+
+            blanksData.push(blankData);
+            blankIndex++;
+          }
+
+          if (blanksData.length === 0) return null; // Need at least one blank answer
+
+          // Store passage with [passage: text] tag and blanks as JSON in options
+          questionData.question = clozeQuestionText + ' [passage: ' + passage + ']';
+          questionData.options = JSON.stringify(blanksData);
+          // First blank's correct answer as the primary correct_answer
+          questionData.correct_answer = blanksData[0].correct;
           break;
 
         default:
@@ -2024,6 +2121,49 @@
                 falseRadio.checked = true;
                 console.log('  ✓ Checked FALSE radio button');
               }
+            }
+          }
+
+          // Load cloze_test data
+          if (selectedType === 'cloze_test') {
+            // Extract passage from [passage: text] format
+            let clozeQuestionText = question.question || '';
+            let passageText = '';
+
+            const passageMatch = clozeQuestionText.match(/\[passage:\s*(.+?)\]$/);
+            if (passageMatch) {
+              passageText = passageMatch[1];
+              clozeQuestionText = clozeQuestionText.replace(/\[passage:\s*.+?\]$/, '').trim();
+            }
+
+            if (questionTextInput) {
+              questionTextInput.value = clozeQuestionText;
+              console.log('  ✓ Set cloze question to:', clozeQuestionText);
+            }
+
+            const passageInput = document.getElementById('passage');
+            if (passageInput) {
+              passageInput.value = passageText;
+              console.log('  ✓ Set passage to:', passageText);
+            }
+
+            // Load blank answers from options JSON
+            if (Array.isArray(options)) {
+              options.forEach((blankData, index) => {
+                const blankNum = blankData.blank_num || (index + 1);
+                const answerInput = document.getElementById(`blank_${blankNum}_answer`);
+                const acceptableInput = document.getElementById(`blank_${blankNum}_acceptable`);
+
+                if (answerInput && blankData.correct) {
+                  answerInput.value = blankData.correct;
+                  console.log(`  ✓ Set blank ${blankNum} answer to:`, blankData.correct);
+                }
+
+                if (acceptableInput && blankData.acceptable && Array.isArray(blankData.acceptable)) {
+                  acceptableInput.value = blankData.acceptable.join(', ');
+                  console.log(`  ✓ Set blank ${blankNum} acceptable to:`, blankData.acceptable.join(', '));
+                }
+              });
             }
           }
 
