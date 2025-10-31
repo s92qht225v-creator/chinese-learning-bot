@@ -1174,6 +1174,30 @@
         data.blanks = blanks;
       }
 
+      if (selectedType === 'matching') {
+        // Collect all matching pairs
+        const pairs = [];
+        let pairIndex = 1;
+
+        while (true) {
+          const chineseInput = document.getElementById(`chinese_${pairIndex}`);
+          const englishInput = document.getElementById(`english_${pairIndex}`);
+
+          if (!chineseInput || (!chineseInput.value && pairIndex > 3)) break;
+
+          if (chineseInput.value || englishInput?.value) {
+            pairs.push({
+              left: chineseInput.value.trim(),
+              right: englishInput?.value.trim() || ''
+            });
+          }
+
+          pairIndex++;
+        }
+
+        data.pairs = pairs;
+      }
+
       return data;
     }
 
@@ -1535,6 +1559,23 @@
 
               html += '</div>';
             }
+          }
+          break;
+
+        case 'matching':
+          if (data.pairs && data.pairs.length > 0) {
+            html += `
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${data.pairs.map(pair => `
+                  <div style="display: flex; align-items: center; gap: 12px; padding: 16px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px;">
+                    <div style="flex: 1; font-size: 18px; font-weight: bold; text-align: center;">${pair.left || '(empty)'}</div>
+                    <span style="font-size: 24px; color: #6b7280;">→</span>
+                    <div style="flex: 1; font-size: 16px; text-align: center;">${pair.right || '(empty)'}</div>
+                  </div>
+                `).join('')}
+              </div>
+              <p style="font-size: 12px; color: #6b7280; margin-top: 16px;">Students will match the Chinese words to their English meanings</p>
+            `;
           }
           break;
 
