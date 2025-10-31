@@ -196,9 +196,9 @@ app.get('/api/quiz', async (req, res) => {
     // Handle different question formats
     let optionsArray = [];
 
-    // For matching questions, preserve the pairs structure
-    if (question.question_type === 'matching') {
-      optionsArray = options; // Keep pairs as-is for matching questions
+    // For matching and cloze_test questions, preserve the structure
+    if (question.question_type === 'matching' || question.question_type === 'cloze_test') {
+      optionsArray = options; // Keep structure as-is
     } else {
       // For other question types, extract text values
       if (Array.isArray(options)) {
