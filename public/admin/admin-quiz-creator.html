@@ -1767,11 +1767,33 @@
             questionText = questionText.replace(/\s+-\s+.+$/, '').trim();
           }
 
-          if (questionTextInput) questionTextInput.value = questionText;
-          if (chineseTextInput) chineseTextInput.value = chineseText || question.chinese_text || '';
-          if (audioUrlInput) audioUrlInput.value = audioUrl || question.audio_url || '';
-          if (imageUrlInput) imageUrlInput.value = imageUrl || question.image_url || '';
-          if (correctAnswerInput) correctAnswerInput.value = question.correct_answer || '';
+          console.log('📋 Setting form values:');
+          console.log('  - questionTextInput exists:', !!questionTextInput);
+          console.log('  - chineseTextInput exists:', !!chineseTextInput);
+          console.log('  - audioUrlInput exists:', !!audioUrlInput);
+          console.log('  - imageUrlInput exists:', !!imageUrlInput);
+          console.log('  - correctAnswerInput exists:', !!correctAnswerInput);
+
+          if (questionTextInput) {
+            questionTextInput.value = questionText;
+            console.log('  ✓ Set questionText to:', questionText);
+          }
+          if (chineseTextInput) {
+            chineseTextInput.value = chineseText || question.chinese_text || '';
+            console.log('  ✓ Set chineseText to:', chineseText || question.chinese_text || '');
+          }
+          if (audioUrlInput) {
+            audioUrlInput.value = audioUrl || question.audio_url || '';
+            console.log('  ✓ Set audioUrl to:', audioUrl || question.audio_url || '');
+          }
+          if (imageUrlInput) {
+            imageUrlInput.value = imageUrl || question.image_url || '';
+            console.log('  ✓ Set imageUrl to:', imageUrl || question.image_url || '');
+          }
+          if (correctAnswerInput) {
+            correctAnswerInput.value = question.correct_answer || '';
+            console.log('  ✓ Set correctAnswer to:', question.correct_answer || '');
+          }
 
           // Show image preview if image URL exists
           if (imageUrl && imageUrlInput) {
