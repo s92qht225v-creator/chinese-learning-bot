@@ -158,17 +158,21 @@ app.get('/api/quiz', async (req, res) => {
     console.log(`[API] Excluding question IDs: ${excludeIds.length > 0 ? excludeIds.join(', ') : 'none'}`);
 
     // Get quiz questions from the quizzes table
-    let quizQuestions = await Promise.race([
+    let allQuizQuestions = await Promise.race([
       db.getQuizzes(hskLevel),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Database timeout')), 5000))
     ]);
 
+    // Store total count before filtering
+    const totalAvailable = allQuizQuestions ? allQuizQuestions.length : 0;
+
     // Filter out already used questions
+    let quizQuestions = allQuizQuestions;
     if (excludeIds.length > 0) {
       quizQuestions = quizQuestions.filter(q => !excludeIds.includes(q.id));
     }
 
-    console.log(`[API] Quiz questions loaded: ${quizQuestions ? quizQuestions.length : 0} questions`);
+    console.log(`[API] Quiz questions loaded: ${quizQuestions ? quizQuestions.length : 0} questions (${totalAvailable} total available)`);
 
     if (!quizQuestions || quizQuestions.length === 0) {
       const levelMsg = hskLevel ? ` for HSK level ${hskLevel}` : '';
@@ -216,7 +220,8 @@ app.get('/api/quiz', async (req, res) => {
       correctAnswer: question.correct_answer,
       questionType: question.question_type,
       audioUrl: question.audio_url,
-      imageUrl: question.image_url
+      imageUrl: question.image_url,
+      totalQuestions: totalAvailable
     });
   } catch (error) {
     console.error('[API] Error generating quiz:', error.message);

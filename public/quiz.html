@@ -436,6 +436,12 @@
           throw new Error(data.error || `HTTP error! status: ${response.status}`);
         }
 
+        // Set total questions from API response (if not already set)
+        if (totalQuestions === null && data.totalQuestions) {
+          totalQuestions = data.totalQuestions;
+          console.log('Total questions available:', totalQuestions);
+        }
+
         console.log('Question loaded:', data.id, 'Previously used:', usedQuestionIds);
 
         // Parse question text to extract audio URL, image URL, and Chinese text if present
