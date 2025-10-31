@@ -327,6 +327,18 @@
     let selectedType = null;
     let currentQuestion = {};
 
+    // Get admin password helper
+    async function getAdminPassword() {
+      let adminPassword = localStorage.getItem('adminPassword');
+      if (!adminPassword) {
+        adminPassword = prompt('Enter admin password:');
+        if (adminPassword) {
+          localStorage.setItem('adminPassword', adminPassword.trim());
+        }
+      }
+      return adminPassword;
+    }
+
     // Handle audio file upload via backend API
     async function handleAudioUpload(input) {
       const file = input.files[0];
