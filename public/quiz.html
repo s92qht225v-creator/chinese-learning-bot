@@ -261,13 +261,14 @@
         }
 
         // Remove transcript tag from audio_comprehension (transcript is shown after answer)
-        questionText = questionText.replace(/\[transcript:.*?\]/, '').trim();
+        // Use greedy match to handle multi-line transcripts
+        questionText = questionText.replace(/\[transcript:[^\]]*\]/g, '').trim();
 
         // Extract and display comprehension question if present (for audio_comprehension type)
-        const compQuestionMatch = questionText.match(/\[compQuestion:\s*(.+?)\]/);
+        const compQuestionMatch = questionText.match(/\[compQuestion:\s*([^\]]+)\]/);
         if (compQuestionMatch) {
           const compQuestion = compQuestionMatch[1];
-          questionText = questionText.replace(/\[compQuestion:.*?\]/, '').trim();
+          questionText = questionText.replace(/\[compQuestion:[^\]]+\]/, '').trim();
           // Append comprehension question to the main question text
           if (questionText) {
             questionText += ' - ' + compQuestion;
@@ -277,10 +278,10 @@
         }
 
         // Extract and display sentence for grammar_choice type
-        const sentenceMatch = questionText.match(/\[sentence:\s*(.+?)\]/);
+        const sentenceMatch = questionText.match(/\[sentence:\s*([^\]]+)\]/);
         if (sentenceMatch) {
           const sentence = sentenceMatch[1];
-          questionText = questionText.replace(/\[sentence:.*?\]/, '').trim();
+          questionText = questionText.replace(/\[sentence:[^\]]+\]/, '').trim();
           // Display sentence prominently
           if (questionText) {
             questionText += ' - ' + sentence;
@@ -288,6 +289,9 @@
             questionText = sentence;
           }
         }
+
+        // Remove passage tag from cloze_test (passage is shown in the question rendering)
+        questionText = questionText.replace(/\[passage:[^\]]*\]$/g, '').trim();
 
         // Extract Chinese text from " - 中文" format if present
         const chineseMatch = questionText.match(/\s+-\s+(.+)$/);
