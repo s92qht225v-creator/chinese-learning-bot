@@ -298,32 +298,29 @@
 <body class="bg-background-light dark:bg-background-dark font-display">
   <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
     <!-- Header -->
-    <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
-      <div class="max-w-screen-xl mx-auto px-4 py-3">
-        <div class="flex items-center justify-between">
-          <button id="backBtn" class="flex items-center gap-2 text-text-light dark:text-text-dark">
-            <span class="material-symbols-outlined">arrow_back</span>
-            <span class="font-medium">Back</span>
-          </button>
-          <div class="text-center">
-            <p class="text-sm font-medium text-text-light dark:text-text-dark">Quiz</p>
-            <p class="text-xs text-text-muted-light dark:text-text-muted-dark" id="progress">Question 1 / 10</p>
+    <header class="sticky top-0 z-50 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-b border-border-light dark:border-border-dark">
+      <div class="px-4 py-3">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-3">
+            <button id="backBtn" class="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
+              <span class="material-symbols-outlined text-gray-500">close</span>
+            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="quizTitle" class="text-sm font-semibold text-text-light dark:text-text-dark">Quiz</span>
+                <span id="questionType" class="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium hidden"></span>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Question <span id="currentQuestionNum">1</span>/<span id="totalQuestionsNum">1</span></p>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-accent">emoji_events</span>
-            <span class="font-bold text-accent" id="score">0</span>
-          </div>
+        </div>
+        <div class="progress-bar">
+          <div id="progressBar" class="progress-fill" style="width: 0%"></div>
         </div>
       </div>
     </header>
 
-    <main class="flex-1 flex flex-col px-4 py-6 max-w-screen-xl mx-auto w-full">
-      <!-- Progress Bar -->
-      <div class="mb-6">
-        <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-          <div id="progressBar" class="h-full bg-secondary rounded-full transition-all duration-300" style="width: 10%;"></div>
-        </div>
-      </div>
+    <main class="px-4 py-5 pb-24">
 
       <!-- Question Card -->
       <div id="questionCard" class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg mb-6 overflow-hidden">
@@ -349,26 +346,18 @@
       <!-- Options -->
       <div class="space-y-3 mb-6" id="optionsContainer"></div>
 
-      <!-- Next Button -->
-      <button id="nextBtn" class="w-full bg-primary hover:bg-blue-600 text-white rounded-xl py-4 font-bold text-lg shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-        Next Question
-      </button>
-
-      <!-- Stats -->
-      <div class="mt-6 grid grid-cols-3 gap-3 text-center">
-        <div class="bg-white dark:bg-gray-800 rounded-lg p-3">
-          <p class="text-2xl font-bold text-secondary" id="correctCount">0</p>
-          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Correct</p>
-        </div>
-        <div class="bg-white dark:bg-gray-800 rounded-lg p-3">
-          <p class="text-2xl font-bold text-red-500" id="incorrectCount">0</p>
-          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Incorrect</p>
-        </div>
-        <div class="bg-white dark:bg-gray-800 rounded-lg p-3">
-          <p class="text-2xl font-bold text-accent" id="accuracyPercent">0%</p>
-          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">Accuracy</p>
+      <!-- Action Buttons -->
+      <div class="fixed bottom-0 left-0 right-0 p-4 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-md border-t border-border-light dark:border-border-dark">
+        <div class="flex gap-3">
+          <button id="skipBtn" class="flex-1 px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-95 transition-all">
+            Skip
+          </button>
+          <button id="nextBtn" disabled class="flex-1 px-6 py-3 rounded-xl bg-primary text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 active:scale-95 transition-all">
+            Next
+          </button>
         </div>
       </div>
+
     </main>
   </div>
 
@@ -396,11 +385,31 @@
     const questionChinese = document.getElementById('questionChinese');
     const questionPinyin = document.getElementById('questionPinyin');
     const optionsContainer = document.getElementById('optionsContainer');
-    const progress = document.getElementById('progress');
-    const progressBar = document.getElementById('progressBar');
-    const scoreEl = document.getElementById('score');
     const nextBtn = document.getElementById('nextBtn');
+    const skipBtn = document.getElementById('skipBtn');
     const backBtn = document.getElementById('backBtn');
+
+    // Set quiz title based on HSK level
+    const quizTitle = document.getElementById('quizTitle');
+    if (quizTitle && hskLevel) {
+      quizTitle.textContent = `HSK ${hskLevel} Quiz`;
+    }
+
+    // Skip button handler
+    if (skipBtn) {
+      skipBtn.addEventListener('click', async () => {
+        // Skip current question without answering
+        currentQuestion++;
+        try {
+          await loadQuestion();
+        } catch (error) {
+          console.log('No more questions available, finishing quiz');
+          quizComplete = true;
+          totalQuestions = currentQuestion - 1;
+          finishQuiz();
+        }
+      });
+    }
 
     // Load question from API
     async function loadQuestion() {
@@ -607,10 +616,15 @@
             break;
         }
 
-        // Update progress
-        const progressText = totalQuestions ? `Question ${currentQuestion} / ${totalQuestions}` : `Question ${currentQuestion}`;
-        progress.textContent = progressText;
-        if (totalQuestions) {
+        // Update progress in header
+        const currentQuestionNum = document.getElementById('currentQuestionNum');
+        const totalQuestionsNum = document.getElementById('totalQuestionsNum');
+        const progressBar = document.getElementById('progressBar');
+
+        if (currentQuestionNum) currentQuestionNum.textContent = currentQuestion;
+        if (totalQuestionsNum && totalQuestions) totalQuestionsNum.textContent = totalQuestions;
+
+        if (progressBar && totalQuestions) {
           progressBar.style.width = `${(currentQuestion / totalQuestions) * 100}%`;
         }
 
@@ -1282,15 +1296,10 @@
       }
     }
 
-    // Update stats display
+    // Update stats (simplified - no UI elements to update now)
     function updateStats() {
-      document.getElementById('correctCount').textContent = stats.correct;
-      document.getElementById('incorrectCount').textContent = stats.incorrect;
-      scoreEl.textContent = stats.correct * 10;
-      
-      const total = stats.correct + stats.incorrect;
-      const accuracy = total > 0 ? Math.round((stats.correct / total) * 100) : 0;
-      document.getElementById('accuracyPercent').textContent = accuracy + '%';
+      // Stats are tracked in the stats object and shown at quiz completion
+      console.log('Stats updated:', stats);
     }
 
     // Next question
