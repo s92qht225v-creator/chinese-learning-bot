@@ -297,8 +297,8 @@ Before deploying changes, test:
   - Question cards should show clean format with → arrow, not raw `[passage: ...]` tag
 
 ### 2025-01-31: Fix Grammar Choice Question Type
-- **Commits**: 2ceffe8, ef74219, e1b3ee7
-- **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`
+- **Commits**: 2ceffe8, ef74219, e1b3ee7, 69121cd
+- **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`, `public/quiz.html`
 - **Changes**:
   - **Save**: Separated grammar_choice from multiple_choice grouping in save logic (lines 1587-1611)
   - **Edit**: Added grammar_choice specific handler in edit loader (lines 1924-1970)
@@ -309,12 +309,17 @@ Before deploying changes, test:
   - Only uses 3 options (A, B, C) instead of 4 for grammar questions
   - Preview shows sentence in blue box and skips empty 4th option
   - Clean display in question cards: `Question → Sentence` instead of showing `[sentence: ...]` tag
-- **Why**: Grammar choice was grouped with multiple choice, so sentenceText field wasn't saved/loaded, tags showed in cards, and preview showed 4 options with empty D
+  - **Quiz Display**: Clean display on student quiz page (quiz.html lines 279-290)
+    - Extracts and displays `[sentence:]` as part of the question
+    - Format: `Question - Sentence with gap`
+    - Students see the sentence they need to fill
+- **Why**: Grammar choice was grouped with multiple choice, so sentenceText field wasn't saved/loaded, tags showed in cards, and preview showed 4 options with empty D. Student quiz page was showing raw [sentence: ...] tag.
 - **Testing**:
   - Create grammar choice with sentence - both fields should save
   - Edit grammar choice - sentence field should populate
   - Preview shows sentence prominently with only 3 options
   - Question card shows clean format with → arrow
+  - Student quiz page shows clean question with sentence, no raw tags
 
 ### 2025-01-31: Fix Question Overwrite Bug
 - **Commits**: 778c0fe
