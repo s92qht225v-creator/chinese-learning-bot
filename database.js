@@ -404,15 +404,18 @@ const db = {
   async getQuizzes(hskLevel = null) {
     if (!supabase) return [];
     let query = supabase
-      .from('quizzes')
+      .from('quiz_questions')
       .select(`
         *,
         lessons (id, title, hsk_level, lesson_number)
-      `);
+      `)
+      .eq('status', 'active'); // Only get active questions
 
     // Filter by HSK level if provided
     if (hskLevel !== null && hskLevel !== undefined) {
-      query = query.eq('hsk_level', hskLevel);
+      // Convert numeric level to HSK format (e.g., 1 -> 'HSK1')
+      const hskLevelStr = `HSK${hskLevel}`;
+      query = query.eq('hsk_level', hskLevelStr);
     }
 
     query = query.order('id', { ascending: false });
@@ -425,7 +428,7 @@ const db = {
   async addQuiz(quiz) {
     if (!supabase) throw new Error('Database not configured');
     const { data, error } = await supabase
-      .from('quizzes')
+      .from('quiz_questions')
       .insert([quiz])
       .select()
       .single();
@@ -436,7 +439,7 @@ const db = {
   async updateQuiz(id, quiz) {
     if (!supabase) throw new Error('Database not configured');
     const { data, error} = await supabase
-      .from('quizzes')
+      .from('quiz_questions')
       .update(quiz)
       .eq('id', id)
       .select()
@@ -448,7 +451,7 @@ const db = {
   async deleteQuiz(id) {
     if (!supabase) throw new Error('Database not configured');
     const { error } = await supabase
-      .from('quizzes')
+      .from('quiz_questions')
       .delete()
       .eq('id', id);
     if (error) throw error;
