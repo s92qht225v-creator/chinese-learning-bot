@@ -522,13 +522,23 @@
         const questionChinese = document.getElementById('questionChinese');
         const questionPinyin = document.getElementById('questionPinyin');
 
+        // Separate heading from Chinese text
+        // If we extracted Chinese text from the question, use the clean question as heading
+        let headingText = questionText;
+        let chineseText = '';
+
+        // Check if there's Chinese text extracted
+        if (chineseMatch) {
+          chineseText = chineseMatch[1];
+        }
+
         if (questionHeading) {
-          questionHeading.textContent = data.question || 'What does this mean?';
+          questionHeading.textContent = headingText || 'What does this mean?';
         }
 
         // Show Chinese text if it exists
-        if (questionText && questionText !== data.question) {
-          questionChinese.textContent = questionText;
+        if (chineseText) {
+          questionChinese.textContent = chineseText;
           questionPinyin.textContent = data.pinyin || '';
           chineseContainer.classList.remove('hidden');
         } else {
