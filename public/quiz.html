@@ -1110,6 +1110,7 @@
         const blankData = blanks[index];
 
         if (!blankData) {
+          console.error('No blank data for index', index);
           allCorrect = false;
           return;
         }
@@ -1117,8 +1118,17 @@
         const correctAnswer = blankData.correct.toLowerCase();
         const acceptableAnswers = (blankData.acceptable || []).map(a => a.toLowerCase());
 
+        console.log(`Blank ${index + 1}:`, {
+          userAnswer,
+          correctAnswer,
+          acceptableAnswers,
+          blankData
+        });
+
         // Check if user answer matches correct answer or any acceptable alternatives
         const isCorrect = userAnswer === correctAnswer || acceptableAnswers.includes(userAnswer);
+
+        console.log(`Blank ${index + 1} is ${isCorrect ? 'CORRECT' : 'INCORRECT'}`);
 
         if (!isCorrect) allCorrect = false;
 
