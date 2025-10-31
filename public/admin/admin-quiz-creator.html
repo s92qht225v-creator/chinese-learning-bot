@@ -1550,7 +1550,6 @@
       // Collect type-specific data
       switch(selectedType) {
         case 'multiple_choice':
-        case 'grammar_choice':
         case 'image_association':
         case 'audio_comprehension':
         case 'audio_to_word':
@@ -1583,6 +1582,32 @@
           if (imageUrl) questionData.question += ' [image: ' + imageUrl + ']';
           questionData.options = JSON.stringify(options.map(o => o.text));
           questionData.correct_answer = correctAnswer;
+          break;
+
+        case 'grammar_choice':
+          const grammarQuestionText = document.getElementById('questionText')?.value;
+          const grammarSentenceText = document.getElementById('sentenceText')?.value;
+
+          if (!grammarQuestionText || !grammarSentenceText) return null;
+
+          const grammarOptions = [
+            { id: 'a', text: document.getElementById('option_a')?.value || '' },
+            { id: 'b', text: document.getElementById('option_b')?.value || '' },
+            { id: 'c', text: document.getElementById('option_c')?.value || '' }
+          ];
+
+          // Find correct answer
+          let grammarCorrectAnswer = '';
+          if (document.getElementById('correct_a')?.checked) grammarCorrectAnswer = grammarOptions[0].text;
+          else if (document.getElementById('correct_b')?.checked) grammarCorrectAnswer = grammarOptions[1].text;
+          else if (document.getElementById('correct_c')?.checked) grammarCorrectAnswer = grammarOptions[2].text;
+
+          if (!grammarCorrectAnswer) return null;
+
+          // Store both question and sentence, separated by a delimiter
+          questionData.question = grammarQuestionText + ' [sentence: ' + grammarSentenceText + ']';
+          questionData.options = JSON.stringify(grammarOptions.map(o => o.text));
+          questionData.correct_answer = grammarCorrectAnswer;
           break;
 
         case 'fill_gap':
@@ -1894,6 +1919,54 @@
                 rightInput.value = pair.right || '';
               }
             });
+          }
+
+          // Load grammar_choice data
+          if (selectedType === 'grammar_choice') {
+            // Extract sentence from [sentence: text] format
+            let grammarQuestionText = question.question || '';
+            let grammarSentenceText = '';
+
+            const sentenceMatch = grammarQuestionText.match(/\[sentence:\s*(.+?)\]/);
+            if (sentenceMatch) {
+              grammarSentenceText = sentenceMatch[1];
+              grammarQuestionText = grammarQuestionText.replace(/\[sentence:\s*.+?\]/, '').trim();
+            }
+
+            if (questionTextInput) {
+              questionTextInput.value = grammarQuestionText;
+              console.log('  ✓ Set grammar question to:', grammarQuestionText);
+            }
+
+            const sentenceTextInput = document.getElementById('sentenceText');
+            if (sentenceTextInput) {
+              sentenceTextInput.value = grammarSentenceText;
+              console.log('  ✓ Set sentence text to:', grammarSentenceText);
+            }
+
+            // Load grammar options (A, B, C)
+            if (Array.isArray(options)) {
+              const letters = ['a', 'b', 'c'];
+              options.forEach((optionText, index) => {
+                const optionInput = document.getElementById(`option_${letters[index]}`);
+                if (optionInput && optionText) {
+                  optionInput.value = optionText;
+                }
+              });
+
+              // Set correct answer radio button
+              const correctAnswer = question.correct_answer;
+              if (correctAnswer) {
+                const correctIndex = options.indexOf(correctAnswer);
+                if (correctIndex >= 0) {
+                  const radioButton = document.getElementById(`correct_${letters[correctIndex]}`);
+                  if (radioButton) {
+                    radioButton.checked = true;
+                    console.log('  ✓ Checked correct grammar option:', letters[correctIndex]);
+                  }
+                }
+              }
+            }
           }
 
           // Load true/false data
