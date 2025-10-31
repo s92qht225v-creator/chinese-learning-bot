@@ -112,19 +112,41 @@
     }
 
     .input-box {
-      background: white;
+      background: #ffffff;
       border: 2px solid #e5e7eb;
-      padding: 12px 16px;
+      padding: 14px 18px;
       border-radius: 12px;
-      font-size: 18px;
+      font-size: 16px;
       width: 100%;
       transition: all 0.2s ease;
+      color: #1a1a1a;
+      font-family: 'Work Sans', sans-serif;
+    }
+
+    .input-box::placeholder {
+      color: #9ca3af;
     }
 
     .input-box:focus {
       outline: none;
       border-color: #448fe4;
-      background: rgba(68, 143, 228, 0.05);
+      background: rgba(68, 143, 228, 0.03);
+      box-shadow: 0 0 0 3px rgba(68, 143, 228, 0.1);
+    }
+
+    .dark .input-box {
+      background: #1e2732;
+      border-color: #374151;
+      color: #ffffff;
+    }
+
+    .dark .input-box::placeholder {
+      color: #6b7280;
+    }
+
+    .dark .input-box:focus {
+      background: rgba(68, 143, 228, 0.1);
+      border-color: #448fe4;
     }
 
     .word-chip {
@@ -270,29 +292,6 @@
       border-radius: 50%;
     }
 
-    @media (prefers-color-scheme: dark) {
-      .option-card, .input-box, .word-chip {
-        background: #1e2732;
-        border-color: #2d3748;
-      }
-
-      .option-card.selected, .input-box:focus {
-        background: rgba(68, 143, 228, 0.15);
-      }
-
-      .reading-passage {
-        background: #1e2732;
-        border-left-color: #448fe4;
-      }
-
-      .drop-zone {
-        border-color: #2d3748;
-      }
-
-      .image-option {
-        border-color: #2d3748;
-      }
-    }
   </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
