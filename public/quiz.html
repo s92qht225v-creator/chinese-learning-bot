@@ -747,6 +747,10 @@
 
     // Render cloze test question
     function renderClozeTestQuestion(data) {
+      console.log('Rendering cloze test with data:', data);
+      console.log('data.options type:', typeof data.options);
+      console.log('data.options value:', data.options);
+
       // Extract passage from question text
       const passageMatch = data.question.match(/\[passage:\s*(.+?)\]$/);
       if (!passageMatch) {
@@ -764,18 +768,22 @@
       if (typeof data.options === 'string') {
         try {
           blanks = JSON.parse(data.options);
+          console.log('Parsed blanks from string:', blanks);
         } catch (e) {
           console.error('Failed to parse blanks:', e);
           return;
         }
       } else {
         blanks = data.options;
+        console.log('Using blanks directly:', blanks);
       }
 
       if (!Array.isArray(blanks) || blanks.length === 0) {
-        console.error('Invalid blanks data');
+        console.error('Invalid blanks data:', blanks);
         return;
       }
+
+      console.log('Final blanks array:', blanks);
 
       // Build HTML - heading, passage, then input fields (matching reference exactly)
       let html = `<div class="space-y-4">
