@@ -2506,6 +2506,38 @@
             }
           }
 
+          // Load sentence_ordering data
+          if (selectedType === 'sentence_ordering') {
+            // Format: "question text (translation)"
+            let orderQuestionText = question.question || '';
+            let orderTranslation = '';
+
+            // Extract translation from parentheses at the end
+            const orderTranslationMatch = orderQuestionText.match(/\s*\((.+?)\)\s*$/);
+            if (orderTranslationMatch) {
+              orderTranslation = orderTranslationMatch[1].trim();
+              orderQuestionText = orderQuestionText.replace(/\s*\(.+?\)\s*$/, '').trim();
+            }
+
+            const questionTextInput = document.getElementById('questionText');
+            if (questionTextInput) {
+              questionTextInput.value = orderQuestionText;
+              console.log('  ✓ Set sentence ordering question to:', orderQuestionText);
+            }
+
+            const correctSentenceInput = document.getElementById('correctSentence');
+            if (correctSentenceInput) {
+              correctSentenceInput.value = question.correct_answer || '';
+              console.log('  ✓ Set correct sentence to:', question.correct_answer);
+            }
+
+            const translationInput = document.getElementById('translation');
+            if (translationInput) {
+              translationInput.value = orderTranslation;
+              console.log('  ✓ Set translation to:', orderTranslation);
+            }
+          }
+
           // Update Save button to indicate editing
           const saveBtn = document.querySelector('button[onclick="saveQuestion()"]');
           if (saveBtn) {
