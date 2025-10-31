@@ -962,7 +962,7 @@
           </div>
 
           <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2">Transcript *</label>
+            <label class="block text-sm font-semibold mb-2">Transcript (optional)</label>
             <textarea id="transcript" class="input-field textarea-field" placeholder="A: 你去哪儿？&#10;B: 我去图书馆。" style="font-size: 16px;"></textarea>
             <p class="text-xs text-gray-500 mt-1">This will be revealed when students review mistakes</p>
           </div>
@@ -1735,10 +1735,10 @@
         case 'audio_comprehension':
           const acQuestionText = document.getElementById('questionText')?.value;
           const acAudioUrl = document.getElementById('audioUrl')?.value;
-          const transcript = document.getElementById('transcript')?.value;
+          const transcript = document.getElementById('transcript')?.value || '';
           const comprehensionQuestion = document.getElementById('comprehensionQuestion')?.value;
 
-          if (!acQuestionText || !acAudioUrl || !transcript || !comprehensionQuestion) return null;
+          if (!acQuestionText || !acAudioUrl || !comprehensionQuestion) return null;
 
           const acOptions = [
             { id: 'a', text: document.getElementById('option_a')?.value || '' },
@@ -1757,7 +1757,11 @@
           if (!acCorrectAnswer) return null;
 
           // Store with tags: [audio: url] [transcript: text] [compQuestion: text]
-          questionData.question = acQuestionText + ' [audio: ' + acAudioUrl + '] [transcript: ' + transcript + '] [compQuestion: ' + comprehensionQuestion + ']';
+          questionData.question = acQuestionText + ' [audio: ' + acAudioUrl + ']';
+          if (transcript) {
+            questionData.question += ' [transcript: ' + transcript + ']';
+          }
+          questionData.question += ' [compQuestion: ' + comprehensionQuestion + ']';
           questionData.options = JSON.stringify(acOptions.map(o => o.text));
           questionData.correct_answer = acCorrectAnswer;
           break;
@@ -2215,23 +2219,30 @@
             let acTranscript = '';
             let acCompQuestion = '';
 
-            const audioMatch = acQuestionText.match(/\[audio:\s*(.+?)\]/);
+            // Extract audio URL
+            const audioMatch = acQuestionText.match(/\[audio:\s*([^\]]+)\]/);
             if (audioMatch) {
               acAudioUrl = audioMatch[1];
-              acQuestionText = acQuestionText.replace(/\[audio:\s*.+?\]/, '').trim();
             }
 
-            const transcriptMatch = acQuestionText.match(/\[transcript:\s*(.+?)\]/);
+            // Extract transcript - match until [compQuestion: starts (if present)
+            const transcriptMatch = acQuestionText.match(/\[transcript:\s*(.+?)\]\s*\[compQuestion:/);
             if (transcriptMatch) {
               acTranscript = transcriptMatch[1];
-              acQuestionText = acQuestionText.replace(/\[transcript:\s*.+?\]/, '').trim();
             }
 
-            const compQuestionMatch = acQuestionText.match(/\[compQuestion:\s*(.+?)\]/);
+            // Extract comprehension question - match until end of string
+            const compQuestionMatch = acQuestionText.match(/\[compQuestion:\s*(.+?)\]$/);
             if (compQuestionMatch) {
               acCompQuestion = compQuestionMatch[1];
-              acQuestionText = acQuestionText.replace(/\[compQuestion:\s*.+?\]/, '').trim();
             }
+
+            // Remove all tags to get clean question text
+            acQuestionText = acQuestionText.replace(/\[audio:[^\]]+\]/, '').trim();
+            if (acTranscript) {
+              acQuestionText = acQuestionText.replace(/\[transcript:.+?\]/, '').trim();
+            }
+            acQuestionText = acQuestionText.replace(/\[compQuestion:.+?\]$/, '').trim();
 
             if (questionTextInput) {
               questionTextInput.value = acQuestionText;
