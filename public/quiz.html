@@ -492,7 +492,7 @@
         }
 
         // Remove passage tag from cloze_test (passage is shown in the question rendering)
-        questionText = questionText.replace(/\[passage:[^\]]*\]$/g, '').trim();
+        questionText = questionText.replace(/\[passage:.+?\]$/g, '').trim();
 
         // Set question text
         questionChinese.textContent = questionText;
