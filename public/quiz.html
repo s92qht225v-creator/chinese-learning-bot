@@ -260,6 +260,12 @@
           questionText = questionText.replace(/\[image:\s*.+?\]/, '').trim();
         }
 
+        // Extract Chinese text from " - 中文" format if present (do this BEFORE adding sentence/compQuestion)
+        const chineseMatch = questionText.match(/\s+-\s+(.+)$/);
+        if (chineseMatch) {
+          questionText = questionText.replace(/\s+-\s+.+$/, '').trim();
+        }
+
         // Remove transcript tag from audio_comprehension (transcript is shown after answer)
         // Use greedy match to handle multi-line transcripts
         questionText = questionText.replace(/\[transcript:[^\]]*\]/g, '').trim();
@@ -292,12 +298,6 @@
 
         // Remove passage tag from cloze_test (passage is shown in the question rendering)
         questionText = questionText.replace(/\[passage:[^\]]*\]$/g, '').trim();
-
-        // Extract Chinese text from " - 中文" format if present
-        const chineseMatch = questionText.match(/\s+-\s+(.+)$/);
-        if (chineseMatch) {
-          questionText = questionText.replace(/\s+-\s+.+$/, '').trim();
-        }
 
         // Set question text
         questionChinese.textContent = questionText;
