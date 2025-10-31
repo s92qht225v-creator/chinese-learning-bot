@@ -308,7 +308,7 @@
             <div>
               <div class="flex items-center gap-2">
                 <span id="quizTitle" class="text-sm font-semibold text-text-light dark:text-text-dark">Quiz</span>
-                <span id="questionType" class="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium hidden"></span>
+                <span id="questionType" class="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium"></span>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Question <span id="currentQuestionNum">1</span>/<span id="totalQuestionsNum">1</span></p>
             </div>
@@ -626,6 +626,27 @@
 
         if (progressBar && totalQuestions) {
           progressBar.style.width = `${(currentQuestion / totalQuestions) * 100}%`;
+        }
+
+        // Update question type badge
+        const questionTypeBadge = document.getElementById('questionType');
+        if (questionTypeBadge) {
+          const typeLabels = {
+            'multiple_choice': '📝 Multiple Choice',
+            'fill_gap': '✏️ Fill Gap',
+            'true_false': '✓ True/False',
+            'matching': '🔗 Matching',
+            'image_association': '🖼️ Image Association',
+            'sentence_ordering': '📋 Sentence Ordering',
+            'grammar_choice': '📖 Grammar Choice',
+            'error_correction': '✂️ Error Correction',
+            'cloze_test': '📝 Cloze Test',
+            'dictation': '🎧 Dictation',
+            'audio_comprehension': '🎵 Audio Comprehension',
+            'audio_to_word': '🔊 Audio to Word',
+            'repeat_after_me': '🗣️ Repeat After Me'
+          };
+          questionTypeBadge.textContent = typeLabels[data.questionType] || '📝 Question';
         }
 
         answered = false;
