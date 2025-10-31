@@ -220,8 +220,8 @@ Before deploying changes, test:
 ## Recent Changes History
 
 ### 2025-01-31: Fix Audio Comprehension Question Type
-- **Commit**: 76fe081
-- **Files**: `public/admin/admin-quiz-creator.html`
+- **Commits**: 76fe081, a6a5352, 23318c3
+- **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`
 - **Changes**:
   - **Save**: Separated audio_comprehension from multiple_choice grouping (lines 1681-1709)
     - Collects questionText, audioUrl, transcript, and comprehensionQuestion
@@ -233,11 +233,26 @@ Before deploying changes, test:
     - Extracts transcript using regex `/\[transcript:\s*(.+?)\]/`
     - Extracts comprehension question using regex `/\[compQuestion:\s*(.+?)\]/`
     - Loads all fields including options and checks correct radio button
-- **Why**: Audio comprehension was grouped with multiple_choice but has extra fields (transcript, comprehensionQuestion) that weren't being saved. Form had these fields but they were ignored during save.
+  - **Upload**: Added audio file upload to form (lines 949-962)
+    - File input with Supabase upload support
+    - Shows current audio preview when editing
+    - Same upload functionality as Multiple Choice questions
+  - **Preview**: Separated audio_comprehension preview rendering (lines 1357-1400)
+    - Shows audio icon with headphones graphic
+    - Displays transcript in gray box with "shown after answer" note
+    - Shows comprehension question in blue highlighted box
+    - Shows all 4 answer options with correct answer marked
+  - **Card Display**: Clean display in question cards (admin-questions-list.html lines 269-276)
+    - Strips `[transcript: ...]` tag completely
+    - Extracts and shows `[compQuestion: ...]` as: `Question → Comp Question`
+    - Truncates comp question to 60 chars if needed
+- **Why**: Audio comprehension was grouped with multiple_choice but has extra fields (transcript, comprehensionQuestion) that weren't being saved. Form had these fields but they were ignored during save. Preview wasn't showing transcript/comp question, and card showed raw tags.
 - **Testing**:
   - Create audio comprehension with all fields - all should save
   - Edit audio comprehension - all fields including transcript and comp question should populate
   - Audio URL, transcript, and comprehension question should be preserved
+  - Preview shows audio icon, transcript, comp question, and options
+  - Question cards show clean format with → arrow, not raw tags
 
 ### 2025-01-31: Fix Cloze Test Question Type
 - **Commits**: 569834e, e4c3f82
