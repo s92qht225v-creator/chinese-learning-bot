@@ -500,10 +500,17 @@
 
           <div class="mb-4">
             <label class="block text-sm font-semibold mb-2">Audio File (optional)</label>
+            <div id="currentAudioDisplay" class="hidden mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p class="text-sm font-semibold text-blue-900 mb-2">Current Audio:</p>
+              <audio id="audioPreview" controls class="w-full mb-2">
+                <source type="audio/mpeg">
+              </audio>
+              <p class="text-xs text-blue-600 break-all" id="audioUrlDisplay"></p>
+            </div>
             <input type="file" id="audioFileInput" class="input-field" accept="audio/*" onchange="handleAudioUpload(this)">
             <input type="hidden" id="audioUrl">
             <div id="audioUploadStatus" class="text-sm mt-2"></div>
-            <p class="text-xs text-gray-500 mt-1">Upload audio file to Supabase</p>
+            <p class="text-xs text-gray-500 mt-1">Upload new audio file to replace existing (optional)</p>
           </div>
         </section>
 
@@ -1785,6 +1792,20 @@
           if (audioUrlInput) {
             audioUrlInput.value = audioUrl || question.audio_url || '';
             console.log('  ✓ Set audioUrl to:', audioUrl || question.audio_url || '');
+
+            // Show audio preview if audio URL exists
+            if (audioUrl) {
+              const audioPreview = document.getElementById('audioPreview');
+              const audioUrlDisplay = document.getElementById('audioUrlDisplay');
+              const currentAudioDisplay = document.getElementById('currentAudioDisplay');
+
+              if (audioPreview && audioUrlDisplay && currentAudioDisplay) {
+                audioPreview.src = audioUrl;
+                audioUrlDisplay.textContent = audioUrl;
+                currentAudioDisplay.classList.remove('hidden');
+                console.log('  🎵 Audio preview displayed');
+              }
+            }
           }
           if (imageUrlInput) {
             imageUrlInput.value = imageUrl || question.image_url || '';
@@ -1801,6 +1822,7 @@
             if (imagePreview) {
               imagePreview.src = imageUrl;
               imagePreview.classList.remove('hidden');
+              console.log('  🖼️ Image preview displayed');
             }
           }
 
