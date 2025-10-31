@@ -2313,6 +2313,69 @@
             }
           }
 
+          // Load fill_gap data
+          if (selectedType === 'fill_gap') {
+            // Format: "Complete the sentence: - 我 ___ 学生 (I ___ a student.)"
+            let fillGapQuestionText = question.question || '';
+            let heading = '';
+            let sentence = '';
+            let translation = '';
+
+            // Split on " - " to separate heading from sentence
+            const dashMatch = fillGapQuestionText.match(/^(.+?)\s*-\s*(.+)$/);
+            if (dashMatch) {
+              heading = dashMatch[1].trim();
+              sentence = dashMatch[2].trim();
+
+              // Extract translation from parentheses at the end
+              const translationMatch = sentence.match(/\s*\((.+?)\)\s*$/);
+              if (translationMatch) {
+                translation = translationMatch[1].trim();
+                sentence = sentence.replace(/\s*\(.+?\)\s*$/, '').trim();
+              }
+            } else {
+              // Fallback: use entire question as heading
+              heading = fillGapQuestionText;
+            }
+
+            if (questionTextInput) {
+              questionTextInput.value = heading;
+              console.log('  ✓ Set fill_gap heading to:', heading);
+            }
+
+            const sentenceTextInput = document.getElementById('sentenceText');
+            if (sentenceTextInput) {
+              sentenceTextInput.value = sentence;
+              console.log('  ✓ Set sentence text to:', sentence);
+            }
+
+            const translationInput = document.getElementById('translation');
+            if (translationInput && translation) {
+              translationInput.value = translation;
+              console.log('  ✓ Set translation to:', translation);
+            }
+
+            // Load correct answer
+            const correctAnswerInput = document.getElementById('correctAnswer');
+            if (correctAnswerInput) {
+              correctAnswerInput.value = question.correct_answer || '';
+              console.log('  ✓ Set correct answer to:', question.correct_answer);
+            }
+
+            // Load acceptable answers from acceptable_answers JSONB field
+            const acceptableAnswersInput = document.getElementById('acceptableAnswers');
+            if (acceptableAnswersInput && question.acceptable_answers) {
+              let acceptableList = [];
+              if (Array.isArray(question.acceptable_answers)) {
+                acceptableList = question.acceptable_answers;
+              } else if (typeof question.acceptable_answers === 'object') {
+                acceptableList = Object.values(question.acceptable_answers);
+              }
+              acceptableAnswersInput.value = acceptableList.join(', ');
+              console.log('  ✓ Set acceptable answers to:', acceptableList.join(', '));
+            }
+          }
+
           // Update Save button to indicate editing
           const saveBtn = document.querySelector('button[onclick="saveQuestion()"]');
           if (saveBtn) {
