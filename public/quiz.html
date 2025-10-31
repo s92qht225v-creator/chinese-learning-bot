@@ -854,7 +854,7 @@
 
     // Render fill in the gap question
     function renderFillGapQuestion(data) {
-      // Extract sentence from question format: "heading - sentence"
+      // Extract sentence from question format: "heading - sentence (translation)"
       let sentence = data.sentence || data.question;
       let translation = data.translation || '';
 
@@ -862,6 +862,15 @@
       const dashMatch = sentence.match(/^.+?\s*-\s*(.+)$/);
       if (dashMatch) {
         sentence = dashMatch[1].trim();
+      }
+
+      // Extract translation from parentheses at the end of sentence
+      if (!translation) {
+        const translationMatch = sentence.match(/\s*\((.+?)\)\s*$/);
+        if (translationMatch) {
+          translation = translationMatch[1].trim();
+          sentence = sentence.replace(/\s*\(.+?\)\s*$/, '').trim();
+        }
       }
 
       let html = `<div class="space-y-4">
