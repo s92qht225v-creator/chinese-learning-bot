@@ -220,8 +220,8 @@ Before deploying changes, test:
 ## Recent Changes History
 
 ### 2025-01-31: Fix Cloze Test Question Type
-- **Commit**: 569834e
-- **Files**: `public/admin/admin-quiz-creator.html`
+- **Commits**: 569834e, e4c3f82
+- **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`
 - **Changes**:
   - **Save**: Added cloze_test case in collectCompleteFormData() (lines 1706-1739)
     - Collects questionText and passage text
@@ -239,12 +239,17 @@ Before deploying changes, test:
     - Shows acceptable alternatives if provided
   - **Preview Data**: Added cloze_test data collection (lines 1164-1187)
     - Collects passage and all blank data for preview modal
-- **Why**: Cloze test had no save handler, so passage and blank answers weren't being saved to database. Preview also wasn't working.
+  - **Card Display**: Clean display in question cards (admin-questions-list.html lines 275-281)
+    - Extract passage text from `[passage: ...]` format
+    - Display as `Question → Passage preview` (truncated to 50 chars)
+    - Similar to grammar_choice sentence display format
+- **Why**: Cloze test had no save handler, so passage and blank answers weren't being saved to database. Preview also wasn't working. Passage tag was showing in question cards.
 - **Testing**:
   - Create cloze test with passage and 3 blanks - all should save
   - Edit cloze test - passage and all blanks should populate
   - Preview should show passage with blanks highlighted and answers listed
   - Acceptable alternatives should display correctly
+  - Question cards should show clean format with → arrow, not raw `[passage: ...]` tag
 
 ### 2025-01-31: Fix Grammar Choice Question Type
 - **Commits**: 2ceffe8, ef74219, e1b3ee7
