@@ -1764,14 +1764,24 @@
           break;
 
         case 'fill_gap':
+          const fillGapQuestionText = document.getElementById('questionText')?.value;
           const sentence = document.getElementById('sentenceText')?.value;
           const translation = document.getElementById('translation')?.value;
           const fillCorrect = document.getElementById('correctAnswer')?.value;
-          
-          if (!sentence || !fillCorrect) return null;
+          const acceptableAnswers = document.getElementById('acceptableAnswers')?.value;
 
-          questionData.question = sentence + (translation ? ' (' + translation + ')' : '');
+          if (!fillGapQuestionText || !sentence || !fillCorrect) return null;
+
+          // Combine as: "heading - sentence (translation)"
+          questionData.question = fillGapQuestionText + ' - ' + sentence + (translation ? ' (' + translation + ')' : '');
           questionData.correct_answer = fillCorrect;
+
+          // Store acceptable answers as JSONB array
+          if (acceptableAnswers) {
+            const acceptableList = acceptableAnswers.split(',').map(a => a.trim()).filter(a => a);
+            questionData.acceptable_answers = JSON.stringify(acceptableList);
+          }
+
           questionData.options = JSON.stringify([fillCorrect]); // Store for reference
           break;
 
