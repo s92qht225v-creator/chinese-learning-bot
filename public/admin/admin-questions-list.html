@@ -272,6 +272,13 @@
         const sentenceText = sentenceMatch[1];
         questionText = questionText.replace(/\[sentence:.*?\]/, '').trim() + ' → ' + sentenceText;
       }
+      // Remove passage text from cloze_test (show first 50 chars of passage)
+      const passageMatch = questionText.match(/\[passage:\s*(.+?)\]$/);
+      if (passageMatch) {
+        const passageText = passageMatch[1];
+        const truncatedPassage = passageText.length > 50 ? passageText.substring(0, 50) + '...' : passageText;
+        questionText = questionText.replace(/\[passage:.*?\]$/, '').trim() + ' → ' + truncatedPassage;
+      }
       // Truncate if too long
       if (questionText.length > 100) {
         questionText = questionText.substring(0, 100) + '...';
