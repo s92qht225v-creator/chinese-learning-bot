@@ -478,9 +478,9 @@
         }
 
         // Extract Chinese text from " - 中文" format if present (do this BEFORE adding sentence/compQuestion)
-        // Skip this for fill_gap questions where the sentence is shown in the card
+        // Skip this for fill_gap and true_false questions where the content is shown in the card
         let chineseMatch = null;
-        if (data.questionType !== 'fill_gap' && data.questionType !== 'fill_in_gap') {
+        if (data.questionType !== 'fill_gap' && data.questionType !== 'fill_in_gap' && data.questionType !== 'true_false') {
           chineseMatch = questionText.match(/\s+-\s+(.+)$/);
           if (chineseMatch) {
             questionText = questionText.replace(/\s+-\s+.+$/, '').trim();
