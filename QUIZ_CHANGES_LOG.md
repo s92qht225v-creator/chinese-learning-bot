@@ -219,6 +219,33 @@ Before deploying changes, test:
 
 ## Recent Changes History
 
+### 2025-01-31: Fix Cloze Test Question Type
+- **Commit**: 569834e
+- **Files**: `public/admin/admin-quiz-creator.html`
+- **Changes**:
+  - **Save**: Added cloze_test case in collectCompleteFormData() (lines 1706-1739)
+    - Collects questionText and passage text
+    - Dynamically collects all blank answers (blank_1_answer, blank_2_answer, etc.)
+    - Stores passage with `[passage: text]` tag in question field
+    - Stores blanks as JSON array in options field with structure: `[{blank_num: 1, correct: "answer", acceptable: ["alt1", "alt2"]}, ...]`
+    - Sets first blank's correct answer as primary correct_answer
+  - **Edit**: Added cloze_test handler in edit loader (lines 2065-2106)
+    - Extracts passage using regex `/\[passage:\s*(.+?)\]$/`
+    - Loads all blank answers into their respective input fields
+    - Loads acceptable alternatives (comma-separated)
+  - **Preview**: Added cloze_test rendering (lines 1447-1482)
+    - Displays passage with highlighted blank indicators (replaces ___ with styled span)
+    - Shows correct answer for each blank in green boxes
+    - Shows acceptable alternatives if provided
+  - **Preview Data**: Added cloze_test data collection (lines 1164-1187)
+    - Collects passage and all blank data for preview modal
+- **Why**: Cloze test had no save handler, so passage and blank answers weren't being saved to database. Preview also wasn't working.
+- **Testing**:
+  - Create cloze test with passage and 3 blanks - all should save
+  - Edit cloze test - passage and all blanks should populate
+  - Preview should show passage with blanks highlighted and answers listed
+  - Acceptable alternatives should display correctly
+
 ### 2025-01-31: Fix Grammar Choice Question Type
 - **Commits**: 2ceffe8, ef74219, e1b3ee7
 - **Files**: `public/admin/admin-quiz-creator.html`, `public/admin/admin-questions-list.html`
