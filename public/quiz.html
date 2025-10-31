@@ -724,15 +724,13 @@
         return;
       }
 
-      // Build HTML - heading card, passage card, then input fields
-      let html = `<div class="space-y-6">
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-          <h2 class="text-xl font-bold text-center">${questionHeading}</h2>
+      // Build HTML - heading, passage, then input fields (matching reference exactly)
+      let html = `<div class="space-y-4">
+        <h2 class="text-xl font-bold mb-4">${questionHeading}</h2>
+        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800">
+          <p class="text-2xl leading-relaxed mb-4">${passage}</p>
         </div>
-        <div class="p-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl">
-          <p class="text-2xl leading-relaxed">${passage}</p>
-        </div>
-        <div class="space-y-4">`;
+        <div class="space-y-3">`;
 
       blanks.forEach((blank, index) => {
         html += `<div>
