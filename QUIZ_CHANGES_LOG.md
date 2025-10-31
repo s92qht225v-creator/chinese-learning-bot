@@ -196,7 +196,7 @@ Before deploying changes, test:
 ## Recent Changes History
 
 ### 2025-01-31: Fix Image Display Issues
-- **Commit**: TBD (current)
+- **Commit**: 0c53990
 - **Files**:
   - `public/admin/admin-questions-list.html` (line 268)
   - `public/admin/admin-quiz-creator.html` (lines 699-701)
