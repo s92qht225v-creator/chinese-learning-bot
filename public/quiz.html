@@ -380,12 +380,13 @@
 
     // State
     let currentQuestion = 1;
-    const totalQuestions = 10;
+    let totalQuestions = null; // Will be determined dynamically based on available questions
     let stats = { correct: 0, incorrect: 0 };
     let currentAnswer = null;
     let currentQuestionData = null;
     let answered = false;
     let usedQuestionIds = []; // Track used questions to avoid duplicates
+    let quizComplete = false;
 
     // Get HSK level from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -428,11 +429,12 @@
           headers: telegramAuth.getHeaders()
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
         const data = await response.json();
+
+        if (!response.ok) {
+          // Throw error with message from response
+          throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        }
 
         console.log('Question loaded:', data.id, 'Previously used:', usedQuestionIds);
 
@@ -600,8 +602,11 @@
         }
 
         // Update progress
-        progress.textContent = `Question ${currentQuestion} / ${totalQuestions}`;
-        progressBar.style.width = `${(currentQuestion / totalQuestions) * 100}%`;
+        const progressText = totalQuestions ? `Question ${currentQuestion} / ${totalQuestions}` : `Question ${currentQuestion}`;
+        progress.textContent = progressText;
+        if (totalQuestions) {
+          progressBar.style.width = `${(currentQuestion / totalQuestions) * 100}%`;
+        }
 
         answered = false;
         nextBtn.disabled = true;
@@ -613,7 +618,14 @@
           API_CONFIG_exists: typeof API_CONFIG !== 'undefined',
           telegramAuth_exists: typeof telegramAuth !== 'undefined'
         });
+
+        // If it's a "no questions available" error, re-throw it
+        if (error.message && error.message.includes('No quiz questions available')) {
+          throw error;
+        }
+
         alert(`Failed to load question: ${error.message}\n\nPlease check your internet connection and try again.`);
+        throw error;
       }
     }
 
@@ -1276,23 +1288,38 @@
     }
 
     // Next question
-    nextBtn.addEventListener('click', () => {
-      if (currentQuestion < totalQuestions) {
-        currentQuestion++;
-        loadQuestion();
-      } else {
-        // Quiz finished
-        // End study tracking session
-        if (typeof studyTracker !== 'undefined') {
-          const minutes = studyTracker.endSession();
-          console.log(`Quiz session completed: ${minutes} minutes`);
-        }
+    nextBtn.addEventListener('click', async () => {
+      if (quizComplete) {
+        finishQuiz();
+        return;
+      }
 
-        const accuracy = Math.round((stats.correct / totalQuestions) * 100);
-        alert(`Quiz Complete! 🎉\n\nScore: ${stats.correct * 10}/${totalQuestions * 10}\nCorrect: ${stats.correct}\nIncorrect: ${stats.incorrect}\nAccuracy: ${accuracy}%`);
-        window.location.href = '/practice.html';
+      currentQuestion++;
+
+      // Try to load next question
+      try {
+        await loadQuestion();
+      } catch (error) {
+        // If we can't load more questions, the quiz is complete
+        console.log('No more questions available, finishing quiz');
+        quizComplete = true;
+        totalQuestions = currentQuestion - 1; // Set total to actual questions answered
+        finishQuiz();
       }
     });
+
+    function finishQuiz() {
+      // End study tracking session
+      if (typeof studyTracker !== 'undefined') {
+        const minutes = studyTracker.endSession();
+        console.log(`Quiz session completed: ${minutes} minutes`);
+      }
+
+      const total = stats.correct + stats.incorrect;
+      const accuracy = total > 0 ? Math.round((stats.correct / total) * 100) : 0;
+      alert(`Quiz Complete! 🎉\n\nScore: ${stats.correct * 10}/${total * 10}\nCorrect: ${stats.correct}\nIncorrect: ${stats.incorrect}\nAccuracy: ${accuracy}%`);
+      window.location.href = '/practice.html';
+    }
 
     // Back button
     backBtn.addEventListener('click', () => {
