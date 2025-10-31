@@ -1120,6 +1120,10 @@
         ];
       }
 
+      if (selectedType === 'grammar_choice') {
+        data.sentence = document.getElementById('sentenceText')?.value;
+      }
+
       if (selectedType === 'fill_gap') {
         data.sentence = document.getElementById('sentenceText')?.value;
         data.translation = document.getElementById('translation')?.value;
@@ -1298,7 +1302,6 @@
       // Type-specific rendering
       switch(data.type) {
         case 'multiple_choice':
-        case 'grammar_choice':
         case 'audio_comprehension':
         case 'audio_to_word':
           if (data.options) {
@@ -1309,6 +1312,36 @@
                 <div style="padding: 16px; border: 2px solid ${isCorrect ? '#4ade80' : '#e5e7eb'}; background: ${isCorrect ? 'rgba(74, 222, 128, 0.05)' : 'white'}; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
                   <span style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #d1d5db; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">${opt.id.toUpperCase()}</span>
                   <span style="font-size: 16px; font-weight: 500;">${opt.text || '(empty)'}</span>
+                  ${isCorrect ? '<span style="margin-left: auto; color: #4ade80; font-weight: bold;">✓</span>' : ''}
+                </div>
+              `;
+            });
+            html += '</div>';
+          }
+          break;
+
+        case 'grammar_choice':
+          // Show sentence with gap
+          if (data.sentence) {
+            html += `
+              <div style="padding: 24px; background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; margin-bottom: 16px;">
+                <p style="font-size: 12px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">SENTENCE WITH GAP:</p>
+                <p style="font-size: 24px; font-weight: bold; text-align: center;">${data.sentence}</p>
+              </div>
+            `;
+          }
+          // Show options (only 3 for grammar choice)
+          if (data.options) {
+            html += '<div style="display: flex; flex-direction: column; gap: 12px;">';
+            data.options.forEach(opt => {
+              // Skip empty 4th option
+              if (!opt.text || opt.text.trim() === '') return;
+
+              const isCorrect = opt.correct;
+              html += `
+                <div style="padding: 16px; border: 2px solid ${isCorrect ? '#4ade80' : '#e5e7eb'}; background: ${isCorrect ? 'rgba(74, 222, 128, 0.05)' : 'white'}; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+                  <span style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #d1d5db; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">${opt.id.toUpperCase()}</span>
+                  <span style="font-size: 16px; font-weight: 500;">${opt.text}</span>
                   ${isCorrect ? '<span style="margin-left: auto; color: #4ade80; font-weight: bold;">✓</span>' : ''}
                 </div>
               `;
