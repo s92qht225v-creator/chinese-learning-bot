@@ -196,7 +196,7 @@ Before deploying changes, test:
 ## Recent Changes History
 
 ### 2025-01-31: True/False Edit Support
-- **Commit**: TBD (current)
+- **Commit**: 69fff12
 - **Files**: `public/admin/admin-quiz-creator.html`
 - **Changes**:
   - Added true/false data loading in edit mode (lines 1883-1906)
