@@ -196,20 +196,22 @@ Before deploying changes, test:
 ## Recent Changes History
 
 ### 2025-01-31: Fix Image Display Issues
-- **Commit**: 0c53990
+- **Commits**: 0c53990, 8e631e4
 - **Files**:
   - `public/admin/admin-questions-list.html` (line 268)
-  - `public/admin/admin-quiz-creator.html` (lines 699-701)
+  - `public/admin/admin-quiz-creator.html` (lines 699-701, 1822-1828)
 - **Changes**:
   - Strip `[image: URL]` tags from question cards in list view, replace with 🖼️ icon
   - Fix image preview cropping by changing from fixed `w-48 h-48` to `max-w-md` with `h-auto`
   - Changed `object-cover` to natural sizing so full image shows without cropping
+  - Hide "No image" placeholder text when image is displayed in edit mode
 - **Why**:
   - Question cards showed full image URL making text unreadable
   - Image preview container cropped images instead of showing full image
+  - Placeholder text was overlapping the image preview
 - **Testing**:
   - View questions list - image association should show "Question text 🖼️" not full URL
-  - Edit image association question - preview should show full uncropped image
+  - Edit image association question - preview should show full uncropped image without "No image" text
 
 ### 2025-01-31: True/False Edit Support
 - **Commit**: 69fff12
