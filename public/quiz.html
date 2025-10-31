@@ -276,6 +276,19 @@
           }
         }
 
+        // Extract and display sentence for grammar_choice type
+        const sentenceMatch = questionText.match(/\[sentence:\s*(.+?)\]/);
+        if (sentenceMatch) {
+          const sentence = sentenceMatch[1];
+          questionText = questionText.replace(/\[sentence:.*?\]/, '').trim();
+          // Display sentence prominently
+          if (questionText) {
+            questionText += ' - ' + sentence;
+          } else {
+            questionText = sentence;
+          }
+        }
+
         // Extract Chinese text from " - 中文" format if present
         const chineseMatch = questionText.match(/\s+-\s+(.+)$/);
         if (chineseMatch) {
