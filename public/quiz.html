@@ -187,17 +187,52 @@
     .error-text {
       position: relative;
       cursor: pointer;
-      padding: 2px 4px;
-      border-radius: 4px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      background: white;
+      transition: all 0.2s ease;
+      min-width: 60px;
+      text-align: center;
     }
 
-    .error-text.error {
-      background: rgba(239, 68, 68, 0.1);
-      border-bottom: 2px wavy #ef4444;
+    .error-text:hover {
+      border-color: #448fe4;
+      background: rgba(68, 143, 228, 0.05);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(68, 143, 228, 0.15);
+    }
+
+    .error-text:active {
+      transform: translateY(0);
     }
 
     .error-text.selected {
-      background: rgba(68, 143, 228, 0.2);
+      background: rgba(68, 143, 228, 0.15);
+      border-color: #448fe4;
+      border-width: 3px;
+    }
+
+    .error-text.correct {
+      background: rgba(76, 175, 80, 0.1);
+      border-color: #4CAF50;
+      border-width: 3px;
+    }
+
+    .error-text.wrong {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #ef4444;
+      border-width: 3px;
+    }
+
+    .dark .error-text {
+      background: #1e2732;
+      border-color: #2d3748;
+    }
+
+    .dark .error-text:hover {
+      background: rgba(68, 143, 228, 0.1);
+      border-color: #448fe4;
     }
 
     .record-button {
@@ -719,6 +754,8 @@
         }
 
         answered = false;
+        errorCorrectionAnswered = false;
+        selectedErrorIndex = null;
         nextBtn.disabled = true;
       } catch (error) {
         console.error('Failed to load question:', error);
@@ -995,20 +1032,39 @@
       const sentence = data.sentence || data.options;
       console.log('🔍 Error Correction - Using sentence array:', sentence);
 
-      let html = `<div class="space-y-4">
-        <p class="text-sm text-gray-500 mb-4">Tap the word that is in the wrong position:</p>
-        <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center">
-          <div class="flex justify-center gap-2 flex-wrap">`;
+      // Parse acceptable_answers to get error index and correct sentence
+      let errorIndex = null;
+      let correctSentence = data.correctAnswer || '';
+
+      if (data.acceptable_answers) {
+        try {
+          const extraData = typeof data.acceptable_answers === 'string'
+            ? JSON.parse(data.acceptable_answers)
+            : data.acceptable_answers;
+          errorIndex = extraData.errorIndex;
+          correctSentence = extraData.correctSentence || correctSentence;
+        } catch (e) {
+          console.error('Failed to parse acceptable_answers:', e);
+        }
+      }
+
+      // Store for validation
+      window.currentErrorData = { errorIndex, correctSentence, sentence };
+
+      let html = `<div class="space-y-6">
+        <div class="text-center">
+          <p class="text-base font-semibold text-gray-700 dark:text-gray-300 mb-6">
+            Tap the word that is in the wrong position:
+          </p>
+          <div class="flex justify-center gap-3 flex-wrap max-w-2xl mx-auto">`;
 
       sentence.forEach((word, index) => {
-        html += `<span class="error-text text-2xl font-bold px-2 py-1" onclick="selectError(${index})" data-index="${index}">${word}</span>`;
+        html += `<div class="error-text text-2xl font-bold" onclick="selectError(${index})" data-index="${index}">${word}</div>`;
       });
 
-      html += `</div></div>
-        <div id="correctionInput" class="hidden mt-4">
-          <p class="text-sm font-medium mb-2">Drag to reorder:</p>
-          <div class="drop-zone" id="correctionZone"></div>
+      html += `</div>
         </div>
+        <div id="errorFeedback" class="hidden mt-6"></div>
       </div>`;
 
       optionsContainer.innerHTML = html;
@@ -1414,10 +1470,87 @@
 
     // Select error for error correction
     let selectedErrorIndex = null;
+    let errorCorrectionAnswered = false;
+
     function selectError(index) {
+      if (errorCorrectionAnswered) return; // Prevent changing answer after submission
+
       document.querySelectorAll('.error-text').forEach(el => el.classList.remove('selected'));
       document.querySelector(`[data-index="${index}"]`).classList.add('selected');
       selectedErrorIndex = index;
+
+      // Auto-submit the answer
+      submitErrorCorrection();
+    }
+
+    async function submitErrorCorrection() {
+      if (errorCorrectionAnswered || selectedErrorIndex === null) return;
+
+      errorCorrectionAnswered = true;
+      answered = true;
+
+      const errorData = window.currentErrorData;
+      const isCorrect = selectedErrorIndex === errorData.errorIndex;
+
+      // Visual feedback on selected word
+      const words = document.querySelectorAll('.error-text');
+      words.forEach((word, idx) => {
+        word.style.cursor = 'default';
+        word.style.pointerEvents = 'none';
+
+        if (idx === selectedErrorIndex) {
+          word.classList.remove('selected');
+          word.classList.add(isCorrect ? 'correct' : 'wrong');
+        }
+
+        // Show the actual error word
+        if (idx === errorData.errorIndex && !isCorrect) {
+          word.classList.add('correct');
+        }
+      });
+
+      // Show feedback
+      const feedbackDiv = document.getElementById('errorFeedback');
+      if (feedbackDiv) {
+        feedbackDiv.classList.remove('hidden');
+        feedbackDiv.innerHTML = `
+          <div class="p-4 rounded-xl ${isCorrect ? 'bg-green-50 dark:bg-green-900/20 border-2 border-green-500' : 'bg-red-50 dark:bg-red-900/20 border-2 border-red-500'}">
+            <p class="text-lg font-bold ${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'} mb-2">
+              ${isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+            </p>
+            ${!isCorrect ? `<p class="text-sm text-gray-700 dark:text-gray-300 mb-3">The error was at word ${errorData.errorIndex + 1}</p>` : ''}
+            <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Correct sentence:</p>
+              <p class="text-xl font-bold text-gray-900 dark:text-white">${errorData.correctSentence}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      // Update stats
+      if (isCorrect) {
+        stats.correct++;
+      } else {
+        stats.incorrect++;
+      }
+
+      // Save progress to backend
+      if (currentQuestionData && telegramAuth.isAuthenticated()) {
+        try {
+          await fetch(API_CONFIG.url('/api/progress/quiz'), {
+            method: 'POST',
+            headers: telegramAuth.getHeaders(),
+            body: JSON.stringify({
+              vocabularyId: currentQuestionData.id,
+              correct: isCorrect
+            })
+          });
+        } catch (error) {
+          console.error('Failed to save progress:', error);
+        }
+      }
+
+      updateStats();
       nextBtn.disabled = false;
     }
 
