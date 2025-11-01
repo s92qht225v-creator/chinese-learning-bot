@@ -1862,12 +1862,22 @@
           const incorrectSentence = document.getElementById('incorrectSentence')?.value;
           const correctFixed = document.getElementById('correctSentence')?.value;
           const errorIndex = document.getElementById('errorIndex')?.value;
-          
-          if (!errorQuestion || !incorrectSentence || !correctFixed) return null;
 
-          questionData.question = errorQuestion + ' - ' + incorrectSentence;
+          if (!errorQuestion || !incorrectSentence || !correctFixed || errorIndex === '') return null;
+
+          // Split incorrect sentence into array of words for rendering
+          const wordsArray = incorrectSentence.split(' ').filter(w => w.trim());
+
+          questionData.question = errorQuestion;
           questionData.correct_answer = correctFixed;
-          questionData.options = JSON.stringify({ errorIndex: errorIndex, incorrect: incorrectSentence });
+          // Store words array in options (for rendering), errorIndex separately
+          questionData.options = JSON.stringify(wordsArray);
+          // Store additional data in a structured format
+          questionData.acceptable_answers = JSON.stringify({
+            errorIndex: parseInt(errorIndex),
+            incorrectSentence: incorrectSentence,
+            correctSentence: correctFixed
+          });
           break;
 
         case 'dictation':
@@ -2440,6 +2450,52 @@
                   console.log(`  ✓ Set blank ${blankNum} acceptable to:`, blankData.acceptable.join(', '));
                 }
               });
+            }
+          }
+
+          // Load error_correction data
+          if (selectedType === 'error_correction') {
+            // questionText is just the instruction
+            if (questionTextInput) {
+              questionTextInput.value = question.question || 'Find and correct the error in this sentence:';
+              console.log('  ✓ Set error_correction question to:', question.question);
+            }
+
+            // Load incorrect sentence from acceptable_answers (where we stored it)
+            let incorrectSent = '';
+            let errorIdx = '';
+            let correctSent = question.correct_answer || '';
+
+            if (question.acceptable_answers) {
+              try {
+                const extraData = typeof question.acceptable_answers === 'string'
+                  ? JSON.parse(question.acceptable_answers)
+                  : question.acceptable_answers;
+
+                incorrectSent = extraData.incorrectSentence || '';
+                errorIdx = extraData.errorIndex !== undefined ? extraData.errorIndex : '';
+                correctSent = extraData.correctSentence || correctSent;
+              } catch (e) {
+                console.error('Failed to parse acceptable_answers:', e);
+              }
+            }
+
+            const incorrectSentenceInput = document.getElementById('incorrectSentence');
+            if (incorrectSentenceInput) {
+              incorrectSentenceInput.value = incorrectSent;
+              console.log('  ✓ Set incorrect sentence to:', incorrectSent);
+            }
+
+            const errorIndexInput = document.getElementById('errorIndex');
+            if (errorIndexInput && errorIdx !== '') {
+              errorIndexInput.value = errorIdx;
+              console.log('  ✓ Set error index to:', errorIdx);
+            }
+
+            const correctSentenceInput = document.getElementById('correctSentence');
+            if (correctSentenceInput) {
+              correctSentenceInput.value = correctSent;
+              console.log('  ✓ Set correct sentence to:', correctSent);
             }
           }
 
