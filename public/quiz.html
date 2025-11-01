@@ -653,6 +653,7 @@
             renderGrammarChoiceQuestion(data);
             break;
           case 'error_correction':
+            console.log('📝 Loading error_correction question, currentQuestionData:', currentQuestionData);
             questionCard.classList.remove('hidden');
             renderErrorCorrectionQuestion(data);
             break;
@@ -985,7 +986,14 @@
 
     // Render error correction question
     function renderErrorCorrectionQuestion(data) {
+      console.log('🔍 Error Correction - Full data:', data);
+      console.log('🔍 Error Correction - data.options:', data.options);
+      console.log('🔍 Error Correction - data.sentence:', data.sentence);
+      console.log('🔍 Error Correction - data.acceptable_answers:', data.acceptable_answers);
+      console.log('🔍 Error Correction - data.correctAnswer:', data.correctAnswer);
+
       const sentence = data.sentence || data.options;
+      console.log('🔍 Error Correction - Using sentence array:', sentence);
 
       let html = `<div class="space-y-4">
         <p class="text-sm text-gray-500 mb-4">Tap the word that is in the wrong position:</p>
