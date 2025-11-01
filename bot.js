@@ -196,9 +196,9 @@ app.get('/api/quiz', async (req, res) => {
     // Handle different question formats
     let optionsArray = [];
 
-    // For matching and cloze_test questions, preserve the structure
-    if (question.question_type === 'matching' || question.question_type === 'cloze_test') {
-      optionsArray = options; // Keep structure as-is
+    // For matching, cloze_test, and error_correction questions, preserve the structure
+    if (question.question_type === 'matching' || question.question_type === 'cloze_test' || question.question_type === 'error_correction') {
+      optionsArray = options; // Keep structure as-is (don't shuffle)
     } else {
       // For other question types, extract text values
       if (Array.isArray(options)) {
@@ -208,7 +208,7 @@ app.get('/api/quiz', async (req, res) => {
         // If options is an object with a, b, c, d keys
         optionsArray = Object.values(options).filter(Boolean);
       }
-      // Shuffle options for non-matching questions
+      // Shuffle options for multiple choice questions
       optionsArray.sort(() => Math.random() - 0.5);
     }
 
@@ -221,6 +221,7 @@ app.get('/api/quiz', async (req, res) => {
       questionType: question.question_type,
       audioUrl: question.audio_url,
       imageUrl: question.image_url,
+      acceptable_answers: question.acceptable_answers,
       totalQuestions: totalAvailable
     });
   } catch (error) {
