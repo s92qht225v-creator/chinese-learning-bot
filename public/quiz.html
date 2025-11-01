@@ -1395,6 +1395,140 @@
       updateStats();
     }
 
+    // Submit dictation answer
+    async function submitDictationAnswer() {
+      if (answered) return;
+      answered = true;
+
+      const input = document.getElementById('dictationInput');
+      const userAnswer = input.value.trim();
+      const correctAnswer = currentAnswer;
+
+      // Parse acceptable answers (comma-separated alternatives)
+      let acceptableAnswers = [];
+      if (currentQuestionData.acceptable_answers) {
+        if (typeof currentQuestionData.acceptable_answers === 'string') {
+          acceptableAnswers = currentQuestionData.acceptable_answers.split(',').map(a => a.trim().toLowerCase());
+        }
+      }
+
+      // Check answer (case-insensitive)
+      const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase() ||
+                       acceptableAnswers.includes(userAnswer.toLowerCase());
+
+      console.log('Dictation answer:', {
+        userAnswer,
+        correctAnswer,
+        acceptableAnswers,
+        isCorrect
+      });
+
+      // Visual feedback
+      if (isCorrect) {
+        input.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+        stats.correct++;
+      } else {
+        input.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+        stats.incorrect++;
+
+        // Show correct answer
+        const correctDiv = document.createElement('div');
+        correctDiv.className = 'mt-3 p-3 bg-green-50 dark:bg-green-900/20 border-2 border-green-500 rounded-lg';
+        correctDiv.innerHTML = `<p class="text-sm font-semibold text-green-700 dark:text-green-400 mb-1">Correct answer:</p><p class="text-xl font-bold text-gray-900 dark:text-white">${correctAnswer}</p>`;
+        input.parentNode.appendChild(correctDiv);
+      }
+      input.disabled = true;
+
+      // Save progress
+      if (currentQuestionData && telegramAuth.isAuthenticated()) {
+        try {
+          await fetch(API_CONFIG.url('/api/progress/quiz'), {
+            method: 'POST',
+            headers: telegramAuth.getHeaders(),
+            body: JSON.stringify({
+              vocabularyId: currentQuestionData.id,
+              correct: isCorrect
+            })
+          });
+        } catch (error) {
+          console.error('Failed to save progress:', error);
+        }
+      }
+
+      updateStats();
+    }
+
+    // Submit fill gap answer
+    async function submitFillGapAnswer() {
+      if (answered) return;
+      answered = true;
+
+      const input = document.getElementById('gapInput');
+      const userAnswer = input.value.trim();
+      const correctAnswer = currentAnswer;
+
+      // Parse acceptable answers from JSONB array
+      let acceptableAnswers = [];
+      if (currentQuestionData.acceptable_answers) {
+        try {
+          const parsed = typeof currentQuestionData.acceptable_answers === 'string'
+            ? JSON.parse(currentQuestionData.acceptable_answers)
+            : currentQuestionData.acceptable_answers;
+
+          if (Array.isArray(parsed)) {
+            acceptableAnswers = parsed.map(a => a.toLowerCase());
+          }
+        } catch (e) {
+          console.error('Failed to parse acceptable_answers:', e);
+        }
+      }
+
+      // Check answer (case-insensitive)
+      const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase() ||
+                       acceptableAnswers.includes(userAnswer.toLowerCase());
+
+      console.log('Fill gap answer:', {
+        userAnswer,
+        correctAnswer,
+        acceptableAnswers,
+        isCorrect
+      });
+
+      // Visual feedback
+      if (isCorrect) {
+        input.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+        stats.correct++;
+      } else {
+        input.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+        stats.incorrect++;
+
+        // Show correct answer
+        const correctDiv = document.createElement('div');
+        correctDiv.className = 'mt-3 p-3 bg-green-50 dark:bg-green-900/20 border-2 border-green-500 rounded-lg';
+        correctDiv.innerHTML = `<p class="text-sm font-semibold text-green-700 dark:text-green-400 mb-1">Correct answer:</p><p class="text-xl font-bold text-gray-900 dark:text-white">${correctAnswer}</p>`;
+        input.parentNode.appendChild(correctDiv);
+      }
+      input.disabled = true;
+
+      // Save progress
+      if (currentQuestionData && telegramAuth.isAuthenticated()) {
+        try {
+          await fetch(API_CONFIG.url('/api/progress/quiz'), {
+            method: 'POST',
+            headers: telegramAuth.getHeaders(),
+            body: JSON.stringify({
+              vocabularyId: currentQuestionData.id,
+              correct: isCorrect
+            })
+          });
+        } catch (error) {
+          console.error('Failed to save progress:', error);
+        }
+      }
+
+      updateStats();
+    }
+
     // Handle option selection
     async function selectOption(selectedElement, selectedAnswer) {
       if (answered) return;
@@ -1651,6 +1785,16 @@
       // If this is a sentence ordering question and not yet answered, submit the answer first
       if (currentQuestionData?.questionType === 'sentence_ordering' && !answered) {
         await submitSentenceOrderingAnswer();
+      }
+
+      // If this is a dictation question and not yet answered, submit the answer first
+      if (currentQuestionData?.questionType === 'dictation' && !answered) {
+        await submitDictationAnswer();
+      }
+
+      // If this is a fill gap question and not yet answered, submit the answer first
+      if (currentQuestionData?.questionType === 'fill_gap' && !answered) {
+        await submitFillGapAnswer();
       }
 
       currentQuestion++;
