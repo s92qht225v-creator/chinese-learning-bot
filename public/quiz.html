@@ -1267,6 +1267,60 @@
       updateStats();
     }
 
+    // Submit sentence ordering answer
+    async function submitSentenceOrderingAnswer() {
+      if (answered) return;
+      answered = true;
+
+      // Get the correct answer (correct sentence)
+      const correctAnswer = currentQuestionData.correctAnswer || currentAnswer;
+
+      // Split correct answer into words
+      const correctWords = correctAnswer.split(' ').filter(w => w.trim());
+
+      // Compare ordered words with correct answer
+      const isCorrect = JSON.stringify(orderedWords) === JSON.stringify(correctWords);
+
+      // Visual feedback on drop zone
+      const dropZone = document.getElementById('dropZone');
+      if (dropZone) {
+        const wordChips = dropZone.querySelectorAll('.word-chip');
+        wordChips.forEach((chip, index) => {
+          const isWordCorrect = orderedWords[index] === correctWords[index];
+          if (isWordCorrect) {
+            chip.classList.add('!border-green-500', '!bg-green-50', 'dark:!bg-green-900/20');
+          } else {
+            chip.classList.add('!border-red-500', '!bg-red-50', 'dark:!bg-red-900/20');
+          }
+        });
+      }
+
+      // Update stats
+      if (isCorrect) {
+        stats.correct++;
+      } else {
+        stats.incorrect++;
+      }
+
+      // Save progress
+      if (currentQuestionData && telegramAuth.isAuthenticated()) {
+        try {
+          await fetch(API_CONFIG.url('/api/progress/quiz'), {
+            method: 'POST',
+            headers: telegramAuth.getHeaders(),
+            body: JSON.stringify({
+              vocabularyId: currentQuestionData.id,
+              correct: isCorrect
+            })
+          });
+        } catch (error) {
+          console.error('Failed to save progress:', error);
+        }
+      }
+
+      updateStats();
+    }
+
     // Handle option selection
     async function selectOption(selectedElement, selectedAnswer) {
       if (answered) return;
@@ -1441,6 +1495,11 @@
       // If this is a matching question and not yet answered, submit the answer first
       if (currentQuestionData?.questionType === 'matching' && !answered) {
         await submitMatchingAnswer();
+      }
+
+      // If this is a sentence ordering question and not yet answered, submit the answer first
+      if (currentQuestionData?.questionType === 'sentence_ordering' && !answered) {
+        await submitSentenceOrderingAnswer();
       }
 
       currentQuestion++;
