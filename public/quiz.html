@@ -1029,12 +1029,11 @@
       console.log('🔍 Error Correction - data.acceptable_answers:', data.acceptable_answers);
       console.log('🔍 Error Correction - data.correctAnswer:', data.correctAnswer);
 
-      const sentence = data.sentence || data.options;
-      console.log('🔍 Error Correction - Using sentence array:', sentence);
-
-      // Parse acceptable_answers to get error index and correct sentence
+      // Parse acceptable_answers to get error index, correct sentence, AND incorrect sentence
       let errorIndex = null;
       let correctSentence = data.correctAnswer || '';
+      let incorrectSentence = '';
+      let sentence = data.sentence || data.options;
 
       if (data.acceptable_answers) {
         try {
@@ -1043,10 +1042,18 @@
             : data.acceptable_answers;
           errorIndex = extraData.errorIndex;
           correctSentence = extraData.correctSentence || correctSentence;
+          incorrectSentence = extraData.incorrectSentence || '';
+
+          // If we have incorrectSentence in acceptable_answers, use that as the source of truth
+          if (incorrectSentence) {
+            sentence = incorrectSentence.split(' ').filter(w => w.trim());
+          }
         } catch (e) {
           console.error('Failed to parse acceptable_answers:', e);
         }
       }
+
+      console.log('🔍 Error Correction - Using sentence array:', sentence);
 
       // Store for validation
       window.currentErrorData = { errorIndex, correctSentence, sentence };
