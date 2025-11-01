@@ -552,7 +552,8 @@
         }
 
         // Remove passage tag from cloze_test (passage is shown in the question rendering)
-        questionText = questionText.replace(/\[passage:.+?\]$/g, '').trim();
+        // This only affects the heading display, data.question still has the passage
+        questionText = questionText.replace(/\[passage:.+\]$/s, '').trim();
 
         // Set question heading
         const questionHeading = document.getElementById('questionHeading');
@@ -818,18 +819,21 @@
       console.log('Rendering cloze test with data:', data);
       console.log('data.options type:', typeof data.options);
       console.log('data.options value:', data.options);
+      console.log('data.question:', data.question);
 
       // Extract passage from question text
-      const passageMatch = data.question.match(/\[passage:\s*(.+?)\]$/);
+      // Use greedy match and handle the passage tag more robustly
+      const passageMatch = data.question.match(/\[passage:\s*(.+)\]$/s);
       if (!passageMatch) {
         console.error('No passage found in cloze test question');
+        console.error('Question text:', data.question);
         return;
       }
 
       const passage = passageMatch[1];
 
       // Extract question heading (text before [passage:...])
-      const questionHeading = data.question.replace(/\[passage:.+?\]$/g, '').trim();
+      const questionHeading = data.question.replace(/\[passage:.+\]$/s, '').trim();
 
       // Parse blanks from options
       let blanks = [];
