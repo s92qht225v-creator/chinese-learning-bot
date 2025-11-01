@@ -504,16 +504,15 @@
           }
         }
 
-        // Extract and display sentence for grammar_choice type
-        const sentenceMatch = questionText.match(/\[sentence:\s*([^\]]+)\]/);
-        if (sentenceMatch) {
-          const sentence = sentenceMatch[1];
-          questionText = questionText.replace(/\[sentence:[^\]]+\]/, '').trim();
-          // Display sentence prominently
-          if (questionText) {
-            questionText += ' - ' + sentence;
-          } else {
-            questionText = sentence;
+        // For grammar_choice questions, extract sentence (shown in card) from heading
+        // Format: "Choose the correct word: [sentence: 我 ___ 学生。]"
+        if (data.questionType === 'grammar_choice') {
+          const sentenceMatch = questionText.match(/\[sentence:\s*([^\]]+)\]/);
+          if (sentenceMatch) {
+            // Store sentence for use in render function
+            data.sentence = sentenceMatch[1];
+            // Remove sentence tag from heading, keep only the instruction
+            questionText = questionText.replace(/\[sentence:[^\]]+\]/, '').trim();
           }
         }
 
