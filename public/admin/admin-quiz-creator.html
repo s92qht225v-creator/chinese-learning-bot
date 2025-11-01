@@ -1907,12 +1907,19 @@
           const dictQuestion = document.getElementById('questionText')?.value;
           const dictAudio = document.getElementById('audioUrl')?.value;
           const dictAnswer = document.getElementById('correctAnswer')?.value;
+          const acceptableAnswers = document.getElementById('acceptableAnswers')?.value;
 
           if (!dictQuestion || !dictAudio || !dictAnswer) return null;
 
           questionData.question = dictQuestion + ' [audio: ' + dictAudio + ']';
           questionData.correct_answer = dictAnswer;
           questionData.options = JSON.stringify([dictAnswer]);
+          questionData.audio_url = dictAudio;
+
+          // Store acceptable answers if provided
+          if (acceptableAnswers) {
+            questionData.acceptable_answers = acceptableAnswers;
+          }
           break;
 
         case 'matching':
@@ -2430,6 +2437,55 @@
                   }
                 }
               }
+            }
+          }
+
+          // Load dictation data
+          if (selectedType === 'dictation') {
+            // Extract audio URL from [audio: url] format
+            let dictQuestionText = question.question || '';
+            let dictAudioUrl = '';
+
+            const audioMatch = dictQuestionText.match(/\[audio:\s*([^\]]+)\]/);
+            if (audioMatch) {
+              dictAudioUrl = audioMatch[1];
+              dictQuestionText = dictQuestionText.replace(/\[audio:\s*[^\]]+\]/, '').trim();
+            }
+
+            if (questionTextInput) {
+              questionTextInput.value = dictQuestionText;
+              console.log('  ✓ Set dictation question to:', dictQuestionText);
+            }
+
+            const audioUrlInput = document.getElementById('audioUrl');
+            if (audioUrlInput) {
+              audioUrlInput.value = dictAudioUrl;
+              console.log('  ✓ Set audio URL to:', dictAudioUrl);
+
+              // Show audio preview if audio URL exists
+              if (dictAudioUrl) {
+                const audioPreview = document.getElementById('audioPreview');
+                const audioUrlDisplay = document.getElementById('audioUrlDisplay');
+                const currentAudioDisplay = document.getElementById('currentAudioDisplay');
+
+                if (audioPreview && audioUrlDisplay && currentAudioDisplay) {
+                  audioPreview.src = dictAudioUrl;
+                  audioUrlDisplay.textContent = dictAudioUrl;
+                  currentAudioDisplay.style.display = 'block';
+                  console.log('  🎵 Audio preview displayed');
+                }
+              }
+            }
+
+            if (correctAnswerInput) {
+              correctAnswerInput.value = question.correct_answer || '';
+              console.log('  ✓ Set correct answer to:', question.correct_answer || '');
+            }
+
+            const acceptableAnswersInput = document.getElementById('acceptableAnswers');
+            if (acceptableAnswersInput) {
+              acceptableAnswersInput.value = question.acceptable_answers || '';
+              console.log('  ✓ Set acceptable answers to:', question.acceptable_answers || '');
             }
           }
 
