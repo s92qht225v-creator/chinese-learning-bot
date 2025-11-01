@@ -1903,7 +1903,7 @@
           });
           break;
 
-        case 'dictation':
+        case 'dictation': {
           const dictQuestion = document.getElementById('questionText')?.value;
           const dictAudio = document.getElementById('audioUrl')?.value;
           const dictAnswer = document.getElementById('correctAnswer')?.value;
@@ -1921,6 +1921,7 @@
             questionData.acceptable_answers = acceptableAnswers;
           }
           break;
+        }
 
         case 'matching':
           const matchingQuestion = document.getElementById('questionText')?.value;
