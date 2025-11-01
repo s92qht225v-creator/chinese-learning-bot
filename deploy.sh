@@ -1,46 +1,37 @@
 #!/bin/bash
 
-# Deployment script for Google Cloud server
-# Run this on your server: bash deploy.sh
+# Server-side deployment script
+# Run this on the server: bash deploy.sh
 
-echo "🚀 Starting deployment..."
+set -e  # Exit on error
 
-# Stop existing PM2 processes
-pm2 delete chinese-learning-bot 2>/dev/null || true
+echo "🚀 Starting server deployment..."
+echo ""
 
-# Install dependencies
+# Navigate to project directory
+cd /var/www/chinese-learning-bot
+
+# Pull latest changes from git
+echo "⬇️  Pulling latest changes from GitHub..."
+git pull origin main
+
+# Install/update dependencies
 echo "📦 Installing dependencies..."
-npm install
+npm install --production
 
-# Create logs directory
-mkdir -p logs
-
-# Test if bot.js works
-echo "🧪 Testing bot..."
-timeout 5 node bot.js &
-sleep 3
-if curl -s http://localhost:3000/api/vocabulary > /dev/null; then
-    echo "✅ Bot is working!"
-else
-    echo "❌ Bot failed to start. Check the output above."
-    exit 1
-fi
-
-# Kill test process
-pkill -f "node bot.js"
-
-# Start with PM2
-echo "🔄 Starting with PM2..."
-pm2 start ecosystem.config.js
-pm2 save
+# Restart the application
+echo "🔄 Restarting application with PM2..."
+pm2 restart chinese-learning-bot
 
 # Show status
 echo ""
-echo "📊 Status:"
-pm2 status
-pm2 logs chinese-learning-bot --lines 10
+echo "📊 Application Status:"
+pm2 status chinese-learning-bot
+
+echo ""
+echo "📝 Recent logs:"
+pm2 logs chinese-learning-bot --lines 20 --nostream
 
 echo ""
 echo "✅ Deployment complete!"
-echo "🌐 Your bot should be running at: http://lokatsiya.online"
-echo "📱 Update BotFather menu button to: http://lokatsiya.online"
+echo "🌐 Application running at: https://lokatsiya.online"
