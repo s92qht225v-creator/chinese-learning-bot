@@ -749,7 +749,7 @@
           <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center">
             <span class="font-semibold text-gray-600">${optId.toUpperCase()}</span>
           </div>
-          <span class="text-base font-medium">${opt}</span>
+          <span class="text-2xl font-bold">${opt}</span>
         </div>`;
       });
       html += '</div>';
@@ -784,13 +784,13 @@
 
         // Left side (Chinese or term)
         const leftBox = document.createElement('div');
-        leftBox.className = 'flex-1 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 font-bold text-xl text-center border-2 border-blue-200 dark:border-blue-800';
+        leftBox.className = 'flex-1 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 font-bold text-2xl text-center border-2 border-blue-200 dark:border-blue-800';
         leftBox.textContent = pair.left || pair.chinese;
 
         // Right side (dropdown)
         const select = document.createElement('select');
         select.id = `match_${index}`;
-        select.className = 'flex-1 p-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-light dark:text-text-dark font-medium';
+        select.className = 'flex-1 p-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-light dark:text-text-dark font-bold text-2xl';
         select.onchange = checkMatchingComplete;
 
         // Add placeholder option
@@ -899,7 +899,7 @@
 
       let html = `<div class="space-y-4">
         <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center mb-4">
-          <p class="text-3xl font-bold mb-2">${sentence}</p>
+          <p class="text-2xl font-bold mb-2">${sentence}</p>
           ${translation ? `<p class="text-sm text-gray-500">${translation}</p>` : ''}
         </div>
         <div>
@@ -951,7 +951,7 @@
 
       shuffled.forEach((word, index) => {
         html += `<div class="word-chip" draggable="true" ondragstart="drag(event)" id="word_${index}" data-word="${word}">
-          <span class="text-lg font-bold">${word}</span>
+          <span class="text-2xl font-bold">${word}</span>
         </div>`;
       });
 
@@ -966,7 +966,7 @@
 
       let html = `<div class="space-y-4">
         <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center mb-6">
-          <p class="text-3xl font-bold">${sentence}</p>
+          <p class="text-2xl font-bold">${sentence}</p>
         </div>
         <div class="space-y-3">`;
 
@@ -1021,7 +1021,7 @@
       const options = data.options;
 
       let html = `<div class="space-y-4">
-        <p class="font-semibold mb-3">${comprehensionQuestion}</p>
+        <p class="text-2xl font-bold mb-3">${comprehensionQuestion}</p>
         <div class="space-y-3">`;
 
       options.forEach((opt, index) => {
@@ -1030,7 +1030,7 @@
           <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center">
             <span class="font-semibold text-gray-600">${optId.toUpperCase()}</span>
           </div>
-          <span class="text-base font-medium">${opt}</span>
+          <span class="text-2xl font-bold">${opt}</span>
         </div>`;
       });
 
