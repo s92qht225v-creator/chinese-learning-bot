@@ -686,9 +686,9 @@
       q.options.forEach(opt => {
         html += `<div onclick="selectOption('${opt.id}')" class="option-card rounded-xl p-4 flex items-center gap-3" data-option="${opt.id}">
           <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center">
-            <span class="font-bold text-gray-600">${opt.id.toUpperCase()}</span>
+            <span class="font-semibold text-gray-600">${opt.id.toUpperCase()}</span>
           </div>
-          <span class="text-base font-bold">${opt.text}</span>
+          <span class="text-base font-medium">${opt.text}</span>
         </div>`;
       });
       html += '</div></div>';
@@ -699,8 +699,8 @@
       return `<div class="space-y-4">
         <h2 class="text-xl font-bold mb-4">${q.question}</h2>
         <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center mb-4">
-          <p class="text-2xl font-bold mb-2">${q.sentence}</p>
-          <p class="text-sm font-medium">${q.translation}</p>
+          <p class="text-3xl font-bold mb-2">${q.sentence}</p>
+          <p class="text-sm text-gray-500">${q.translation}</p>
         </div>
         <div>
           <label class="block text-sm font-medium mb-2">Your answer:</label>
@@ -718,15 +718,14 @@
         <div class="space-y-3">
           <div onclick="selectTrueFalse(true)" class="option-card rounded-xl p-5 flex items-center gap-3" data-option="true">
             <span class="material-symbols-outlined text-green-500 text-3xl">check_circle</span>
-            <span class="text-lg font-bold">True</span>
+            <span class="text-lg font-semibold">True</span>
           </div>
           <div onclick="selectTrueFalse(false)" class="option-card rounded-xl p-5 flex items-center gap-3" data-option="false">
             <span class="material-symbols-outlined text-red-500 text-3xl">cancel</span>
-            <span class="text-lg font-bold">False</span>
+            <span class="text-lg font-semibold">False</span>
           </div>
         </div>
       </div>`;
-    }
     }
 
     function renderMatching(q) {
@@ -736,10 +735,10 @@
       
       q.pairs.forEach((pair, index) => {
         html += `<div class="flex items-center gap-4">
-          <div class="flex-1 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 font-bold text-2xl text-center">
+          <div class="flex-1 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 font-bold text-xl text-center">
             ${pair.chinese}
           </div>
-          <select id="match_${index}" onchange="handleMatchingChange()" class="flex-1 p-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 font-bold text-base">
+          <select id="match_${index}" onchange="handleMatchingChange()" class="flex-1 p-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
             <option value="">Select...</option>
             ${q.pairs.map(p => `<option value="${p.id}">${p.english}</option>`).join('')}
           </select>
@@ -769,14 +768,13 @@
       html += '</div></div>';
       return html;
     }
-    }
 
     function renderSentenceOrdering(q) {
       let html = `<div class="space-y-4">
         <h2 class="text-xl font-bold mb-4">${q.question}</h2>
-        <p class="text-sm font-medium mb-2">${q.translation}</p>
+        <p class="text-sm text-gray-500 mb-2">${q.translation}</p>
         <div class="drop-zone mb-4" id="dropZone" ondrop="drop(event)" ondragover="allowDrop(event)">
-          <p class="text-gray-400 text-sm font-medium">Drop words here in correct order</p>
+          <p class="text-gray-400 text-sm">Drop words here in correct order</p>
         </div>
         <div class="flex flex-wrap gap-3" id="wordBank">`;
       
@@ -784,7 +782,7 @@
       const shuffled = [...q.words].sort(() => Math.random() - 0.5);
       shuffled.forEach((word, index) => {
         html += `<div class="word-chip" draggable="true" ondragstart="drag(event)" id="word_${index}" data-word="${word}">
-          <span class="text-xl font-bold">${word}</span>
+          <span class="text-lg font-bold">${word}</span>
         </div>`;
       });
       
@@ -792,13 +790,11 @@
       return html;
     }
 
-    }
-
     function renderGrammarChoice(q) {
       let html = `<div class="space-y-4">
         <h2 class="text-xl font-bold mb-4">${q.question}</h2>
         <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center mb-6">
-          <p class="text-2xl font-bold">${q.sentence}</p>
+          <p class="text-3xl font-bold">${q.sentence}</p>
         </div>
         <div class="space-y-3">`;
       
@@ -815,7 +811,7 @@
     function renderErrorCorrection(q) {
       let html = `<div class="space-y-4">
         <h2 class="text-xl font-bold mb-4">${q.question}</h2>
-        <p class="text-sm font-medium mb-4">Tap the word that is in the wrong position:</p>
+        <p class="text-sm text-gray-500 mb-4">Tap the word that is in the wrong position:</p>
         <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center">
           <div class="flex justify-center gap-2 flex-wrap">`;
       
@@ -839,7 +835,7 @@
       let html = `<div class="space-y-6">
         <div class="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700">
           <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">📄 ${q.question}</p>
-          <p class="text-2xl leading-loose font-bold text-gray-900 dark:text-gray-100">`;
+          <p class="text-2xl leading-loose font-medium text-gray-900 dark:text-gray-100">`;
       
       // Build passage with inline blanks shown as ___
       passageParts.forEach((part, index) => {
@@ -856,7 +852,7 @@
       // Show blank inputs below with labels
       q.blanks.forEach((blank, index) => {
         html += `<div>
-          <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Blank ${index + 1}:</label>
+          <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Blank ${index + 1}:</label>
           <input type="text" 
                  id="blank_${index}" 
                  class="input-box" 
@@ -907,9 +903,9 @@
       q.options.forEach(opt => {
         html += `<div onclick="selectOption('${opt.id}')" class="option-card rounded-xl p-4 flex items-center gap-3" data-option="${opt.id}">
           <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center">
-            <span class="font-bold text-gray-600">${opt.id.toUpperCase()}</span>
+            <span class="font-semibold text-gray-600">${opt.id.toUpperCase()}</span>
           </div>
-          <span class="text-base font-bold">${opt.text}</span>
+          <span class="text-base font-medium">${opt.text}</span>
         </div>`;
       });
       
@@ -935,7 +931,7 @@
       q.options.forEach(opt => {
         html += `<div onclick="selectOption('${opt.id}')" class="option-card rounded-xl p-4" data-option="${opt.id}">
           <p class="text-2xl font-bold mb-1">${opt.text.split(' ')[0]}</p>
-          <p class="text-sm font-medium">${opt.text.split(' ').slice(1).join(' ')}</p>
+          <p class="text-sm text-gray-500">${opt.text.split(' ').slice(1).join(' ')}</p>
         </div>`;
       });
       
