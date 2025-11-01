@@ -435,7 +435,13 @@
             console.log(`  ⏭️ Skipping dark mode init (main-app handles this)`);
             return;
           }
-          
+
+          // Skip Telegram WebApp init scripts (main-app already handles this)
+          if (script.textContent?.includes('const tg = window.Telegram.WebApp')) {
+            console.log(`  ⏭️ Skipping Telegram WebApp init (main-app handles this)`);
+            return;
+          }
+
           try {
             // Create a new script element to execute
             const newScript = document.createElement('script');
