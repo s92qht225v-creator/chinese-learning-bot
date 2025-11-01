@@ -582,14 +582,16 @@
     // Load default tab on page load
     window.addEventListener('DOMContentLoaded', () => {
       console.log('🎬 [DOMContentLoaded] Event fired');
-      
+
       // Remove hash from URL
       if (window.location.hash) {
         history.replaceState(null, null, window.location.pathname + window.location.search);
       }
-      
-      // Always load 'learn' tab by default
-      const defaultTab = 'learn';
+
+      // Check for tab query parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      const defaultTab = (tabParam && tabs[tabParam]) ? tabParam : 'learn';
       console.log('🔖 [DOMContentLoaded] Default tab:', defaultTab);
 
       // Set active nav item

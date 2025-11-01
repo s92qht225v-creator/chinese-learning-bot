@@ -226,7 +226,7 @@
       } else {
         // Finished
         alert(`Session complete! 🎉\n\nAgain: ${stats.again}\nHard: ${stats.hard}\nGood: ${stats.good}\nEasy: ${stats.easy}`);
-        window.location.href = '/practice.html';
+        window.location.href = '/main-app.html?tab=practice';
       }
     }
 
@@ -264,10 +264,10 @@
         window.history.back();
       } else {
         // Fallback to practice page if no history
-        window.location.href = '/practice.html';
+        window.location.href = '/main-app.html?tab=practice';
       }
     });
-    
+
     // Also setup Telegram WebApp BackButton if available
     if (tg.BackButton) {
       tg.BackButton.show();
@@ -275,7 +275,7 @@
         if (window.history.length > 1) {
           window.history.back();
         } else {
-          window.location.href = '/practice.html';
+          window.location.href = '/main-app.html?tab=practice';
         }
       });
     }

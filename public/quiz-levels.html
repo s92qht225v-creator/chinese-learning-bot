@@ -319,7 +319,13 @@
 
     // Back button handler
     function goBack() {
-      window.history.back();
+      // Check if we have history to go back to
+      if (window.history.length > 1 && document.referrer) {
+        window.history.back();
+      } else {
+        // If no history (direct link), go to main app practice tab
+        window.location.href = '/main-app.html?tab=practice';
+      }
     }
 
     // Handle Telegram back button

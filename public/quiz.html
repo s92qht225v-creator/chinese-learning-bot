@@ -1526,7 +1526,7 @@
       const total = stats.correct + stats.incorrect;
       const accuracy = total > 0 ? Math.round((stats.correct / total) * 100) : 0;
       alert(`Quiz Complete! 🎉\n\nScore: ${stats.correct * 10}/${total * 10}\nCorrect: ${stats.correct}\nIncorrect: ${stats.incorrect}\nAccuracy: ${accuracy}%`);
-      window.location.replace('/practice.html');
+      window.location.href = '/main-app.html?tab=practice';
     }
 
     // Back button
