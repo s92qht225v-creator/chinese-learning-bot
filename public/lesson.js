@@ -376,34 +376,70 @@ async function loadQuizzes(lessonId) {
 function renderQuizzes(quizzes) {
   const container = document.getElementById('quizzesContainer');
   const countEl = document.getElementById('exercisesCount');
+  const checkContainer = document.getElementById('checkAnswersContainer');
 
   if (!quizzes || quizzes.length === 0) {
     container.innerHTML = '<p class="text-center text-text-secondary-light">No exercises available</p>';
     if (countEl) countEl.textContent = 'No exercises';
+    if (checkContainer) checkContainer.style.display = 'none';
     return;
   }
 
   // Update count
   if (countEl) countEl.textContent = `${quizzes.length} exercise${quizzes.length !== 1 ? 's' : ''}`;
 
+  // Store quiz data globally for checking
+  window.exerciseQuizzes = quizzes;
+
   container.innerHTML = quizzes.map((quiz, index) => {
     const options = JSON.parse(quiz.options || '[]');
     const correctAnswer = quiz.correct_answer;
-    
+    const correctAnswerIndex = Array.isArray(options) ? options.indexOf(correctAnswer) : parseInt(correctAnswer);
+
     return `
-      <div class="flex flex-col gap-4">
-        <p class="font-medium"><span class="font-bold">${index + 1}.</span> ${quiz.question}</p>
-        <div class="grid grid-cols-1 gap-2" role="radiogroup">
+      <div class="exercise-item" data-quiz-id="${quiz.id}" data-correct-index="${correctAnswerIndex}">
+        <div class="flex items-start gap-3 mb-3">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
+            ${index + 1}
+          </div>
+          <div class="flex-1">
+            <p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark">${quiz.question}</p>
+            ${quiz.pinyin ? `<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">${quiz.pinyin}</p>` : ''}
+          </div>
+        </div>
+
+        <div class="ml-11 space-y-2" role="radiogroup">
           ${options.map((option, optIndex) => `
-            <label class="flex items-center gap-3 cursor-pointer rounded-lg border border-border-light dark:border-border-dark p-3 has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-              <input class="h-5 w-5 border-2 border-border-light dark:border-border-dark text-primary focus:ring-primary checked:bg-primary" name="quiz_${quiz.id}" type="radio" value="${optIndex}" ${optIndex === correctAnswer ? 'checked' : ''} />
-              <span>${option}</span>
+            <label class="exercise-option flex items-center gap-3 cursor-pointer rounded-lg border-2 border-border-light dark:border-border-dark p-3 transition-all hover:border-primary/50 hover:bg-primary/5" data-option-index="${optIndex}">
+              <input
+                class="h-5 w-5 border-2 border-border-light dark:border-border-dark text-primary focus:ring-2 focus:ring-primary/50"
+                name="quiz_${quiz.id}"
+                type="radio"
+                value="${optIndex}"
+                onchange="onExerciseOptionChange(${quiz.id})"
+              />
+              <span class="flex-1 text-base">${option}</span>
             </label>
           `).join('')}
+        </div>
+
+        <div class="ml-11 mt-3 exercise-feedback" style="display: none;">
+          <div class="feedback-message rounded-lg p-3 text-sm">
+            <!-- Feedback will be shown here -->
+          </div>
         </div>
       </div>
     `;
   }).join('');
+
+  // Show check answers button
+  if (checkContainer) {
+    checkContainer.style.display = 'block';
+    const totalCountEl = document.getElementById('totalCount');
+    const correctCountEl = document.getElementById('correctCount');
+    if (totalCountEl) totalCountEl.textContent = quizzes.length;
+    if (correctCountEl) correctCountEl.textContent = '0';
+  }
 }
 
 function switchDialogueTab(tab) {
@@ -657,6 +693,160 @@ function markLessonComplete() {
   if (currentLesson) {
     localStorage.setItem(`lesson${currentLesson.id}_completed`, 'true');
     document.getElementById('completeBtn').style.opacity = '0.5';
+  }
+}
+
+// Exercise Answer Checking Functions
+function onExerciseOptionChange(quizId) {
+  // Reset any previous feedback for this question
+  const exerciseItem = document.querySelector(`.exercise-item[data-quiz-id="${quizId}"]`);
+  if (!exerciseItem) return;
+
+  // Remove previous feedback styling
+  const options = exerciseItem.querySelectorAll('.exercise-option');
+  options.forEach(opt => {
+    opt.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-900/20', 'border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+  });
+
+  // Hide feedback
+  const feedbackDiv = exerciseItem.querySelector('.exercise-feedback');
+  if (feedbackDiv) feedbackDiv.style.display = 'none';
+}
+
+function checkExerciseAnswers() {
+  if (!window.exerciseQuizzes) return;
+
+  let correctCount = 0;
+
+  window.exerciseQuizzes.forEach((quiz) => {
+    const exerciseItem = document.querySelector(`.exercise-item[data-quiz-id="${quiz.id}"]`);
+    if (!exerciseItem) return;
+
+    const correctIndex = parseInt(exerciseItem.dataset.correctIndex);
+    const selectedRadio = exerciseItem.querySelector('input[type="radio"]:checked');
+
+    if (!selectedRadio) {
+      // No answer selected - show warning
+      const feedbackDiv = exerciseItem.querySelector('.exercise-feedback');
+      const messageDiv = feedbackDiv.querySelector('.feedback-message');
+
+      messageDiv.className = 'feedback-message rounded-lg p-3 text-sm bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200';
+      messageDiv.innerHTML = `
+        <div class="flex items-start gap-2">
+          <span class="material-symbols-outlined text-lg">warning</span>
+          <span>Please select an answer for this question.</span>
+        </div>
+      `;
+      feedbackDiv.style.display = 'block';
+      return;
+    }
+
+    const selectedIndex = parseInt(selectedRadio.value);
+    const isCorrect = selectedIndex === correctIndex;
+
+    if (isCorrect) correctCount++;
+
+    // Get all option labels
+    const options = exerciseItem.querySelectorAll('.exercise-option');
+    const selectedOption = options[selectedIndex];
+    const correctOption = options[correctIndex];
+
+    // Apply visual feedback
+    if (isCorrect) {
+      // Correct answer - green styling
+      selectedOption.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+    } else {
+      // Wrong answer - red styling on selected, green on correct
+      selectedOption.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+      if (correctOption) {
+        correctOption.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+      }
+    }
+
+    // Show feedback message
+    const feedbackDiv = exerciseItem.querySelector('.exercise-feedback');
+    const messageDiv = feedbackDiv.querySelector('.feedback-message');
+
+    if (isCorrect) {
+      messageDiv.className = 'feedback-message rounded-lg p-3 text-sm bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200';
+      messageDiv.innerHTML = `
+        <div class="flex items-start gap-2">
+          <span class="material-symbols-outlined text-lg">check_circle</span>
+          <div class="flex-1">
+            <strong>Correct!</strong>
+            ${quiz.explanation ? `<p class="mt-1">${quiz.explanation}</p>` : ''}
+          </div>
+        </div>
+      `;
+    } else {
+      const options = JSON.parse(quiz.options || '[]');
+      const correctAnswerText = options[correctIndex];
+
+      messageDiv.className = 'feedback-message rounded-lg p-3 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200';
+      messageDiv.innerHTML = `
+        <div class="flex items-start gap-2">
+          <span class="material-symbols-outlined text-lg">cancel</span>
+          <div class="flex-1">
+            <strong>Incorrect</strong>
+            <p class="mt-1">The correct answer is: <strong>${correctAnswerText}</strong></p>
+            ${quiz.explanation ? `<p class="mt-1">${quiz.explanation}</p>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    feedbackDiv.style.display = 'block';
+  });
+
+  // Update progress counter
+  const correctCountEl = document.getElementById('correctCount');
+  if (correctCountEl) correctCountEl.textContent = correctCount;
+
+  // Disable radio buttons after checking
+  document.querySelectorAll('.exercise-item input[type="radio"]').forEach(radio => {
+    radio.disabled = true;
+  });
+
+  // Change button to "Reset" functionality
+  const checkBtn = document.getElementById('checkAnswersBtn');
+  if (checkBtn) {
+    checkBtn.innerHTML = `
+      <span class="material-symbols-outlined">refresh</span>
+      <span>Reset Exercises</span>
+    `;
+    checkBtn.onclick = resetExercises;
+  }
+}
+
+function resetExercises() {
+  // Re-enable all radio buttons
+  document.querySelectorAll('.exercise-item input[type="radio"]').forEach(radio => {
+    radio.disabled = false;
+    radio.checked = false;
+  });
+
+  // Remove all visual feedback
+  document.querySelectorAll('.exercise-option').forEach(opt => {
+    opt.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-900/20', 'border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+  });
+
+  // Hide all feedback messages
+  document.querySelectorAll('.exercise-feedback').forEach(feedback => {
+    feedback.style.display = 'none';
+  });
+
+  // Reset counter
+  const correctCountEl = document.getElementById('correctCount');
+  if (correctCountEl) correctCountEl.textContent = '0';
+
+  // Change button back to "Check Answers"
+  const checkBtn = document.getElementById('checkAnswersBtn');
+  if (checkBtn) {
+    checkBtn.innerHTML = `
+      <span class="material-symbols-outlined">check_circle</span>
+      <span>Check Answers</span>
+    `;
+    checkBtn.onclick = checkExerciseAnswers;
   }
 }
 
