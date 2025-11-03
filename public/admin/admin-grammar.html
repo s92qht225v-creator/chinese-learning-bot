@@ -219,7 +219,11 @@
     async function loadLessons() {
       try {
         const response = await fetch('/api/lessons');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch lessons: ${response.status}`);
+        }
         const lessons = await response.json();
+        console.log('Loaded lessons:', lessons.length);
 
         const lessonSelects = [document.getElementById('lessonId'), document.getElementById('filterLesson')];
         lessonSelects.forEach(select => {
@@ -312,13 +316,17 @@
     }
 
     // Show create modal
-    function showCreateModal() {
+    async function showCreateModal() {
       currentGrammarId = null;
       document.getElementById('grammarId').value = '';
       document.getElementById('modalTitle').textContent = 'Add Grammar Point';
       document.getElementById('grammarForm').reset();
       document.getElementById('examplesContainer').innerHTML = '';
       exampleCount = 0;
+
+      // Ensure lessons are loaded
+      await loadLessons();
+
       document.getElementById('grammarModal').classList.remove('hidden');
     }
 
