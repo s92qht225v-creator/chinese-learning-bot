@@ -967,7 +967,41 @@ app.patch('/api/admin/dialogues/bulk', adminAuth, async (req, res) => {
 // ========== GRAMMAR API ==========
 app.get('/api/admin/grammar', adminAuth, async (req, res) => {
   try {
-    const grammar = await db.getGrammar();
+    const { hsk_level, difficulty, lesson_id, search } = req.query;
+    let grammar = await db.getGrammar();
+
+    // Apply filters
+    if (hsk_level) {
+      grammar = grammar.filter(g => g.hsk_level === hsk_level);
+    }
+    if (difficulty) {
+      grammar = grammar.filter(g => g.difficulty === difficulty);
+    }
+    if (lesson_id) {
+      grammar = grammar.filter(g => g.lesson_id == lesson_id);
+    }
+    if (search) {
+      const searchLower = search.toLowerCase();
+      grammar = grammar.filter(g =>
+        g.title?.toLowerCase().includes(searchLower) ||
+        g.subtitle?.toLowerCase().includes(searchLower) ||
+        g.explanation?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    res.json(grammar);
+  } catch (error) {
+    console.error('Error fetching grammar:', error);
+    res.status(500).json({ error: 'Failed to fetch grammar' });
+  }
+});
+
+app.get('/api/admin/grammar/:id', adminAuth, async (req, res) => {
+  try {
+    const grammar = await db.getGrammarById(req.params.id);
+    if (!grammar) {
+      return res.status(404).json({ error: 'Grammar point not found' });
+    }
     res.json(grammar);
   } catch (error) {
     console.error('Error fetching grammar:', error);

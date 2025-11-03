@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grammar Management - Admin Panel</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <style>
+    .hidden { display: none; }
+    .grammar-pattern-box {
+      background: rgba(68, 143, 228, 0.08);
+      border-left: 3px solid #448fe4;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center gap-4">
+          <a href="/admin" class="text-gray-600 hover:text-gray-900">
+            <span class="material-symbols-outlined">arrow_back</span>
+          </a>
+          <h1 class="text-2xl font-bold text-gray-900">Grammar Management</h1>
+        </div>
+        <button onclick="showCreateModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+          <span class="material-symbols-outlined">add</span>
+          <span>Add Grammar Point</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">HSK Level</label>
+          <select id="filterHskLevel" onchange="loadGrammar()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All Levels</option>
+            <option value="HSK1">HSK 1</option>
+            <option value="HSK2">HSK 2</option>
+            <option value="HSK3">HSK 3</option>
+            <option value="HSK4">HSK 4</option>
+            <option value="HSK5">HSK 5</option>
+            <option value="HSK6">HSK 6</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+          <select id="filterDifficulty" onchange="loadGrammar()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All Difficulties</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Lesson</label>
+          <select id="filterLesson" onchange="loadGrammar()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">All Lessons</option>
+            <!-- Will be populated dynamically -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+          <input type="text" id="searchInput" onkeyup="loadGrammar()" placeholder="Search title..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+      </div>
+    </div>
+
+    <!-- Grammar List -->
+    <div id="grammarList" class="space-y-4">
+      <!-- Will be populated dynamically -->
+    </div>
+
+  </div>
+
+  <!-- Create/Edit Modal -->
+  <div id="grammarModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+        <h2 id="modalTitle" class="text-xl font-bold text-gray-900">Add Grammar Point</h2>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="grammarForm" class="p-6 space-y-6">
+        <input type="hidden" id="grammarId">
+
+        <!-- Basic Information -->
+        <div class="space-y-4">
+          <h3 class="text-lg font-semibold text-gray-900">Basic Information</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+              <input type="text" id="title" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Particle 呢 (ne)">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+              <input type="text" id="subtitle" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Question particle">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">HSK Level *</label>
+              <select id="hskLevel" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Select level</option>
+                <option value="HSK1">HSK 1</option>
+                <option value="HSK2">HSK 2</option>
+                <option value="HSK3">HSK 3</option>
+                <option value="HSK4">HSK 4</option>
+                <option value="HSK5">HSK 5</option>
+                <option value="HSK6">HSK 6</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+              <select id="difficulty" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Lesson</label>
+              <select id="lessonId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">No lesson</option>
+                <!-- Will be populated dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Explanation *</label>
+            <textarea id="explanation" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Explain how this grammar point works..."></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Grammar Structure</label>
+            <input type="text" id="structure" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono" placeholder="e.g., Subject + 也 + Verb">
+            <p class="text-xs text-gray-500 mt-1">This will be displayed in a special pattern box</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Keywords (comma-separated)</label>
+            <input type="text" id="keywords" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 也, 呢">
+            <p class="text-xs text-gray-500 mt-1">These words will be highlighted in examples</p>
+          </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="space-y-4">
+          <h3 class="text-lg font-semibold text-gray-900">Additional Information</h3>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Key Point / Note</label>
+            <input type="text" id="note" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Always use 呢 at the end of the sentence">
+            <p class="text-xs text-gray-500 mt-1">Will be displayed with a lightbulb icon</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Common Mistake</label>
+            <input type="text" id="commonMistake" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Don't put 也 after the verb">
+            <p class="text-xs text-gray-500 mt-1">Will be displayed with a warning icon</p>
+          </div>
+        </div>
+
+        <!-- Examples -->
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">Example Sentences</h3>
+            <button type="button" onclick="addExample()" class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>Add Example</span>
+            </button>
+          </div>
+
+          <div id="examplesContainer" class="space-y-4">
+            <!-- Examples will be added here -->
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Save Grammar Point
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let supabase;
+    let currentGrammarId = null;
+    let exampleCount = 0;
+
+    // Initialize
+    async function init() {
+      // Get admin password
+      const password = localStorage.getItem('adminPassword') || prompt('Enter admin password:');
+      if (password) {
+        localStorage.setItem('adminPassword', password);
+      }
+
+      // Initialize Supabase (using service from main app)
+      const { createClient } = supabase;
+
+      await loadLessons();
+      await loadGrammar();
+    }
+
+    // Load lessons for dropdown
+    async function loadLessons() {
+      try {
+        const response = await fetch('/api/lessons');
+        const lessons = await response.json();
+
+        const lessonSelects = [document.getElementById('lessonId'), document.getElementById('filterLesson')];
+        lessonSelects.forEach(select => {
+          if (select && select.id === 'lessonId') {
+            select.innerHTML = '<option value="">No lesson</option>' +
+              lessons.map(lesson => `<option value="${lesson.id}">${lesson.hsk_level} - Lesson ${lesson.lesson_number}: ${lesson.title}</option>`).join('');
+          } else if (select) {
+            select.innerHTML = '<option value="">All Lessons</option>' +
+              lessons.map(lesson => `<option value="${lesson.id}">${lesson.hsk_level} - Lesson ${lesson.lesson_number}</option>`).join('');
+          }
+        });
+      } catch (error) {
+        console.error('Failed to load lessons:', error);
+      }
+    }
+
+    // Load grammar points
+    async function loadGrammar() {
+      try {
+        const hskLevel = document.getElementById('filterHskLevel').value;
+        const difficulty = document.getElementById('filterDifficulty').value;
+        const lessonId = document.getElementById('filterLesson').value;
+        const search = document.getElementById('searchInput').value;
+
+        let url = '/api/admin/grammar?';
+        if (hskLevel) url += `hsk_level=${hskLevel}&`;
+        if (difficulty) url += `difficulty=${difficulty}&`;
+        if (lessonId) url += `lesson_id=${lessonId}&`;
+        if (search) url += `search=${encodeURIComponent(search)}&`;
+
+        const password = localStorage.getItem('adminPassword');
+        const response = await fetch(url, {
+          headers: {
+            'X-Admin-Password': password
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load grammar');
+        }
+
+        const grammar = await response.json();
+        renderGrammarList(grammar);
+      } catch (error) {
+        console.error('Error loading grammar:', error);
+        document.getElementById('grammarList').innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">Failed to load grammar points</div>';
+      }
+    }
+
+    // Render grammar list
+    function renderGrammarList(grammar) {
+      const container = document.getElementById('grammarList');
+
+      if (!grammar || grammar.length === 0) {
+        container.innerHTML = '<div class="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">No grammar points found</div>';
+        return;
+      }
+
+      container.innerHTML = grammar.map(point => {
+        const examples = point.examples ? (typeof point.examples === 'string' ? JSON.parse(point.examples) : point.examples) : [];
+        const exampleCount = examples.length;
+
+        return `
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h3 class="text-xl font-bold text-gray-900">${point.title}</h3>
+                  ${point.difficulty ? `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">${point.difficulty}</span>` : ''}
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">${point.hsk_level}</span>
+                </div>
+                ${point.subtitle ? `<p class="text-sm text-gray-600 mb-2">${point.subtitle}</p>` : ''}
+                <p class="text-gray-700 mb-3">${point.explanation}</p>
+                ${point.structure ? `<div class="grammar-pattern-box mb-3"><strong>Structure:</strong> ${point.structure}</div>` : ''}
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                  <span>${exampleCount} example${exampleCount !== 1 ? 's' : ''}</span>
+                  ${point.lesson_id ? `<span>• Linked to lesson</span>` : ''}
+                  ${point.note ? `<span>• Has key point</span>` : ''}
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="editGrammar(${point.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button onclick="deleteGrammar(${point.id})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Show create modal
+    function showCreateModal() {
+      currentGrammarId = null;
+      document.getElementById('grammarId').value = '';
+      document.getElementById('modalTitle').textContent = 'Add Grammar Point';
+      document.getElementById('grammarForm').reset();
+      document.getElementById('examplesContainer').innerHTML = '';
+      exampleCount = 0;
+      document.getElementById('grammarModal').classList.remove('hidden');
+    }
+
+    // Edit grammar
+    async function editGrammar(id) {
+      try {
+        const password = localStorage.getItem('adminPassword');
+        const response = await fetch(`/api/admin/grammar/${id}`, {
+          headers: {
+            'X-Admin-Password': password
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to load grammar');
+
+        const grammar = await response.json();
+        currentGrammarId = id;
+
+        // Populate form
+        document.getElementById('grammarId').value = id;
+        document.getElementById('modalTitle').textContent = 'Edit Grammar Point';
+        document.getElementById('title').value = grammar.title || '';
+        document.getElementById('subtitle').value = grammar.subtitle || '';
+        document.getElementById('hskLevel').value = grammar.hsk_level || '';
+        document.getElementById('difficulty').value = grammar.difficulty || 'Beginner';
+        document.getElementById('lessonId').value = grammar.lesson_id || '';
+        document.getElementById('explanation').value = grammar.explanation || '';
+        document.getElementById('structure').value = grammar.structure || '';
+        document.getElementById('keywords').value = Array.isArray(grammar.keywords) ? grammar.keywords.join(', ') : grammar.keywords || '';
+        document.getElementById('note').value = grammar.note || '';
+        document.getElementById('commonMistake').value = grammar.common_mistake || '';
+
+        // Populate examples
+        document.getElementById('examplesContainer').innerHTML = '';
+        exampleCount = 0;
+
+        const examples = grammar.examples ? (typeof grammar.examples === 'string' ? JSON.parse(grammar.examples) : grammar.examples) : [];
+        examples.forEach(example => {
+          addExample(example);
+        });
+
+        document.getElementById('grammarModal').classList.remove('hidden');
+      } catch (error) {
+        console.error('Error loading grammar:', error);
+        alert('Failed to load grammar point');
+      }
+    }
+
+    // Add example field
+    function addExample(data = null) {
+      exampleCount++;
+      const container = document.getElementById('examplesContainer');
+      const exampleDiv = document.createElement('div');
+      exampleDiv.className = 'border border-gray-300 rounded-lg p-4 space-y-3';
+      exampleDiv.id = `example-${exampleCount}`;
+
+      exampleDiv.innerHTML = `
+        <div class="flex justify-between items-center">
+          <h4 class="font-semibold text-gray-900">Example ${exampleCount}</h4>
+          <button type="button" onclick="removeExample(${exampleCount})" class="text-red-600 hover:text-red-800">
+            <span class="material-symbols-outlined text-sm">delete</span>
+          </button>
+        </div>
+        <div class="grid grid-cols-1 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Chinese *</label>
+            <input type="text" data-example-field="chinese" value="${data?.chinese || ''}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 你的书呢？">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pinyin</label>
+            <input type="text" data-example-field="pinyin" value="${data?.pinyin || ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Nǐ de shū ne?">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">English</label>
+            <input type="text" data-example-field="english" value="${data?.english || ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Where is your book?">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Audio URL (optional)</label>
+            <input type="text" data-example-field="audio_url" value="${data?.audio_url || ''}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="https://...">
+          </div>
+        </div>
+      `;
+
+      container.appendChild(exampleDiv);
+    }
+
+    // Remove example
+    function removeExample(id) {
+      const element = document.getElementById(`example-${id}`);
+      if (element) {
+        element.remove();
+      }
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('grammarModal').classList.add('hidden');
+      document.getElementById('grammarForm').reset();
+      currentGrammarId = null;
+    }
+
+    // Save grammar
+    document.getElementById('grammarForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      try {
+        // Collect examples
+        const examples = [];
+        document.querySelectorAll('#examplesContainer > div').forEach(exampleDiv => {
+          const chinese = exampleDiv.querySelector('[data-example-field="chinese"]').value;
+          const pinyin = exampleDiv.querySelector('[data-example-field="pinyin"]').value;
+          const english = exampleDiv.querySelector('[data-example-field="english"]').value;
+          const audio_url = exampleDiv.querySelector('[data-example-field="audio_url"]').value;
+
+          if (chinese) {
+            examples.push({ chinese, pinyin, english, audio_url });
+          }
+        });
+
+        // Prepare data
+        const data = {
+          title: document.getElementById('title').value,
+          subtitle: document.getElementById('subtitle').value || null,
+          hsk_level: document.getElementById('hskLevel').value,
+          difficulty: document.getElementById('difficulty').value,
+          lesson_id: document.getElementById('lessonId').value || null,
+          explanation: document.getElementById('explanation').value,
+          structure: document.getElementById('structure').value || null,
+          keywords: document.getElementById('keywords').value.split(',').map(k => k.trim()).filter(k => k),
+          note: document.getElementById('note').value || null,
+          common_mistake: document.getElementById('commonMistake').value || null,
+          examples: JSON.stringify(examples)
+        };
+
+        const password = localStorage.getItem('adminPassword');
+        const url = currentGrammarId ? `/api/admin/grammar/${currentGrammarId}` : '/api/admin/grammar';
+        const method = currentGrammarId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Password': password
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to save grammar');
+        }
+
+        alert('Grammar point saved successfully!');
+        closeModal();
+        loadGrammar();
+      } catch (error) {
+        console.error('Error saving grammar:', error);
+        alert('Failed to save grammar point: ' + error.message);
+      }
+    });
+
+    // Delete grammar
+    async function deleteGrammar(id) {
+      if (!confirm('Are you sure you want to delete this grammar point?')) {
+        return;
+      }
+
+      try {
+        const password = localStorage.getItem('adminPassword');
+        const response = await fetch(`/api/admin/grammar/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'X-Admin-Password': password
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete grammar');
+        }
+
+        alert('Grammar point deleted successfully!');
+        loadGrammar();
+      } catch (error) {
+        console.error('Error deleting grammar:', error);
+        alert('Failed to delete grammar point');
+      }
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

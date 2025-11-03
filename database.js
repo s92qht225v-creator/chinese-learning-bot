@@ -368,6 +368,20 @@ const db = {
     return data || [];
   },
 
+  async getGrammarById(id) {
+    if (!supabase) return null;
+    const { data, error } = await supabase
+      .from('grammar_points')
+      .select(`
+        *,
+        lessons (id, title, hsk_level, lesson_number)
+      `)
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
   async addGrammar(grammar) {
     if (!supabase) throw new Error('Database not configured');
     const { data, error } = await supabase
