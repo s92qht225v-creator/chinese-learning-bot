@@ -230,24 +230,134 @@ function renderGrammar(grammar) {
   if (countEl) countEl.textContent = `${grammar.length} point${grammar.length !== 1 ? 's' : ''}`;
 
   const colors = ['primary', 'warning', 'success'];
-  
+
   container.innerHTML = grammar.map((point, index) => {
     const color = colors[index % colors.length];
     const borderColor = color === 'primary' ? 'border-primary' : color === 'warning' ? 'border-warning' : 'border-success';
     const bgColor = color === 'primary' ? 'bg-primary/5 dark:bg-primary/10' : color === 'warning' ? 'bg-warning/5 dark:bg-warning/10' : 'bg-success/5 dark:bg-success/10';
-    
+
+    // Parse examples if available (expected format: JSON array of {chinese, pinyin, english})
+    let examplesHtml = '';
+    if (point.examples) {
+      try {
+        const examples = typeof point.examples === 'string' ? JSON.parse(point.examples) : point.examples;
+        if (Array.isArray(examples) && examples.length > 0) {
+          examplesHtml = `
+            <div class="space-y-3">
+              <p class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wide">Examples:</p>
+              <div class="flex flex-col gap-3">
+                ${examples.map(example => `
+                  <div class="rounded-lg border border-border-light bg-surface-light p-3 dark:border-border-dark dark:bg-surface-dark">
+                    <div class="flex items-start gap-3">
+                      ${example.audio_url ? `
+                        <button onclick="playExampleAudio('${example.audio_url}')" class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary hover:bg-primary/30 transition-all active:scale-95">
+                          <span class="material-symbols-outlined text-lg">volume_up</span>
+                        </button>
+                      ` : ''}
+                      <div class="flex flex-col flex-1">
+                        <p class="font-bold text-base">${highlightGrammarWords(example.chinese, point.keywords)}</p>
+                        ${example.pinyin ? `<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-0.5">${example.pinyin}</p>` : ''}
+                        ${example.english ? `<p class="text-sm italic text-text-secondary-light dark:text-text-secondary-dark mt-1">${example.english}</p>` : ''}
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+      } catch (e) {
+        console.error('Failed to parse grammar examples:', e);
+      }
+    }
+
+    // Grammar structure pattern
+    let structureHtml = '';
+    if (point.structure) {
+      structureHtml = `
+        <div class="grammar-pattern-box">
+          <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1 font-semibold">STRUCTURE:</p>
+          <p class="text-sm">${point.structure}</p>
+        </div>
+      `;
+    }
+
+    // Key points or notes
+    let noteHtml = '';
+    if (point.note) {
+      noteHtml = `
+        <div class="inline-flex items-center gap-2 rounded-lg bg-warning/20 px-3 py-2 text-xs font-medium text-amber-800 dark:text-amber-300">
+          <span class="material-symbols-outlined text-base">lightbulb</span>
+          <span><strong>Key point:</strong> ${point.note}</span>
+        </div>
+      `;
+    }
+
+    // Common mistakes
+    let mistakeHtml = '';
+    if (point.common_mistake) {
+      mistakeHtml = `
+        <div class="inline-flex items-center gap-2 rounded-lg bg-warning/20 px-3 py-2 text-xs font-medium text-amber-800 dark:text-amber-300">
+          <span class="material-symbols-outlined text-base">warning</span>
+          <span><strong>Common mistake:</strong> ${point.common_mistake}</span>
+        </div>
+      `;
+    }
+
+    // Difficulty badge
+    const difficultyBadge = point.difficulty ? `
+      <span class="text-xs px-2 py-0.5 rounded-full bg-success/20 text-success font-semibold">${point.difficulty}</span>
+    ` : '';
+
     return `
-      <div class="flex flex-col gap-3 rounded-lg border-l-4 ${borderColor} ${bgColor} p-4">
+      <div class="flex flex-col gap-3 rounded-xl border-l-4 ${borderColor} ${bgColor} p-4">
         <div class="flex items-start justify-between">
-          <h3 class="text-base font-bold text-text-primary-light dark:text-text-primary-dark">${point.title}</h3>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="text-base font-bold text-text-primary-light dark:text-text-primary-dark">${point.title}</h3>
+              ${difficultyBadge}
+            </div>
+            ${point.subtitle ? `<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">${point.subtitle}</p>` : ''}
+          </div>
           <button onclick="saveGrammar(${point.id})" class="flex h-8 w-8 items-center justify-center rounded-full text-text-secondary-light transition-colors hover:bg-black/10 dark:text-text-secondary-dark dark:hover:bg-white/10">
             <span class="material-symbols-outlined text-xl">bookmark_border</span>
           </button>
         </div>
-        <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${point.explanation}</p>
+
+        <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark leading-relaxed">${point.explanation}</p>
+
+        ${structureHtml}
+        ${examplesHtml}
+        ${noteHtml}
+        ${mistakeHtml}
       </div>
     `;
   }).join('');
+}
+
+// Helper function to highlight grammar keywords in examples
+function highlightGrammarWords(text, keywords) {
+  if (!keywords) return text;
+
+  const keywordArray = Array.isArray(keywords) ? keywords : [keywords];
+  let highlighted = text;
+
+  keywordArray.forEach(keyword => {
+    const regex = new RegExp(keyword, 'g');
+    highlighted = highlighted.replace(regex, `<span class="word-highlight">${keyword}</span>`);
+  });
+
+  return highlighted;
+}
+
+// Play audio for grammar examples
+function playExampleAudio(audioUrl) {
+  if (!audioUrl) return;
+
+  const audio = new Audio(audioUrl);
+  audio.play().catch(error => {
+    console.error('Failed to play audio:', error);
+  });
 }
 
 async function loadQuizzes(lessonId) {
