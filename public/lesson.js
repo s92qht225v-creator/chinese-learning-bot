@@ -304,18 +304,12 @@ function renderGrammar(grammar) {
       `;
     }
 
-    // Difficulty badge
-    const difficultyBadge = point.difficulty ? `
-      <span class="text-xs px-2 py-0.5 rounded-full bg-success/20 text-success font-semibold">${point.difficulty}</span>
-    ` : '';
-
     return `
       <div class="flex flex-col gap-3 rounded-xl border-l-4 ${borderColor} ${bgColor} p-4">
         <div class="flex items-start justify-between">
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
               <h3 class="text-base font-bold text-text-primary-light dark:text-text-primary-dark">${point.title}</h3>
-              ${difficultyBadge}
             </div>
             ${point.subtitle ? `<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">${point.subtitle}</p>` : ''}
           </div>

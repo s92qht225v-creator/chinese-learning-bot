@@ -967,15 +967,12 @@ app.patch('/api/admin/dialogues/bulk', adminAuth, async (req, res) => {
 // ========== GRAMMAR API ==========
 app.get('/api/admin/grammar', adminAuth, async (req, res) => {
   try {
-    const { hsk_level, difficulty, lesson_id, search } = req.query;
+    const { hsk_level, lesson_id, search } = req.query;
     let grammar = await db.getGrammar();
 
     // Apply filters
     if (hsk_level) {
       grammar = grammar.filter(g => g.hsk_level === hsk_level);
-    }
-    if (difficulty) {
-      grammar = grammar.filter(g => g.difficulty === difficulty);
     }
     if (lesson_id) {
       grammar = grammar.filter(g => g.lesson_id == lesson_id);
