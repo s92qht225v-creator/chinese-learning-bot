@@ -1259,40 +1259,12 @@
         </script>
 
         <!-- Grammar Tab -->
-        <div id="grammarPanel" class="panel">
-            <h2 style="margin-bottom: 20px;">Grammar Management</h2>
-            <div id="grammarMessage"></div>
-            
-            <form id="grammarForm" onsubmit="saveGrammar(event)">
-                <div class="form-group">
-                    <label>Select Lesson</label>
-                    <select id="grammarLesson" required>
-                        <option value="">Loading...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Title</label>
-                    <input type="text" id="grammarTitle" required>
-                </div>
-                <div class="form-group">
-                    <label>Explanation</label>
-                    <textarea id="grammarExplanation" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;" required></textarea>
-                </div>
-                <button type="submit" class="btn">Add Grammar Point</button>
-            </form>
-
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Lesson</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="grammarTable"></tbody>
-                </table>
-            </div>
+        <div id="grammarPanel" class="panel" style="padding: 0; background: transparent;">
+            <iframe
+                src="/admin/admin-grammar.html"
+                style="width: 100%; height: calc(100vh - 150px); border: none; border-radius: 10px; background: white;"
+                title="Grammar Management">
+            </iframe>
         </div>
 
         <!-- Quizzes Tab -->
@@ -1382,8 +1354,7 @@
             if (tabName === 'vocabulary') { loadVocabulary(); loadLessonsForVocab(); }
             if (tabName === 'lessons') loadLessons();
             if (tabName === 'dialogues') { loadMultiLineDialogues(); }
-            if (tabName === 'grammar') { loadLessonsForSelect(); loadGrammar(); }
-            // Quiz management is now in embedded iframe, no loading needed
+            // Grammar and Quiz management are now in embedded iframes, no loading needed
             if (tabName === 'users') loadUsers();
         }
 
@@ -2124,69 +2095,7 @@
         }
 
         // ========== GRAMMAR ==========
-        async function loadGrammar() {
-            try {
-                const { data, error } = await supabase
-                    .from('grammar_points')
-                    .select(`
-                        *,
-                        lessons (title)
-                    `)
-                    .order('id', { ascending: false });
-
-                if (error) throw error;
-
-                const tbody = document.getElementById('grammarTable');
-                tbody.innerHTML = data?.map(grammar => `
-                    <tr>
-                        <td>${grammar.title}</td>
-                        <td>${grammar.lessons?.title || 'N/A'}</td>
-                        <td class="actions">
-                            <button class="btn btn-danger btn-small" onclick="deleteGrammar(${grammar.id})">Delete</button>
-                        </td>
-                    </tr>
-                `).join('') || '<tr><td colspan="3">No grammar points yet</td></tr>';
-            } catch (error) {
-                console.error('Error loading grammar:', error);
-            }
-        }
-
-        async function saveGrammar(event) {
-            event.preventDefault();
-            const messageEl = document.getElementById('grammarMessage');
-            
-            try {
-                const { error } = await supabase
-                    .from('grammar_points')
-                    .insert([{
-                        lesson_id: parseInt(document.getElementById('grammarLesson').value),
-                        title: document.getElementById('grammarTitle').value,
-                        explanation: document.getElementById('grammarExplanation').value
-                    }]);
-
-                if (error) throw error;
-
-                messageEl.innerHTML = '<div class="message success">Grammar point added!</div>';
-                setTimeout(() => messageEl.innerHTML = '', 3000);
-                
-                event.target.reset();
-                await loadGrammar();
-            } catch (error) {
-                messageEl.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
-                setTimeout(() => messageEl.innerHTML = '', 3000);
-            }
-        }
-
-        async function deleteGrammar(id) {
-            if (!confirm('Delete this grammar point?')) return;
-            try {
-                const { error } = await supabase.from('grammar_points').delete().eq('id', id);
-                if (error) throw error;
-                await loadGrammar();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
+        // Grammar management is now handled in admin-grammar.html iframe
 
         // ========== QUIZZES ==========
         // Quiz management is now handled in the embedded quiz creator iframe
