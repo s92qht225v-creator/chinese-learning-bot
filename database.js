@@ -437,7 +437,7 @@ const db = {
       .eq('question_type', 'multiple_choice')
       .not('lesson_id', 'is', null) // Only get exercises linked to lessons
       .order('lesson_id', { ascending: true })
-      .order('order_num', { ascending: true });
+      .order('quiz_order', { ascending: true });
     if (error) throw error;
     return data || [];
   },
