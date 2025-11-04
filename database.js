@@ -425,6 +425,72 @@ const db = {
     if (error) throw error;
   },
 
+  // ========== PRACTICE EXERCISES ==========
+  async getPracticeExercises() {
+    if (!supabase) return [];
+    const { data, error} = await supabase
+      .from('quiz_questions')
+      .select(`
+        *,
+        lessons (id, title, hsk_level, lesson_number)
+      `)
+      .eq('question_type', 'multiple_choice')
+      .not('lesson_id', 'is', null) // Only get exercises linked to lessons
+      .order('lesson_id', { ascending: true })
+      .order('order_num', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getPracticeExerciseById(id) {
+    if (!supabase) return null;
+    const { data, error } = await supabase
+      .from('quiz_questions')
+      .select(`
+        *,
+        lessons (id, title, hsk_level, lesson_number)
+      `)
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async addPracticeExercise(exercise) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('quiz_questions')
+      .insert([{
+        ...exercise,
+        status: 'active'
+      }])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updatePracticeExercise(id, exercise) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('quiz_questions')
+      .update(exercise)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deletePracticeExercise(id) {
+    if (!supabase) throw new Error('Database not configured');
+    const { error } = await supabase
+      .from('quiz_questions')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
   // ========== QUIZZES ==========
   async getQuizzes(hskLevel = null) {
     if (!supabase) return [];

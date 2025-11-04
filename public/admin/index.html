@@ -347,6 +347,7 @@
             <button class="tab" onclick="showTab(event, 'dialogues')">💬 Dialogues</button>
             <button class="tab" onclick="showTab(event, 'grammar')">📝 Grammar</button>
             <button class="tab" onclick="showTab(event, 'quizzes')">❓ Quizzes</button>
+            <button class="tab" onclick="showTab(event, 'practice')">✏️ Practice</button>
             <button class="tab" onclick="showTab(event, 'users')">👥 Users</button>
         </div>
 
@@ -1269,10 +1270,19 @@
 
         <!-- Quizzes Tab -->
         <div id="quizzesPanel" class="panel" style="padding: 0; background: transparent;">
-            <iframe 
-                src="/admin/admin-quiz-creator.html" 
+            <iframe
+                src="/admin/admin-quiz-creator.html"
                 style="width: 100%; height: calc(100vh - 140px); border: none; border-radius: 10px; background: white;"
                 title="Quiz Creator"
+            ></iframe>
+        </div>
+
+        <!-- Practice Tab -->
+        <div id="practicePanel" class="panel" style="padding: 0; background: transparent;">
+            <iframe
+                src="/admin/admin-practice.html"
+                style="width: 100%; height: calc(100vh - 140px); border: none; border-radius: 10px; background: white;"
+                title="Practice Exercise Management"
             ></iframe>
         </div>
 

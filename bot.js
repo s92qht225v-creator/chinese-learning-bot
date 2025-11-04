@@ -1048,6 +1048,76 @@ app.delete('/api/admin/grammar/:id', adminAuth, async (req, res) => {
   }
 });
 
+// ========== PRACTICE EXERCISES API ==========
+app.get('/api/admin/practice-exercises', adminAuth, async (req, res) => {
+  try {
+    const { hsk_level, lesson_id, search } = req.query;
+    let exercises = await db.getPracticeExercises();
+
+    // Apply filters
+    if (hsk_level) {
+      exercises = exercises.filter(e => e.hsk_level === hsk_level);
+    }
+    if (lesson_id) {
+      exercises = exercises.filter(e => e.lesson_id == lesson_id);
+    }
+    if (search) {
+      const searchLower = search.toLowerCase();
+      exercises = exercises.filter(e =>
+        e.question?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    res.json(exercises);
+  } catch (error) {
+    console.error('Error fetching practice exercises:', error);
+    res.status(500).json({ error: 'Failed to fetch practice exercises' });
+  }
+});
+
+app.get('/api/admin/practice-exercises/:id', adminAuth, async (req, res) => {
+  try {
+    const exercise = await db.getPracticeExerciseById(req.params.id);
+    if (!exercise) {
+      return res.status(404).json({ error: 'Practice exercise not found' });
+    }
+    res.json(exercise);
+  } catch (error) {
+    console.error('Error fetching practice exercise:', error);
+    res.status(500).json({ error: 'Failed to fetch practice exercise' });
+  }
+});
+
+app.post('/api/admin/practice-exercises', adminAuth, async (req, res) => {
+  try {
+    const exercise = await db.addPracticeExercise(req.body);
+    res.json(exercise);
+  } catch (error) {
+    console.error('Error adding practice exercise:', error);
+    res.status(500).json({ error: 'Failed to add practice exercise' });
+  }
+});
+
+app.put('/api/admin/practice-exercises/:id', adminAuth, async (req, res) => {
+  try {
+    const exercise = await db.updatePracticeExercise(req.params.id, req.body);
+    res.json(exercise);
+  } catch (error) {
+    console.error('Error updating practice exercise:', error);
+    res.status(500).json({ error: 'Failed to update practice exercise' });
+  }
+});
+
+app.delete('/api/admin/practice-exercises/:id', adminAuth, async (req, res) => {
+  try {
+    await db.deletePracticeExercise(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting practice exercise:', error);
+    res.status(500).json({ error: 'Failed to delete practice exercise' });
+  }
+});
+
 // ========== QUIZZES API ==========
 app.get('/api/admin/quizzes', adminAuth, async (req, res) => {
   try {
