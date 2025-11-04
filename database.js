@@ -399,7 +399,7 @@ const db = {
       .from('quiz_questions')
       .select('*')
       .eq('lesson_id', lessonId)
-      .eq('question_type', 'multiple_choice')
+      .in('question_type', ['multiple_choice', 'fill_gap'])
       .order('id', { ascending: true });
     if (error) throw error;
     return data || [];

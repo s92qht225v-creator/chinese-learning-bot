@@ -389,9 +389,13 @@ function renderQuizzes(quizzes) {
     const options = JSON.parse(quiz.options || '[]');
     const correctAnswer = quiz.correct_answer;
     const correctAnswerIndex = Array.isArray(options) ? options.indexOf(correctAnswer) : parseInt(correctAnswer);
+    const questionType = quiz.question_type || 'multiple_choice';
+
+    // Determine if this is a fill-in-blank question (short Chinese character options)
+    const isFillInBlank = questionType === 'fill_gap' || (options.length <= 4 && options.every(opt => opt.length <= 2));
 
     return `
-      <div class="exercise-item" data-quiz-id="${quiz.id}" data-correct-index="${correctAnswerIndex}">
+      <div class="exercise-item" data-quiz-id="${quiz.id}" data-correct-index="${correctAnswerIndex}" data-question-type="${questionType}">
         <div class="flex items-start gap-3 mb-3">
           <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
             ${index + 1}
@@ -402,20 +406,39 @@ function renderQuizzes(quizzes) {
           </div>
         </div>
 
-        <div class="ml-11 space-y-2" role="radiogroup">
-          ${options.map((option, optIndex) => `
-            <label class="exercise-option flex items-center gap-3 cursor-pointer rounded-lg border-2 border-border-light dark:border-border-dark p-3 transition-all hover:border-primary/50 hover:bg-primary/5" data-option-index="${optIndex}">
-              <input
-                class="h-5 w-5 border-2 border-border-light dark:border-border-dark text-primary focus:ring-2 focus:ring-primary/50"
-                name="quiz_${quiz.id}"
-                type="radio"
-                value="${optIndex}"
-                onchange="onExerciseOptionChange(${quiz.id})"
-              />
-              <span class="flex-1 text-base">${option}</span>
-            </label>
-          `).join('')}
-        </div>
+        ${isFillInBlank ? `
+          <!-- Fill-in-blank style: Grid layout for character options -->
+          <div class="ml-11 grid grid-cols-2 gap-2" role="radiogroup">
+            ${options.map((option, optIndex) => `
+              <label class="exercise-option flex items-center justify-center gap-2 cursor-pointer rounded-lg border-2 border-border-light dark:border-border-dark p-4 transition-all hover:border-primary/50 hover:bg-primary/5" data-option-index="${optIndex}">
+                <input
+                  class="h-5 w-5 border-2 border-border-light dark:border-border-dark text-primary focus:ring-2 focus:ring-primary/50"
+                  name="quiz_${quiz.id}"
+                  type="radio"
+                  value="${optIndex}"
+                  onchange="onExerciseOptionChange(${quiz.id})"
+                />
+                <span class="text-lg font-bold">${option}</span>
+              </label>
+            `).join('')}
+          </div>
+        ` : `
+          <!-- Multiple choice style: Vertical list layout -->
+          <div class="ml-11 space-y-2" role="radiogroup">
+            ${options.map((option, optIndex) => `
+              <label class="exercise-option flex items-start gap-3 cursor-pointer rounded-lg border-2 border-border-light dark:border-border-dark p-3 transition-all hover:border-primary/50 hover:bg-primary/5" data-option-index="${optIndex}">
+                <input
+                  class="mt-1 h-5 w-5 border-2 border-border-light dark:border-border-dark text-primary focus:ring-2 focus:ring-primary/50"
+                  name="quiz_${quiz.id}"
+                  type="radio"
+                  value="${optIndex}"
+                  onchange="onExerciseOptionChange(${quiz.id})"
+                />
+                <span class="flex-1 text-base">${option}</span>
+              </label>
+            `).join('')}
+          </div>
+        `}
 
         <div class="ml-11 mt-3 exercise-feedback" style="display: none;">
           <div class="feedback-message rounded-lg p-3 text-sm">

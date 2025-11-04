@@ -85,7 +85,7 @@
       <form id="practiceForm" class="p-6 space-y-6">
         <input type="hidden" id="exerciseId">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">HSK Level *</label>
             <select id="hskLevel" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -105,6 +105,15 @@
               <option value="">Select lesson</option>
               <!-- Will be populated dynamically -->
             </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Question Type *</label>
+            <select id="questionType" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="multiple_choice">Multiple Choice</option>
+              <option value="fill_gap">Fill in Blank</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Fill in Blank shows options in a grid</p>
           </div>
         </div>
 
@@ -297,6 +306,7 @@
         document.getElementById('modalTitle').textContent = 'Edit Practice Exercise';
         document.getElementById('hskLevel').value = exercise.hsk_level || '';
         document.getElementById('lessonId').value = exercise.lesson_id || '';
+        document.getElementById('questionType').value = exercise.question_type || 'multiple_choice';
         document.getElementById('question').value = exercise.question || '';
         document.getElementById('pinyin').value = exercise.pinyin || '';
 
@@ -335,7 +345,7 @@
           options: JSON.stringify(options),
           correct_answer: document.getElementById('correctAnswer').value,
           explanation: document.getElementById('explanation').value || null,
-          question_type: 'multiple_choice'
+          question_type: document.getElementById('questionType').value
         };
 
         const password = localStorage.getItem('adminPassword');
