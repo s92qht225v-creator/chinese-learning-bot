@@ -382,6 +382,17 @@ const db = {
     return data;
   },
 
+  async getGrammarByLesson(lessonId) {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from('grammar_points')
+      .select('*')
+      .eq('lesson_id', lessonId)
+      .order('grammar_order', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  },
+
   async addGrammar(grammar) {
     if (!supabase) throw new Error('Database not configured');
     const { data, error } = await supabase

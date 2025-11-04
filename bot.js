@@ -269,6 +269,18 @@ app.get('/api/lessons/:lessonId/dialogues', async (req, res) => {
   }
 });
 
+// Get grammar for a lesson (frontend public endpoint)
+app.get('/api/lessons/:lessonId/grammar', async (req, res) => {
+  try {
+    const lessonId = req.params.lessonId;
+    const grammar = await db.getGrammarByLesson(lessonId);
+    res.json(grammar || []);
+  } catch (error) {
+    console.error('Error fetching grammar for lesson:', error);
+    res.json([]);
+  }
+});
+
 // Middleware to extract Telegram user from headers
 app.use((req, res, next) => {
   const userId = req.headers['x-telegram-user-id'];
