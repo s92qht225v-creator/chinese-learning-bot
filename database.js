@@ -393,6 +393,18 @@ const db = {
     return data || [];
   },
 
+  async getQuizzesByLesson(lessonId) {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from('quiz_questions')
+      .select('*')
+      .eq('lesson_id', lessonId)
+      .eq('question_type', 'multiple_choice')
+      .order('id', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  },
+
   async addGrammar(grammar) {
     if (!supabase) throw new Error('Database not configured');
     const { data, error } = await supabase
