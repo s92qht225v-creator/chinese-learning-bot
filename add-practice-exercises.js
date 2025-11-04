@@ -3,10 +3,11 @@ require('dotenv').config();
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
+  process.env.SUPABASE_ANON_KEY
 );
 
 const practiceExercises = [
+  // Multiple Choice Questions
   {
     lesson_id: 3,
     hsk_level: 'HSK1',
@@ -93,6 +94,52 @@ const practiceExercises = [
     correct_answer: '我是学生',
     explanation: '"我是学生" (wǒ shì xuéshēng) means "I am a student". "是" (shì) is the verb "to be".',
     question_type: 'multiple_choice',
+    status: 'active'
+  },
+
+  // Fill-in-Blank Questions
+  {
+    lesson_id: 3,
+    hsk_level: 'HSK1',
+    question: 'Fill in the blank: 你的书____？ (Where is your book?)',
+    pinyin: 'Nǐ de shū ____?',
+    options: JSON.stringify(['吗', '呢', '吧', '了']),
+    correct_answer: '呢',
+    explanation: '"呢" (ne) is used at the end of a question to ask "what about...?" or "where is...?"',
+    question_type: 'fill_gap',
+    status: 'active'
+  },
+  {
+    lesson_id: 3,
+    hsk_level: 'HSK1',
+    question: 'Fill in the blank: 我____学生 (I am also a student)',
+    pinyin: 'Wǒ ____ xuéshēng',
+    options: JSON.stringify(['也', '都', '很', '是']),
+    correct_answer: '也',
+    explanation: '"也" (yě) means "also" or "too" and must be placed before the verb.',
+    question_type: 'fill_gap',
+    status: 'active'
+  },
+  {
+    lesson_id: 3,
+    hsk_level: 'HSK1',
+    question: 'Fill in the blank: 我____是学生 (I am not a student)',
+    pinyin: 'Wǒ ____ shì xuéshēng',
+    options: JSON.stringify(['不', '没', '别', '非']),
+    correct_answer: '不',
+    explanation: '"不" (bù) is the most common negation word, meaning "no" or "not".',
+    question_type: 'fill_gap',
+    status: 'active'
+  },
+  {
+    lesson_id: 3,
+    hsk_level: 'HSK1',
+    question: 'Fill in the blank: 你____？ (What about you?)',
+    pinyin: 'Nǐ ____?',
+    options: JSON.stringify(['呢', '吗', '吧', '的']),
+    correct_answer: '呢',
+    explanation: '"呢" (ne) at the end of a sentence asks "what about..." or "how about..."',
+    question_type: 'fill_gap',
     status: 'active'
   }
 ];

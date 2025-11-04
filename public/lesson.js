@@ -367,6 +367,167 @@ async function loadQuizzes(lessonId) {
   }
 }
 
+// Helper function to render different question types
+function renderQuestionByType(quiz, index, options, correctAnswer, questionType) {
+  const questionHeader = `
+    <div class="flex items-start gap-3 mb-3">
+      <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
+        ${index + 1}
+      </div>
+      <div class="flex-1">
+        <p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark">${quiz.question}</p>
+        ${quiz.pinyin ? `<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">${quiz.pinyin}</p>` : ''}
+      </div>
+    </div>
+  `;
+
+  const feedback = `
+    <div class="ml-11 mt-3 exercise-feedback" style="display: none;">
+      <div class="feedback-message rounded-lg p-3 text-sm"></div>
+    </div>
+  `;
+
+  let questionBody = '';
+  const correctAnswerIndex = Array.isArray(options) ? options.indexOf(correctAnswer) : 0;
+
+  switch(questionType) {
+    case 'fill_gap':
+      questionBody = `
+        <div class="ml-11 grid grid-cols-2 gap-2" role="radiogroup">
+          ${options.map((option, optIndex) => `
+            <label class="exercise-option flex items-center justify-center gap-2 cursor-pointer rounded-lg border-2 border-border-light dark:border-border-dark p-4 transition-all hover:border-primary/50 hover:bg-primary/5" data-option-index="${optIndex}">
+              <input class="h-5 w-5 border-2 text-primary focus:ring-primary" name="quiz_${quiz.id}" type="radio" value="${optIndex}" onchange="onExerciseOptionChange(${quiz.id})"/>
+              <span class="text-lg font-bold">${option}</span>
+            </label>
+          `).join('')}
+        </div>
+      `;
+      break;
+
+    case 'text_input':
+      questionBody = `
+        <div class="ml-11">
+          <input type="text" id="text_input_${quiz.id}" data-correct="${correctAnswer}" placeholder="Type your answer..."
+            class="w-full px-4 py-3 rounded-lg border-2 border-border-light dark:border-border-dark focus:border-primary focus:ring-2 focus:ring-primary/20 text-lg font-medium"
+            maxlength="10" onchange="onExerciseOptionChange(${quiz.id})"/>
+        </div>
+      `;
+      break;
+
+    case 'true_false':
+      questionBody = `
+        <div class="ml-11 grid grid-cols-2 gap-3">
+          <label class="exercise-option flex items-center justify-center gap-2 cursor-pointer rounded-lg border-2 border-border-light dark:border-border-dark p-4 hover:border-primary/50" data-option-index="0">
+            <input class="h-5 w-5 border-2 text-primary" name="quiz_${quiz.id}" type="radio" value="true" onchange="onExerciseOptionChange(${quiz.id})"/>
+            <span class="font-bold text-lg">True ✓</span>
+          </label>
+          <label class="exercise-option flex items-center justify-center gap-2 cursor-pointer rounded-lg border-2 border-border-light dark:border-border-dark p-4 hover:border-primary/50" data-option-index="1">
+            <input class="h-5 w-5 border-2 text-primary" name="quiz_${quiz.id}" type="radio" value="false" onchange="onExerciseOptionChange(${quiz.id})"/>
+            <span class="font-bold text-lg">False ✗</span>
+          </label>
+        </div>
+      `;
+      break;
+
+    case 'sentence_ordering':
+      questionBody = `
+        <div class="ml-11">
+          <div class="p-4 rounded-lg bg-background-light dark:bg-background-dark mb-3">
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">Click words in order:</p>
+            <div class="flex flex-wrap gap-2" id="wordBank_${quiz.id}">
+              ${options.map(word => `
+                <button type="button" class="word-button px-4 py-2 rounded-lg border-2 border-border-light hover:border-primary transition-colors font-medium" data-word="${word}" data-quiz-id="${quiz.id}" onclick="selectWord(${quiz.id}, '${word}', this)">
+                  ${word}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+          <div class="p-4 rounded-lg border-2 border-dashed border-border-light dark:border-border-dark min-h-16" id="answerArea_${quiz.id}" data-correct="${correctAnswer}">
+            <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Click words above to build sentence</span>
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'error_correction':
+      questionBody = `
+        <div class="ml-11 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+          <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-3">Click on the incorrect word:</p>
+          <div class="flex flex-wrap gap-2 text-xl" id="errorSentence_${quiz.id}">
+            ${options.map(word => `
+              <button type="button" class="error-word px-3 py-2 rounded hover:bg-red-50 border-2 border-transparent transition-colors" data-word="${word}" data-quiz-id="${quiz.id}" onclick="selectError(${quiz.id}, '${word}', this)">
+                ${word}
+              </button>
+            `).join('')}
+          </div>
+          <input type="hidden" id="error_${quiz.id}" data-correct="${correctAnswer}"/>
+        </div>
+      `;
+      break;
+
+    case 'matching':
+    case 'translation':
+    case 'multiple_choice':
+    default:
+      questionBody = `
+        <div class="ml-11 space-y-2" role="radiogroup">
+          ${options.map((option, optIndex) => `
+            <label class="exercise-option flex items-start gap-3 cursor-pointer rounded-lg border-2 border-border-light dark:border-border-dark p-3 transition-all hover:border-primary/50 hover:bg-primary/5" data-option-index="${optIndex}">
+              <input class="mt-1 h-5 w-5 border-2 text-primary focus:ring-primary" name="quiz_${quiz.id}" type="radio" value="${optIndex}" onchange="onExerciseOptionChange(${quiz.id})"/>
+              <span class="flex-1 text-base">${option}</span>
+            </label>
+          `).join('')}
+        </div>
+      `;
+  }
+
+  return `
+    <div class="exercise-item" data-quiz-id="${quiz.id}" data-correct-index="${correctAnswerIndex}" data-question-type="${questionType}" data-correct-answer="${correctAnswer}">
+      ${questionHeader}
+      ${questionBody}
+      ${feedback}
+    </div>
+  `;
+}
+
+// Initialize interactive question handlers
+function initializeInteractiveQuestions() {
+  window.sentenceBuilders = {};
+  window.errorSelections = {};
+}
+
+// Word selection for sentence ordering
+function selectWord(quizId, word, button) {
+  if (!window.sentenceBuilders[quizId]) {
+    window.sentenceBuilders[quizId] = [];
+  }
+
+  button.disabled = true;
+  button.classList.add('opacity-50', 'cursor-not-allowed');
+
+  window.sentenceBuilders[quizId].push(word);
+
+  const answerArea = document.getElementById(`answerArea_${quizId}`);
+  answerArea.innerHTML = window.sentenceBuilders[quizId].map(w =>
+    `<span class="px-3 py-1 rounded-lg bg-primary/10 border border-primary font-medium inline-block mr-2">${w}</span>`
+  ).join('');
+
+  onExerciseOptionChange(quizId);
+}
+
+// Error word selection
+function selectError(quizId, word, button) {
+  document.querySelectorAll(`#errorSentence_${quizId} .error-word`).forEach(btn => {
+    btn.classList.remove('bg-primary/10', 'border-primary');
+  });
+
+  button.classList.add('bg-primary/10', 'border-primary');
+  document.getElementById(`error_${quizId}`).value = word;
+  window.errorSelections[quizId] = word;
+
+  onExerciseOptionChange(quizId);
+}
+
 function renderQuizzes(quizzes) {
   const container = document.getElementById('quizzesContainer');
   const countEl = document.getElementById('exercisesCount');
@@ -388,66 +549,13 @@ function renderQuizzes(quizzes) {
   container.innerHTML = quizzes.map((quiz, index) => {
     const options = JSON.parse(quiz.options || '[]');
     const correctAnswer = quiz.correct_answer;
-    const correctAnswerIndex = Array.isArray(options) ? options.indexOf(correctAnswer) : parseInt(correctAnswer);
     const questionType = quiz.question_type || 'multiple_choice';
 
-    // Determine if this is a fill-in-blank question (short Chinese character options)
-    const isFillInBlank = questionType === 'fill_gap' || (options.length <= 4 && options.every(opt => opt.length <= 2));
-
-    return `
-      <div class="exercise-item" data-quiz-id="${quiz.id}" data-correct-index="${correctAnswerIndex}" data-question-type="${questionType}">
-        <div class="flex items-start gap-3 mb-3">
-          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
-            ${index + 1}
-          </div>
-          <div class="flex-1">
-            <p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark">${quiz.question}</p>
-            ${quiz.pinyin ? `<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">${quiz.pinyin}</p>` : ''}
-          </div>
-        </div>
-
-        ${isFillInBlank ? `
-          <!-- Fill-in-blank style: Grid layout for character options -->
-          <div class="ml-11 grid grid-cols-2 gap-2" role="radiogroup">
-            ${options.map((option, optIndex) => `
-              <label class="exercise-option flex items-center justify-center gap-2 cursor-pointer rounded-lg border-2 border-border-light dark:border-border-dark p-4 transition-all hover:border-primary/50 hover:bg-primary/5" data-option-index="${optIndex}">
-                <input
-                  class="h-5 w-5 border-2 border-border-light dark:border-border-dark text-primary focus:ring-2 focus:ring-primary/50"
-                  name="quiz_${quiz.id}"
-                  type="radio"
-                  value="${optIndex}"
-                  onchange="onExerciseOptionChange(${quiz.id})"
-                />
-                <span class="text-lg font-bold">${option}</span>
-              </label>
-            `).join('')}
-          </div>
-        ` : `
-          <!-- Multiple choice style: Vertical list layout -->
-          <div class="ml-11 space-y-2" role="radiogroup">
-            ${options.map((option, optIndex) => `
-              <label class="exercise-option flex items-start gap-3 cursor-pointer rounded-lg border-2 border-border-light dark:border-border-dark p-3 transition-all hover:border-primary/50 hover:bg-primary/5" data-option-index="${optIndex}">
-                <input
-                  class="mt-1 h-5 w-5 border-2 border-border-light dark:border-border-dark text-primary focus:ring-2 focus:ring-primary/50"
-                  name="quiz_${quiz.id}"
-                  type="radio"
-                  value="${optIndex}"
-                  onchange="onExerciseOptionChange(${quiz.id})"
-                />
-                <span class="flex-1 text-base">${option}</span>
-              </label>
-            `).join('')}
-          </div>
-        `}
-
-        <div class="ml-11 mt-3 exercise-feedback" style="display: none;">
-          <div class="feedback-message rounded-lg p-3 text-sm">
-            <!-- Feedback will be shown here -->
-          </div>
-        </div>
-      </div>
-    `;
+    return renderQuestionByType(quiz, index, options, correctAnswer, questionType);
   }).join('');
+
+  // Initialize interactive components after rendering
+  initializeInteractiveQuestions();
 
   // Show check answers button
   if (checkContainer) {
@@ -730,6 +838,38 @@ function onExerciseOptionChange(quizId) {
   if (feedbackDiv) feedbackDiv.style.display = 'none';
 }
 
+function showFeedback(exerciseItem, quiz, isCorrect, correctAnswer) {
+  const feedbackDiv = exerciseItem.querySelector('.exercise-feedback');
+  const messageDiv = feedbackDiv.querySelector('.feedback-message');
+
+  if (isCorrect) {
+    messageDiv.className = 'feedback-message rounded-lg p-3 text-sm bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200';
+    messageDiv.innerHTML = `
+      <div class="flex items-start gap-2">
+        <span class="material-symbols-outlined text-lg">check_circle</span>
+        <div class="flex-1">
+          <strong>Correct!</strong>
+          ${quiz.explanation ? `<p class="mt-1">${quiz.explanation}</p>` : ''}
+        </div>
+      </div>
+    `;
+  } else {
+    messageDiv.className = 'feedback-message rounded-lg p-3 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200';
+    messageDiv.innerHTML = `
+      <div class="flex items-start gap-2">
+        <span class="material-symbols-outlined text-lg">cancel</span>
+        <div class="flex-1">
+          <strong>Incorrect</strong>
+          <p class="mt-1">The correct answer is: <strong>${correctAnswer}</strong></p>
+          ${quiz.explanation ? `<p class="mt-1">${quiz.explanation}</p>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  feedbackDiv.style.display = 'block';
+}
+
 function checkExerciseAnswers() {
   if (!window.exerciseQuizzes) return;
 
@@ -739,80 +879,73 @@ function checkExerciseAnswers() {
     const exerciseItem = document.querySelector(`.exercise-item[data-quiz-id="${quiz.id}"]`);
     if (!exerciseItem) return;
 
-    const correctIndex = parseInt(exerciseItem.dataset.correctIndex);
-    const selectedRadio = exerciseItem.querySelector('input[type="radio"]:checked');
+    const questionType = exerciseItem.dataset.questionType;
+    const correctAnswer = exerciseItem.dataset.correctAnswer;
+    let userAnswer = null;
+    let isCorrect = false;
 
-    if (!selectedRadio) {
-      // No answer selected - show warning
-      const feedbackDiv = exerciseItem.querySelector('.exercise-feedback');
-      const messageDiv = feedbackDiv.querySelector('.feedback-message');
+    // Get user answer based on question type
+    switch(questionType) {
+      case 'text_input':
+        const textInput = document.getElementById(`text_input_${quiz.id}`);
+        userAnswer = textInput ? textInput.value.trim() : '';
+        isCorrect = userAnswer === correctAnswer;
+        if (textInput) {
+          textInput.classList.add(isCorrect ? 'border-green-500' : 'border-red-500');
+          textInput.disabled = true;
+        }
+        break;
 
-      messageDiv.className = 'feedback-message rounded-lg p-3 text-sm bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200';
-      messageDiv.innerHTML = `
-        <div class="flex items-start gap-2">
-          <span class="material-symbols-outlined text-lg">warning</span>
-          <span>Please select an answer for this question.</span>
-        </div>
-      `;
-      feedbackDiv.style.display = 'block';
-      return;
+      case 'sentence_ordering':
+        const builtSentence = window.sentenceBuilders[quiz.id] ? window.sentenceBuilders[quiz.id].join('') : '';
+        userAnswer = builtSentence;
+        isCorrect = builtSentence === correctAnswer;
+        const answerArea = document.getElementById(`answerArea_${quiz.id}`);
+        if (answerArea) {
+          answerArea.classList.add(isCorrect ? 'border-green-500' : 'border-red-500');
+        }
+        break;
+
+      case 'error_correction':
+        userAnswer = window.errorSelections[quiz.id] || '';
+        isCorrect = userAnswer === correctAnswer;
+        break;
+
+      case 'true_false':
+        const tfRadio = exerciseItem.querySelector('input[type="radio"]:checked');
+        if (tfRadio) {
+          userAnswer = tfRadio.value;
+          isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+        }
+        break;
+
+      case 'fill_gap':
+      case 'multiple_choice':
+      case 'translation':
+      default:
+        const selectedRadio = exerciseItem.querySelector('input[type="radio"]:checked');
+        if (selectedRadio) {
+          const selectedIndex = parseInt(selectedRadio.value);
+          const correctIndex = parseInt(exerciseItem.dataset.correctIndex);
+          isCorrect = selectedIndex === correctIndex;
+
+          const options = exerciseItem.querySelectorAll('.exercise-option');
+          const selectedOption = options[selectedIndex];
+          const correctOption = options[correctIndex];
+
+          if (isCorrect) {
+            selectedOption?.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+          } else {
+            selectedOption?.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+            correctOption?.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+          }
+        }
     }
-
-    const selectedIndex = parseInt(selectedRadio.value);
-    const isCorrect = selectedIndex === correctIndex;
 
     if (isCorrect) correctCount++;
 
-    // Get all option labels
-    const options = exerciseItem.querySelectorAll('.exercise-option');
-    const selectedOption = options[selectedIndex];
-    const correctOption = options[correctIndex];
-
-    // Apply visual feedback
-    if (isCorrect) {
-      // Correct answer - green styling
-      selectedOption.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
-    } else {
-      // Wrong answer - red styling on selected, green on correct
-      selectedOption.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
-      if (correctOption) {
-        correctOption.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
-      }
-    }
-
-    // Show feedback message
-    const feedbackDiv = exerciseItem.querySelector('.exercise-feedback');
-    const messageDiv = feedbackDiv.querySelector('.feedback-message');
-
-    if (isCorrect) {
-      messageDiv.className = 'feedback-message rounded-lg p-3 text-sm bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200';
-      messageDiv.innerHTML = `
-        <div class="flex items-start gap-2">
-          <span class="material-symbols-outlined text-lg">check_circle</span>
-          <div class="flex-1">
-            <strong>Correct!</strong>
-            ${quiz.explanation ? `<p class="mt-1">${quiz.explanation}</p>` : ''}
-          </div>
-        </div>
-      `;
-    } else {
-      const options = JSON.parse(quiz.options || '[]');
-      const correctAnswerText = options[correctIndex];
-
-      messageDiv.className = 'feedback-message rounded-lg p-3 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200';
-      messageDiv.innerHTML = `
-        <div class="flex items-start gap-2">
-          <span class="material-symbols-outlined text-lg">cancel</span>
-          <div class="flex-1">
-            <strong>Incorrect</strong>
-            <p class="mt-1">The correct answer is: <strong>${correctAnswerText}</strong></p>
-            ${quiz.explanation ? `<p class="mt-1">${quiz.explanation}</p>` : ''}
-          </div>
-        </div>
-      `;
-    }
-
-    feedbackDiv.style.display = 'block';
+    // Show feedback
+    showFeedback(exerciseItem, quiz, isCorrect, correctAnswer);
   });
 
   // Update progress counter
