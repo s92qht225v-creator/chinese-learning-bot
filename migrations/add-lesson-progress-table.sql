@@ -9,10 +9,7 @@ CREATE TABLE IF NOT EXISTS lesson_progress (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
   -- Unique constraint to prevent duplicate entries
-  UNIQUE(user_id, lesson_id),
-
-  -- Foreign key to lessons table
-  FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE
+  UNIQUE(user_id, lesson_id)
 );
 
 -- Create index for faster queries
