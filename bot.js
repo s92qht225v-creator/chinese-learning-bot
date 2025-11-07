@@ -360,6 +360,48 @@ app.get('/api/user/progress', async (req, res) => {
   }
 });
 
+// Complete lesson
+app.post('/api/user-progress/complete-lesson', async (req, res) => {
+  try {
+    if (!req.telegramUser) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const { lesson_id } = req.body;
+
+    if (!lesson_id) {
+      return res.status(400).json({ error: 'lesson_id is required' });
+    }
+
+    if (db.isConfigured()) {
+      await db.getOrCreateUser(req.telegramUser);
+      const result = await db.markLessonComplete(req.telegramUser.id, lesson_id);
+      res.json({ success: true, data: result });
+    } else {
+      res.json({ success: false, message: 'Database not configured' });
+    }
+  } catch (error) {
+    console.error('Error completing lesson:', error);
+    res.status(500).json({ error: 'Failed to complete lesson' });
+  }
+});
+
+// Get lesson progress
+app.get('/api/user-progress/lessons/:lessonId?', async (req, res) => {
+  try {
+    if (!req.telegramUser) {
+      return res.json(null);
+    }
+
+    const lessonId = req.params.lessonId ? parseInt(req.params.lessonId) : null;
+    const progress = await db.getLessonProgress(req.telegramUser.id, lessonId);
+    res.json(progress || null);
+  } catch (error) {
+    console.error('Error fetching lesson progress:', error);
+    res.status(500).json({ error: 'Failed to fetch lesson progress' });
+  }
+});
+
 // ========== ADMIN API ENDPOINTS ==========
 
 // ========== FAVORITES & REVIEW QUEUE API ==========

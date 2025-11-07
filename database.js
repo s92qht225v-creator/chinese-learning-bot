@@ -503,6 +503,44 @@ const db = {
     if (error) throw error;
   },
 
+  // ========== LESSON PROGRESS ==========
+  async markLessonComplete(userId, lessonId) {
+    if (!supabase) throw new Error('Database not configured');
+
+    const { data, error } = await supabase
+      .from('lesson_progress')
+      .upsert({
+        user_id: userId,
+        lesson_id: lessonId,
+        completed: true,
+        completed_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,lesson_id'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async getLessonProgress(userId, lessonId = null) {
+    if (!supabase) return null;
+
+    let query = supabase
+      .from('lesson_progress')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (lessonId) {
+      query = query.eq('lesson_id', lessonId).single();
+    }
+
+    const { data, error } = await query;
+    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
+    return data;
+  },
+
   // ========== QUIZZES ==========
   async getQuizzes(hskLevel = null) {
     if (!supabase) return [];
