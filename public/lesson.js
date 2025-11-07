@@ -1000,4 +1000,64 @@ function resetExercises() {
   }
 }
 
+// Complete lesson function
+async function completeLesson() {
+  const button = document.getElementById('completeLessonBtn');
+  if (!currentLesson) {
+    alert('⚠️ Lesson not loaded');
+    return;
+  }
+
+  // Disable button to prevent double clicks
+  button.disabled = true;
+  button.classList.add('opacity-50', 'cursor-not-allowed');
+
+  try {
+    // Get user info from Telegram
+    const userId = tg.initDataUnsafe?.user?.id;
+
+    if (!userId) {
+      alert('⚠️ Unable to identify user');
+      button.disabled = false;
+      button.classList.remove('opacity-50', 'cursor-not-allowed');
+      return;
+    }
+
+    // Mark lesson as complete
+    const response = await fetch('/api/user-progress/complete-lesson', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Telegram-User-Id': userId.toString()
+      },
+      body: JSON.stringify({
+        lesson_id: currentLesson.id
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to mark lesson as complete');
+    }
+
+    // Update button to show completion
+    button.innerHTML = `
+      <span class="material-symbols-outlined">done_all</span>
+      <span>Lesson Completed!</span>
+    `;
+    button.classList.add('bg-success');
+
+    // Show success message
+    tg.showAlert('🎉 Congratulations! Lesson completed successfully!', () => {
+      // Navigate back to lesson list
+      tg.close();
+    });
+
+  } catch (error) {
+    console.error('Error completing lesson:', error);
+    alert('❌ Failed to mark lesson as complete. Please try again.');
+    button.disabled = false;
+    button.classList.remove('opacity-50', 'cursor-not-allowed');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', initializePage);
