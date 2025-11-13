@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const { Pool } = require('pg');
 const config = require('./config');
 
 // Initialize Supabase client
@@ -9,6 +10,26 @@ if (config.supabase.url && config.supabase.serviceKey) {
     config.supabase.url,
     config.supabase.serviceKey
   );
+}
+
+// Initialize PostgreSQL connection pool for direct database access
+// Using Supavisor connection pooler for better performance
+let pgPool = null;
+if (config.supabase.url && process.env.SUPABASE_DB_PASSWORD) {
+  const projectRef = config.supabase.url.match(/https:\/\/(.+)\.supabase\.co/)?.[1];
+  if (projectRef) {
+    pgPool = new Pool({
+      host: `aws-0-us-east-1.pooler.supabase.com`,
+      port: 6543, // Transaction mode pooler
+      database: 'postgres',
+      user: `postgres.${projectRef}`,
+      password: process.env.SUPABASE_DB_PASSWORD,
+      ssl: { rejectUnauthorized: false },
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
+  }
 }
 
 // Database operations
@@ -505,6 +526,25 @@ const db = {
 
   // ========== LESSON PROGRESS ==========
   async markLessonComplete(userId, lessonId) {
+    // Use direct PostgreSQL connection to bypass PostgREST cache issues
+    if (pgPool) {
+      const client = await pgPool.connect();
+      try {
+        const query = `
+          INSERT INTO lesson_progress (user_id, lesson_id, completed, completed_at)
+          VALUES ($1, $2, $3, $4)
+          ON CONFLICT (user_id, lesson_id)
+          DO UPDATE SET completed = $3, completed_at = $4, updated_at = NOW()
+          RETURNING *;
+        `;
+        const result = await client.query(query, [userId, lessonId, true, new Date().toISOString()]);
+        return result.rows[0];
+      } finally {
+        client.release();
+      }
+    }
+
+    // Fallback to Supabase client (if pg connection not available)
     if (!supabase) throw new Error('Database not configured');
 
     const { data, error } = await supabase
@@ -525,6 +565,26 @@ const db = {
   },
 
   async getLessonProgress(userId, lessonId = null) {
+    // Use direct PostgreSQL connection to bypass PostgREST cache issues
+    if (pgPool) {
+      const client = await pgPool.connect();
+      try {
+        let query, params;
+        if (lessonId) {
+          query = 'SELECT * FROM lesson_progress WHERE user_id = $1 AND lesson_id = $2';
+          params = [userId, lessonId];
+        } else {
+          query = 'SELECT * FROM lesson_progress WHERE user_id = $1';
+          params = [userId];
+        }
+        const result = await client.query(query, params);
+        return lessonId ? result.rows[0] : result.rows;
+      } finally {
+        client.release();
+      }
+    }
+
+    // Fallback to Supabase client
     if (!supabase) return null;
 
     let query = supabase
