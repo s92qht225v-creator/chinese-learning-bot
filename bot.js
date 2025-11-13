@@ -145,6 +145,36 @@ app.get('/api/vocabulary/random', async (req, res) => {
   }
 });
 
+app.get('/api/vocabulary/search', async (req, res) => {
+  try {
+    const searchTerm = req.query.q;
+
+    if (!searchTerm || searchTerm.trim().length === 0) {
+      return res.json([]);
+    }
+
+    const vocabulary = await db.getVocabulary();
+    const searchLower = searchTerm.toLowerCase().trim();
+
+    // Search in Chinese, Pinyin, English, Uzbek, and Russian
+    const results = vocabulary.filter(word => {
+      return (
+        (word.chinese && word.chinese.includes(searchTerm)) ||
+        (word.pinyin && word.pinyin.toLowerCase().includes(searchLower)) ||
+        (word.english && word.english.toLowerCase().includes(searchLower)) ||
+        (word.uzbek && word.uzbek.toLowerCase().includes(searchLower)) ||
+        (word.russian && word.russian.toLowerCase().includes(searchLower))
+      );
+    });
+
+    // Limit results to 50 for performance
+    res.json(results.slice(0, 50));
+  } catch (error) {
+    console.error('Error searching vocabulary:', error);
+    res.status(500).json({ error: 'Failed to search vocabulary' });
+  }
+});
+
 app.get('/api/quiz', async (req, res) => {
   try {
     console.log('[API] Quiz request received');

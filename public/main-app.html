@@ -210,6 +210,120 @@
       opacity: 0;
     }
 
+    /* Dictionary Modal */
+    .dictionary-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .dictionary-modal.hidden {
+      display: none;
+    }
+
+    .dictionary-modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .dictionary-modal-content {
+      position: relative;
+      width: 100%;
+      max-height: 85vh;
+      background: #ffffff;
+      border-radius: 24px 24px 0 0;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .dark .dictionary-modal-content {
+      background: #18222c;
+    }
+
+    .dictionary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #dce0e5;
+    }
+
+    .dark .dictionary-header {
+      border-bottom-color: #2d3748;
+    }
+
+    .dictionary-search {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #dce0e5;
+    }
+
+    .dark .dictionary-search {
+      border-bottom-color: #2d3748;
+    }
+
+    .dictionary-results {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1.5rem;
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+
+    .dict-result-item {
+      padding: 1rem;
+      background: #f6f7f8;
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-left: 4px solid #448fe4;
+    }
+
+    .dark .dict-result-item {
+      background: #111921;
+    }
+
+    .dict-result-item:hover {
+      transform: translateX(4px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .dict-result-item:active {
+      transform: translateX(2px);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+      to {
+        transform: translateY(0);
+      }
+    }
+
     /* Loading indicator */
     .loading-overlay {
       position: absolute;
@@ -259,6 +373,41 @@
   <button id="floatingDictBtn" class="floating-dict-btn" aria-label="Search Dictionary">
     <span class="material-symbols-outlined">search</span>
   </button>
+
+  <!-- Dictionary Modal -->
+  <div id="dictionaryModal" class="dictionary-modal hidden">
+    <div class="dictionary-modal-overlay"></div>
+    <div class="dictionary-modal-content">
+      <!-- Header -->
+      <div class="dictionary-header">
+        <h2 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">Dictionary</h2>
+        <button id="closeDictModal" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Search Box -->
+      <div class="dictionary-search">
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">search</span>
+          <input
+            type="text"
+            id="dictSearchInput"
+            placeholder="Search Chinese, Pinyin, or English..."
+            class="w-full pl-10 pr-4 py-3 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="dictResults" class="dictionary-results">
+        <div class="text-center text-text-secondary-light dark:text-text-secondary-dark py-8">
+          <span class="material-symbols-outlined text-5xl mb-2 opacity-50">search</span>
+          <p>Start typing to search...</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
@@ -627,18 +776,128 @@
       // Do nothing - we don't want hash in URL
     }
 
-    // Floating Dictionary Button
+    // Floating Dictionary Button & Modal
     const floatingDictBtn = document.getElementById('floatingDictBtn');
+    const dictionaryModal = document.getElementById('dictionaryModal');
+    const closeDictModal = document.getElementById('closeDictModal');
+    const dictSearchInput = document.getElementById('dictSearchInput');
+    const dictResults = document.getElementById('dictResults');
+    const modalOverlay = dictionaryModal.querySelector('.dictionary-modal-overlay');
 
+    let searchTimeout;
+
+    // Open modal
     floatingDictBtn.addEventListener('click', () => {
-      // TODO: Open dictionary search modal or navigate to vocabulary page
-      console.log('Opening dictionary...');
+      dictionaryModal.classList.remove('hidden');
+      dictSearchInput.focus();
+    });
 
-      // For now, switch to Practice tab which could have dictionary/vocabulary
-      const practiceNav = document.querySelector('[data-tab="practice"]');
-      if (practiceNav) {
-        practiceNav.click();
+    // Close modal
+    function closeModal() {
+      dictionaryModal.classList.add('hidden');
+      dictSearchInput.value = '';
+      showEmptyState();
+    }
+
+    closeDictModal.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', closeModal);
+
+    // Empty state
+    function showEmptyState() {
+      dictResults.innerHTML = `
+        <div class="text-center text-text-secondary-light dark:text-text-secondary-dark py-8">
+          <span class="material-symbols-outlined text-5xl mb-2 opacity-50">search</span>
+          <p>Start typing to search...</p>
+        </div>
+      `;
+    }
+
+    // Loading state
+    function showLoadingState() {
+      dictResults.innerHTML = `
+        <div class="text-center text-text-secondary-light dark:text-text-secondary-dark py-8">
+          <div class="spinner mx-auto mb-2"></div>
+          <p>Searching...</p>
+        </div>
+      `;
+    }
+
+    // No results state
+    function showNoResults() {
+      dictResults.innerHTML = `
+        <div class="text-center text-text-secondary-light dark:text-text-secondary-dark py-8">
+          <span class="material-symbols-outlined text-5xl mb-2 opacity-50">search_off</span>
+          <p>No results found</p>
+        </div>
+      `;
+    }
+
+    // Search vocabulary
+    async function searchVocabulary(query) {
+      if (!query || query.trim().length === 0) {
+        showEmptyState();
+        return;
       }
+
+      showLoadingState();
+
+      try {
+        const response = await fetch(`/api/vocabulary/search?q=${encodeURIComponent(query)}`);
+        const results = await response.json();
+
+        if (results.length === 0) {
+          showNoResults();
+          return;
+        }
+
+        // Get user's display language
+        const displayLang = window.settings?.displayLanguage || 'english';
+
+        // Render results
+        dictResults.innerHTML = results.map(word => {
+          let translation = word.english || '';
+          if (displayLang === 'uzbek' && word.uzbek) {
+            translation = word.uzbek;
+          } else if (displayLang === 'russian' && word.russian) {
+            translation = word.russian;
+          }
+
+          const hskBadge = word.hsk_level ? `<span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">HSK ${word.hsk_level}</span>` : '';
+          const partOfSpeech = word.part_of_speech ? `<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">${word.part_of_speech}</span>` : '';
+
+          return `
+            <div class="dict-result-item">
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex-1">
+                  <div class="text-2xl font-bold mb-1" style="font-family: 'Noto Sans SC', sans-serif;">${word.chinese}</div>
+                  <div class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${word.pinyin}</div>
+                </div>
+                <div class="flex gap-2 items-center">
+                  ${hskBadge}
+                  ${partOfSpeech}
+                </div>
+              </div>
+              <div class="text-base text-text-primary-light dark:text-text-primary-dark">${translation}</div>
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error('Error searching vocabulary:', error);
+        dictResults.innerHTML = `
+          <div class="text-center text-red-500 py-8">
+            <span class="material-symbols-outlined text-5xl mb-2">error</span>
+            <p>Error searching. Please try again.</p>
+          </div>
+        `;
+      }
+    }
+
+    // Search on input with debounce
+    dictSearchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        searchVocabulary(e.target.value);
+      }, 300);
     });
 
     // Hide floating button when scrolling down, show when scrolling up
