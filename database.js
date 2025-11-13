@@ -13,16 +13,15 @@ if (config.supabase.url && config.supabase.serviceKey) {
 }
 
 // Initialize PostgreSQL connection pool for direct database access
-// Using Supavisor connection pooler for better performance
 let pgPool = null;
 if (config.supabase.url && process.env.SUPABASE_DB_PASSWORD) {
   const projectRef = config.supabase.url.match(/https:\/\/(.+)\.supabase\.co/)?.[1];
   if (projectRef) {
     pgPool = new Pool({
-      host: `aws-0-us-east-1.pooler.supabase.com`,
-      port: 6543, // Transaction mode pooler
+      host: `db.${projectRef}.supabase.co`,
+      port: 5432, // Direct connection
       database: 'postgres',
-      user: `postgres.${projectRef}`,
+      user: 'postgres',
       password: process.env.SUPABASE_DB_PASSWORD,
       ssl: { rejectUnauthorized: false },
       max: 10,
