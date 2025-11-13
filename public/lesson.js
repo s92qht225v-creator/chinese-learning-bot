@@ -1035,7 +1035,7 @@ async function completeLesson() {
     // Show success message
     tg.showAlert('🎉 Congratulations! Lesson completed successfully!', () => {
       // Navigate back to lesson list
-      tg.close();
+      window.location.href = '/lessons.html';
     });
 
   } catch (error) {
