@@ -214,16 +214,11 @@ async function loadGrammar(lessonId) {
 
 function renderGrammar(grammar) {
   const container = document.getElementById('grammarContainer');
-  const countEl = document.getElementById('grammarCount');
 
   if (!grammar || grammar.length === 0) {
     container.innerHTML = '<p class="text-center text-text-secondary-light">No grammar available</p>';
-    if (countEl) countEl.textContent = 'No grammar points';
     return;
   }
-
-  // Update count
-  if (countEl) countEl.textContent = `${grammar.length} point${grammar.length !== 1 ? 's' : ''}`;
 
   const colors = ['primary', 'warning', 'success'];
 
@@ -526,18 +521,13 @@ function selectError(quizId, word, button) {
 
 function renderQuizzes(quizzes) {
   const container = document.getElementById('quizzesContainer');
-  const countEl = document.getElementById('exercisesCount');
   const checkContainer = document.getElementById('checkAnswersContainer');
 
   if (!quizzes || quizzes.length === 0) {
     container.innerHTML = '<p class="text-center text-text-secondary-light">No exercises available</p>';
-    if (countEl) countEl.textContent = 'No exercises';
     if (checkContainer) checkContainer.style.display = 'none';
     return;
   }
-
-  // Update count
-  if (countEl) countEl.textContent = `${quizzes.length} exercise${quizzes.length !== 1 ? 's' : ''}`;
 
   // Store quiz data globally for checking
   window.exerciseQuizzes = quizzes;
