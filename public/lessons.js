@@ -196,13 +196,51 @@ async function loadLessons(hskLevel = 1) {
 
 // Load lesson progress (mock data for now - replace with actual API call)
 async function loadProgress(lessons) {
-  // TODO: Replace with actual progress from database
-  // For now, mock some progress
-  lessonProgress = {
-    1: { completed: true, progress: 100 },
-    2: { completed: false, progress: 45 },
-    3: { completed: false, progress: 0 },
-  };
+  try {
+    const userId = tg.initDataUnsafe?.user?.id;
+    if (!userId) {
+      lessonProgress = {};
+      return;
+    }
+
+    // Fetch progress for all lessons
+    const response = await fetch('/api/user-progress/lessons', {
+      headers: {
+        'X-Telegram-User-Id': userId.toString()
+      }
+    });
+
+    if (response.ok) {
+      const progressData = await response.json();
+
+      // Convert array of progress records to map by lesson_number
+      lessonProgress = {};
+
+      if (Array.isArray(progressData)) {
+        // Find lesson details to map lesson_id to lesson_number
+        progressData.forEach(record => {
+          const lesson = lessons.find(l => l.id === record.lesson_id);
+          if (lesson) {
+            // Calculate progress percentage from section_progress
+            let progressPercent = 0;
+            if (record.section_progress) {
+              const sections = Object.values(record.section_progress);
+              const completedSections = sections.filter(Boolean).length;
+              progressPercent = Math.round((completedSections / 5) * 100);
+            }
+
+            lessonProgress[lesson.lesson_number] = {
+              completed: record.completed || false,
+              progress: progressPercent
+            };
+          }
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error loading progress:', error);
+    lessonProgress = {};
+  }
 }
 
 // Update overall progress
