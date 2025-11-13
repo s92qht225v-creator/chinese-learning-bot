@@ -1424,10 +1424,9 @@
                 const tbody = document.getElementById('vocabularyTable');
                 tbody.innerHTML = data.map(word => {
                     const uzbek = word.uzbek || '';
-                    const russian = word.russian || '';
                     const pos = word.part_of_speech || '';
-                    const audioHtml = word.audio_url ? 
-                        `<audio controls style="height:30px;width:120px;"><source src="${word.audio_url}" type="audio/mpeg"></audio>` : 
+                    const audioHtml = word.audio_url ?
+                        `<audio controls style="height:30px;width:120px;"><source src="${word.audio_url}" type="audio/mpeg"></audio>` :
                         '<span style="color:#999">-</span>';
                     return `
                     <tr data-id="${word.id}">
@@ -1435,15 +1434,13 @@
                         <td>${word.chinese}</td>
                         <td>${word.pinyin}</td>
                         <td>${pos ? `<span style="background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600">${pos}</span>` : '<span style="color:#999">-</span>'}</td>
-                        <td>${word.english}</td>
                         <td>${uzbek || '<span style="color:#999">-</span>'}</td>
-                        <td>${russian || '<span style="color:#999">-</span>'}</td>
                         <td>HSK ${word.hsk_level}</td>
                         <td>${audioHtml}</td>
                         <td>${word.lessons ? `L${word.lessons.lesson_number}: ${word.lessons.title}` : '<span style="color:#999">None</span>'}</td>
                         <td class="actions">
                             <button class="btn btn-small" onclick='cloneVocabulary(${word.id})' title="Clone this word">🔁</button>
-                            <button class="btn btn-small" onclick='editVocabulary(${word.id}, ${JSON.stringify(word.chinese)}, ${JSON.stringify(word.pinyin)}, ${JSON.stringify(pos)}, ${JSON.stringify(word.english)}, ${JSON.stringify(uzbek)}, ${JSON.stringify(russian)}, ${word.hsk_level}, ${word.lesson_id || 'null'}, ${JSON.stringify(word.audio_url || '')})'>Edit</button>
+                            <button class="btn btn-small" onclick='editVocabulary(${word.id}, ${JSON.stringify(word.chinese)}, ${JSON.stringify(word.pinyin)}, ${JSON.stringify(pos)}, ${JSON.stringify(uzbek)}, ${word.hsk_level}, ${word.lesson_id || 'null'}, ${JSON.stringify(word.audio_url || '')})'>Edit</button>
                             <button class="btn btn-danger btn-small" onclick="deleteVocabulary(${word.id})">Delete</button>
                         </td>
                     </tr>
@@ -1553,13 +1550,11 @@
         }
 
         // Edit vocabulary
-        async function editVocabulary(id, chinese, pinyin, partOfSpeech, english, uzbek, russian, hskLevel, lessonId, audioUrl) {
+        async function editVocabulary(id, chinese, pinyin, partOfSpeech, uzbek, hskLevel, lessonId, audioUrl) {
             document.getElementById('chinese').value = chinese;
             document.getElementById('pinyin').value = pinyin;
             document.getElementById('partOfSpeech').value = partOfSpeech || '';
-            document.getElementById('english').value = english;
             document.getElementById('uzbek').value = uzbek || '';
-            document.getElementById('russian').value = russian || '';
             document.getElementById('hskLevel').value = hskLevel;
             document.getElementById('vocabLesson').value = lessonId || '';
             document.getElementById('vocabAudioUrl').value = audioUrl || '';
