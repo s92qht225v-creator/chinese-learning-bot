@@ -24,9 +24,6 @@ async function initializePage() {
     await loadVocabulary(lessonId);
     await loadGrammar(lessonId);
     await loadQuizzes(lessonId);
-
-    // Initialize section tracking after all content is loaded
-    setTimeout(() => initSectionTracking(), 1000);
   } catch (error) {
     console.error('Error loading lesson:', error);
   }
@@ -1137,26 +1134,6 @@ async function markSectionComplete(section) {
   } catch (error) {
     console.error('Error marking section complete:', error);
   }
-}
-
-// Auto-track section completion when user scrolls to each section
-function initSectionTracking() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-        const section = entry.target.dataset.section;
-        if (section) {
-          markSectionComplete(section);
-        }
-      }
-    });
-  }, {
-    threshold: 0.5
-  });
-
-  // Observe all section containers
-  const sections = document.querySelectorAll('[data-section]');
-  sections.forEach(section => observer.observe(section));
 }
 
 document.addEventListener('DOMContentLoaded', initializePage);
