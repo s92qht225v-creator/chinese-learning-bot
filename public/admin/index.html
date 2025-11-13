@@ -1270,9 +1270,8 @@
                         <tr>
                             <th>Telegram ID</th>
                             <th>Username</th>
-                            <th>HSK Level</th>
-                            <th>Last Active</th>
-                            <th>Progress</th>
+                            <th>First Name</th>
+                            <th>Joined</th>
                         </tr>
                     </thead>
                     <tbody id="usersTable"></tbody>
@@ -1608,22 +1607,28 @@
                 const { data, error } = await supabase
                     .from('users')
                     .select('*')
-                    .order('last_active', { ascending: false });
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
                 const tbody = document.getElementById('usersTable');
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">No users yet</td></tr>';
+                    return;
+                }
+
                 tbody.innerHTML = data.map(user => `
                     <tr>
                         <td>${user.telegram_id}</td>
                         <td>${user.username || 'N/A'}</td>
-                        <td>HSK ${user.hsk_level || 'Not set'}</td>
-                        <td>${new Date(user.last_active).toLocaleString()}</td>
-                        <td>${user.total_words_learned || 0} words</td>
+                        <td>${user.first_name || 'N/A'}</td>
+                        <td>${new Date(user.created_at).toLocaleString()}</td>
                     </tr>
                 `).join('');
             } catch (error) {
                 console.error('Error loading users:', error);
+                const tbody = document.getElementById('usersTable');
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#e74c3c;padding:20px;">Error: ${error.message}</td></tr>`;
             }
         }
 
