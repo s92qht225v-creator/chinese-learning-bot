@@ -491,16 +491,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>English</label>
-                        <input type="text" id="english" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Uzbek</label>
-                        <input type="text" id="uzbek" placeholder="O'zbek tarjimasi">
-                    </div>
-                    <div class="form-group">
-                        <label>Russian</label>
-                        <input type="text" id="russian" placeholder="Русский перевод">
+                        <label>Uzbek Translation</label>
+                        <input type="text" id="uzbek" placeholder="O'zbek tarjimasi" required>
                     </div>
                     <div class="form-group">
                         <label>HSK Level</label>
@@ -544,10 +536,8 @@
                             <th onclick="sortVocabularyTable(0)" style="cursor: pointer;">Chinese ↕</th>
                             <th onclick="sortVocabularyTable(1)" style="cursor: pointer;">Pinyin ↕</th>
                             <th onclick="sortVocabularyTable(2)" style="cursor: pointer;">POS ↕</th>
-                            <th onclick="sortVocabularyTable(3)" style="cursor: pointer;">English ↕</th>
-                            <th onclick="sortVocabularyTable(4)" style="cursor: pointer;">Uzbek ↕</th>
-                            <th onclick="sortVocabularyTable(5)" style="cursor: pointer;">Russian ↕</th>
-                            <th onclick="sortVocabularyTable(6)" style="cursor: pointer;">HSK ↕</th>
+                            <th onclick="sortVocabularyTable(3)" style="cursor: pointer;">Uzbek ↕</th>
+                            <th onclick="sortVocabularyTable(4)" style="cursor: pointer;">HSK ↕</th>
                             <th>Audio</th>
                             <th>Lesson</th>
                             <th>Actions</th>
@@ -847,21 +837,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>🇬🇧 English Translation *</label>
-                        <textarea id="line${index}_translation_en" rows="2" required
-                                  style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
-                                  onchange="updateLine(${index}, 'translation_en', this.value)">${escapeHtml(line.translation_en)}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>🇷🇺 Russian Translation (Русский) *</label>
-                        <textarea id="line${index}_translation_ru" rows="2" required
-                                  style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
-                                  onchange="updateLine(${index}, 'translation_ru', this.value)">${escapeHtml(line.translation_ru)}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>🇺🇿 Uzbek Translation (O'zbek) *</label>
+                        <label>🇺🇿 Uzbek Translation *</label>
                         <textarea id="line${index}_translation_uz" rows="2" required
                                   style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"
                                   onchange="updateLine(${index}, 'translation_uz', this.value)">${escapeHtml(line.translation_uz)}</textarea>
@@ -880,8 +856,6 @@
             dialogueLines.push({
                 chinese: '',
                 pinyin: '',
-                translation_en: '',
-                translation_ru: '',
                 translation_uz: '',
                 line_order: dialogueLines.length + 1
             });
