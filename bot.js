@@ -402,6 +402,38 @@ app.get('/api/user-progress/lessons/:lessonId?', async (req, res) => {
   }
 });
 
+// Update section progress
+app.post('/api/user-progress/update-section', async (req, res) => {
+  try {
+    if (!req.telegramUser) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const { lesson_id, section } = req.body;
+
+    if (!lesson_id || !section) {
+      return res.status(400).json({ error: 'lesson_id and section are required' });
+    }
+
+    // Validate section name
+    const validSections = ['audio', 'dialogue', 'vocab', 'grammar', 'practice'];
+    if (!validSections.includes(section)) {
+      return res.status(400).json({ error: 'Invalid section name' });
+    }
+
+    if (db.isConfigured()) {
+      await db.getOrCreateUser(req.telegramUser);
+      const result = await db.updateSectionProgress(req.telegramUser.id, lesson_id, section);
+      res.json({ success: true, data: result });
+    } else {
+      res.json({ success: false, message: 'Database not configured' });
+    }
+  } catch (error) {
+    console.error('Error updating section progress:', error);
+    res.status(500).json({ error: 'Failed to update section progress' });
+  }
+});
+
 // ========== ADMIN API ENDPOINTS ==========
 
 // ========== FAVORITES & REVIEW QUEUE API ==========

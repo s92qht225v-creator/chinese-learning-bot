@@ -542,6 +542,46 @@ const db = {
     return data;
   },
 
+  async updateSectionProgress(userId, lessonId, section) {
+    if (!supabase) throw new Error('Database not configured');
+
+    // First, get or create the lesson progress entry
+    const { data: existing } = await supabase
+      .from('lesson_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('lesson_id', lessonId)
+      .single();
+
+    const currentProgress = existing?.section_progress || {
+      audio: false,
+      dialogue: false,
+      vocab: false,
+      grammar: false,
+      practice: false
+    };
+
+    // Update the specific section
+    currentProgress[section] = true;
+
+    // Upsert the record
+    const { data, error } = await supabase
+      .from('lesson_progress')
+      .upsert({
+        user_id: userId,
+        lesson_id: lessonId,
+        section_progress: currentProgress,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,lesson_id'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
   // ========== QUIZZES ==========
   async getQuizzes(hskLevel = null) {
     if (!supabase) return [];

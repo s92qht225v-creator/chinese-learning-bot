@@ -19,10 +19,14 @@ async function initializePage() {
 
   try {
     await loadLesson(lessonId);
+    await loadLessonProgress(lessonId);
     await loadDialogues(lessonId);
     await loadVocabulary(lessonId);
     await loadGrammar(lessonId);
     await loadQuizzes(lessonId);
+
+    // Initialize section tracking after all content is loaded
+    setTimeout(() => initSectionTracking(), 1000);
   } catch (error) {
     console.error('Error loading lesson:', error);
   }
@@ -1058,6 +1062,101 @@ async function completeLesson() {
     button.disabled = false;
     button.classList.remove('opacity-50', 'cursor-not-allowed');
   }
+}
+
+// ========== SECTION PROGRESS TRACKING ==========
+
+async function loadLessonProgress(lessonId) {
+  try {
+    const userId = tg.initDataUnsafe?.user?.id;
+    if (!userId) return;
+
+    const response = await fetch(`/api/user-progress/lessons/${lessonId}`, {
+      headers: {
+        'X-Telegram-User-Id': userId.toString()
+      }
+    });
+
+    if (response.ok) {
+      const progress = await response.json();
+      updateProgressUI(progress);
+    }
+  } catch (error) {
+    console.error('Error loading lesson progress:', error);
+  }
+}
+
+function updateProgressUI(progress) {
+  if (!progress || !progress.section_progress) return;
+
+  const sections = progress.section_progress;
+  const sectionNames = ['audio', 'dialogue', 'vocab', 'grammar', 'practice'];
+
+  // Update each section circle
+  sectionNames.forEach(section => {
+    const circle = document.querySelector(`[data-section="${section}"] .progress-circle`);
+    if (circle && sections[section]) {
+      circle.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+      circle.classList.add('bg-primary', 'text-white');
+      circle.innerHTML = '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+    }
+  });
+
+  // Calculate and update progress percentage
+  const completedCount = Object.values(sections).filter(Boolean).length;
+  const percentage = Math.round((completedCount / 5) * 100);
+  const progressText = document.getElementById('progressPercentage');
+  if (progressText) {
+    progressText.textContent = `${percentage}%`;
+  }
+}
+
+async function markSectionComplete(section) {
+  if (!currentLesson) return;
+
+  try {
+    const userId = tg.initDataUnsafe?.user?.id;
+    if (!userId) return;
+
+    const response = await fetch('/api/user-progress/update-section', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Telegram-User-Id': userId.toString()
+      },
+      body: JSON.stringify({
+        lesson_id: currentLesson.id,
+        section: section
+      })
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      updateProgressUI(result.data);
+    }
+  } catch (error) {
+    console.error('Error marking section complete:', error);
+  }
+}
+
+// Auto-track section completion when user scrolls to each section
+function initSectionTracking() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+        const section = entry.target.dataset.section;
+        if (section) {
+          markSectionComplete(section);
+        }
+      }
+    });
+  }, {
+    threshold: 0.5
+  });
+
+  // Observe all section containers
+  const sections = document.querySelectorAll('[data-section]');
+  sections.forEach(section => observer.observe(section));
 }
 
 document.addEventListener('DOMContentLoaded', initializePage);
