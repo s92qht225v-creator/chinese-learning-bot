@@ -62,18 +62,13 @@ async function loadDialogues(lessonId) {
 
 function renderDialogues(dialogues) {
   const container = document.getElementById('dialogueContainer');
-  const countEl = document.getElementById('dialogueCount');
 
   if (!dialogues || dialogues.length === 0) {
     container.innerHTML = '<p class="text-center text-text-secondary-light">No dialogues available</p>';
-    if (countEl) countEl.textContent = 'No dialogues';
     return;
   }
 
   const sorted = dialogues.sort((a, b) => (a.display_order || a.dialogue_order || 0) - (b.display_order || b.dialogue_order || 0));
-
-  // Update count
-  if (countEl) countEl.textContent = `${sorted.length} line${sorted.length !== 1 ? 's' : ''}`;
 
   container.innerHTML = sorted.map(dialogue => {
     // Handle multi-line dialogue structure
