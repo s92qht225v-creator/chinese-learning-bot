@@ -10,21 +10,21 @@
     window.addEventListener('DOMContentLoaded', () => {
       console.log('🏠 [index.html] Checking setup status...');
       const setupCompleted = localStorage.getItem('setupCompleted');
-      const selectedLanguage = localStorage.getItem('selectedLanguage');
-      console.log('📦 [index.html] localStorage:', { setupCompleted, selectedLanguage });
+
+      // Always set Uzbek as the language (app is Uzbek-only)
+      localStorage.setItem('selectedLanguage', 'uzbek');
+      localStorage.setItem('displayLanguage', 'uzbek');
+
+      console.log('📦 [index.html] localStorage:', { setupCompleted });
 
       if (setupCompleted) {
         // User has completed setup, go to main app
         console.log('✅ [index.html] Setup completed, redirecting to main-app.html');
         window.location.href = '/main-app.html';
-      } else if (selectedLanguage) {
-        // Language selected, go to level selection
-        console.log('🌍 [index.html] Language selected, redirecting to level-select.html');
-        window.location.href = '/level-select.html';
       } else {
-        // First time user - start with language selection
-        console.log('🆕 [index.html] First time, redirecting to language-selection.html');
-        window.location.href = '/language-selection.html';
+        // First time user - skip language selection, go directly to level selection
+        console.log('🆕 [index.html] First time, redirecting to level-select.html');
+        window.location.href = '/level-select.html';
       }
     });
   </script>

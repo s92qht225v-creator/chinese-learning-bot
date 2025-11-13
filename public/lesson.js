@@ -78,9 +78,7 @@ function renderDialogues(dialogues) {
           ${line.speaker ? `<p class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">${line.speaker}</p>` : ''}
           <p class="text-lg font-medium" data-tab="characters">${line.chinese || ''}</p>
           <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="pinyin" style="display: none;">${line.pinyin || ''}</p>
-          <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="english">${line.translation_en || line.english || ''}</p>
-          <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="uzbek">${line.translation_uz || line.uzbek || ''}</p>
-          <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="russian">${line.translation_ru || line.russian || ''}</p>
+          <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;">${line.translation_uz || line.uzbek || ''}</p>
         </div>
       `).join('');
     }
@@ -91,9 +89,7 @@ function renderDialogues(dialogues) {
         ${dialogue.speaker ? `<p class="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark">${dialogue.speaker}</p>` : ''}
         <p class="text-lg font-medium" data-tab="characters">${dialogue.chinese || ''}</p>
         <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="pinyin" style="display: none;">${dialogue.pinyin || ''}</p>
-        <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="english">${dialogue.english || ''}</p>
-        <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="uzbek">${dialogue.uzbek || ''}</p>
-        <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;" data-lang="russian">${dialogue.russian || ''}</p>
+        <p class="text-text-secondary-light dark:text-text-secondary-dark" data-tab="translation" style="display: none;">${dialogue.uzbek || ''}</p>
       </div>
     `;
   }).join('');
@@ -181,7 +177,7 @@ function renderVocabulary(vocabulary) {
           <span class="rounded-full bg-${color}-100 px-2 py-0.5 text-xs font-medium text-${color}-800 dark:bg-${color}-900 dark:text-${color}-200">${word.pos || 'n.'}</span>
         </div>
         <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${word.pinyin}</p>
-        <p class="mt-1 text-base text-text-primary-light dark:text-text-primary-dark">${word.english}</p>
+        <p class="mt-1 text-base text-text-primary-light dark:text-text-primary-dark">${word.uzbek || word.english || ''}</p>
       </div>
       <div class="flex flex-col items-center gap-3">
         <button onclick="playAudio('${word.id}')" aria-label="Play audio for ${word.chinese}" class="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white transition-transform active:scale-95">
@@ -586,8 +582,8 @@ function updateDialogueDisplay() {
         line.style.display = 'block';
       });
     } else if (currentDialogueTab === 'translation') {
-      const userLang = localStorage.getItem('userLanguage') || 'english';
-      item.querySelectorAll(`[data-tab="characters"], [data-tab="translation"][data-lang="${userLang}"]`).forEach(line => {
+      // App is Uzbek-only
+      item.querySelectorAll(`[data-tab="characters"], [data-tab="translation"]`).forEach(line => {
         line.style.display = 'block';
       });
     }

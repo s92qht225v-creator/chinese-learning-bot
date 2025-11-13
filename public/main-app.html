@@ -850,17 +850,10 @@
           return;
         }
 
-        // Get user's display language
-        const displayLang = window.settings?.displayLanguage || 'english';
-
+        // App is Uzbek-only
         // Render results
         dictResults.innerHTML = results.map(word => {
-          let translation = word.english || '';
-          if (displayLang === 'uzbek' && word.uzbek) {
-            translation = word.uzbek;
-          } else if (displayLang === 'russian' && word.russian) {
-            translation = word.russian;
-          }
+          const translation = word.uzbek || word.english || '';
 
           const hskBadge = word.hsk_level ? `<span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">HSK ${word.hsk_level}</span>` : '';
           const partOfSpeech = word.part_of_speech ? `<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">${word.part_of_speech}</span>` : '';

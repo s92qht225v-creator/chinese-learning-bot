@@ -68,14 +68,19 @@ class Settings {
     localStorage.setItem('notificationsEnabled', enabled.toString());
   }
 
-  // Get interface language
+  // Get interface language (always Uzbek - app is Uzbek-only)
   getInterfaceLanguage() {
-    return localStorage.getItem('interfaceLanguage') || 'en';
+    return 'uzbek';
   }
 
-  // Set interface language
+  // Set interface language (deprecated - app is Uzbek-only)
   setInterfaceLanguage(language) {
-    localStorage.setItem('interfaceLanguage', language);
+    // No-op: app is Uzbek-only
+  }
+
+  // Get display language for vocabulary/translations (always Uzbek)
+  get displayLanguage() {
+    return 'uzbek';
   }
 }
 

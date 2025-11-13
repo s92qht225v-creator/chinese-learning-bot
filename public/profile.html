@@ -290,20 +290,6 @@
             <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
           </a>
 
-          <!-- Interface Language -->
-          <a href="/profile-language-select.html" class="flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
-                <span class="material-symbols-outlined text-secondary">language</span>
-              </div>
-              <div>
-                <p class="font-medium text-sm text-left">Interface Language</p>
-                <p id="interfaceLanguageDisplay" class="text-xs text-text-secondary-light dark:text-text-secondary-dark">English</p>
-              </div>
-            </div>
-            <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
-          </a>
-
           <!-- Dark Mode -->
           <div class="w-full flex items-center justify-between p-4 hover:bg-background-light dark:hover:bg-background-dark transition-colors">
             <div class="flex items-center gap-3">
@@ -535,34 +521,11 @@
       }
     }
 
-    // Load and display interface language
-    function loadInterfaceLanguage() {
-      // Wait for settings to be available
-      if (typeof settings === 'undefined') {
-        setTimeout(loadInterfaceLanguage, 50);
-        return;
-      }
-
-      const language = settings.getInterfaceLanguage();
-      const languageNames = {
-        'en': 'English',
-        'uz': "O'zbek tili",
-        'ru': 'Русский'
-      };
-
-      const displayText = languageNames[language] || 'English';
-      const interfaceLanguageDisplay = document.getElementById('interfaceLanguageDisplay');
-      if (interfaceLanguageDisplay) {
-        interfaceLanguageDisplay.textContent = displayText;
-      }
-    }
-
     // Load profile data on page load
     loadUserProfile();
     generateActivityCalendar();
     loadHSKLevel();
     loadDailyGoal();
-    loadInterfaceLanguage();
     loadStudyTimeData();
 
     // Reload settings when page becomes visible (e.g., returning from selector)
@@ -570,7 +533,6 @@
       if (!document.hidden) {
         loadHSKLevel();
         loadDailyGoal();
-        loadInterfaceLanguage();
         loadStudyTimeData();
       }
     });
@@ -579,7 +541,6 @@
     window.addEventListener('focus', function() {
       loadHSKLevel();
       loadDailyGoal();
-      loadInterfaceLanguage();
       loadStudyTimeData();
     });
 
