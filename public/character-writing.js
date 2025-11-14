@@ -21,6 +21,7 @@
   let writer = null;
   let currentStrokeIndex = 0;
   let stats = { correct: 0, attempts: 0 };
+  let outlineVisible = true; // Start with outline visible (easy mode)
 
   // Elements
   const targetCharacterEl = document.getElementById('targetCharacter');
@@ -31,7 +32,9 @@
   const backBtnEl = document.getElementById('backBtn');
   const eraseBtnEl = document.getElementById('eraseBtn');
   const showAnimationBtnEl = document.getElementById('showAnimationBtn');
-  const showHintBtnEl = document.getElementById('showHintBtn');
+  const toggleOutlineBtnEl = document.getElementById('toggleOutlineBtn');
+  const toggleOutlineIconEl = document.getElementById('toggleOutlineIcon');
+  const toggleOutlineTextEl = document.getElementById('toggleOutlineText');
   const playAudioBtnEl = document.getElementById('playAudioBtn');
   const skipBtnEl = document.getElementById('skipBtn');
   const nextBtnEl = document.getElementById('nextBtn');
@@ -80,7 +83,7 @@
         padding: 10,
         strokeAnimationSpeed: 1,
         delayBetweenStrokes: 200,
-        showOutline: true,
+        showOutline: outlineVisible,
         showCharacter: false,
         radicalColor: '#4A90E2',
         strokeColor: '#555',
@@ -155,26 +158,34 @@
     });
   }
 
-  // Show hint - animate the next stroke then reload to clear it
-  if (showHintBtnEl) {
-    showHintBtnEl.addEventListener('click', () => {
+  // Toggle outline visibility
+  if (toggleOutlineBtnEl) {
+    toggleOutlineBtnEl.addEventListener('click', () => {
+      outlineVisible = !outlineVisible;
+
+      // Update button UI
+      if (toggleOutlineIconEl && toggleOutlineTextEl) {
+        if (outlineVisible) {
+          toggleOutlineIconEl.textContent = 'visibility_off';
+          toggleOutlineTextEl.textContent = 'Hide';
+        } else {
+          toggleOutlineIconEl.textContent = 'visibility';
+          toggleOutlineTextEl.textContent = 'Show';
+        }
+      }
+
+      // Apply to current writer instance
       if (writer) {
-        // Save which stroke to show before reloading
-        const strokeToShow = currentStrokeIndex;
-        console.log('Showing hint for stroke:', strokeToShow);
-        // Cancel quiz temporarily
-        writer.cancelQuiz();
-        // Show the character outline briefly to help orient the user
-        writer.showOutline();
-        // Animate the stroke that needs to be drawn
-        writer.animateStroke(strokeToShow, {
-          onComplete: () => {
-            // Wait a moment then reload the character to clear and restart
-            setTimeout(() => {
-              loadCharacter(currentIndex);
-            }, 1000);
-          }
-        });
+        if (outlineVisible) {
+          writer.showOutline();
+        } else {
+          writer.hideOutline();
+        }
+      }
+
+      // Haptic feedback
+      if (telegramApp.HapticFeedback) {
+        telegramApp.HapticFeedback.impactOccurred('light');
       }
     });
   }
