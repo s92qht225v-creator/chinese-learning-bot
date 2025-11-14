@@ -5,148 +5,150 @@ telegramApp.ready();
 
 // Character data - will be loaded from API
 let characters = [];
-
 let currentIndex = 0;
+let writer = null;
 let stats = { correct: 0, attempts: 0 };
-let isDrawing = false;
-let showGuide = false;
-let strokes = []; // Store each stroke for undo
-let currentStroke = []; // Current stroke being drawn
 
 // Elements
-const canvas = document.getElementById('drawingCanvas');
-if (!canvas) {
-  console.error('Canvas element not found!');
-  throw new Error('Canvas element not found');
-}
-const ctx = canvas.getContext('2d');
 const targetCharacterEl = document.getElementById('targetCharacter');
 const characterPinyinEl = document.getElementById('characterPinyin');
 const characterMeaningEl = document.getElementById('characterMeaning');
-const guideCharacterEl = document.getElementById('guideCharacter');
 const progressEl = document.getElementById('progress');
 const progressBarEl = document.getElementById('progressBar');
 const backBtnEl = document.getElementById('backBtn');
-const clearBtnEl = document.getElementById('clearBtn');
-const undoBtnEl = document.getElementById('undoBtn');
-const showGuideBtnEl = document.getElementById('showGuideBtn');
+const eraseBtnEl = document.getElementById('eraseBtn');
+const showAnimationBtnEl = document.getElementById('showAnimationBtn');
+const showHintBtnEl = document.getElementById('showHintBtn');
 const playAudioBtnEl = document.getElementById('playAudioBtn');
 const skipBtnEl = document.getElementById('skipBtn');
-const checkBtnEl = document.getElementById('checkBtn');
+const nextBtnEl = document.getElementById('nextBtn');
 
 // Validate critical elements
-if (!targetCharacterEl || !characterPinyinEl || !characterMeaningEl || !backBtnEl || !clearBtnEl || !undoBtnEl || !showGuideBtnEl || !checkBtnEl || !skipBtnEl) {
-  console.error('Required elements not found!');
+if (!targetCharacterEl || !characterPinyinEl || !characterMeaningEl) {
+  console.error('Required display elements not found!');
   alert('Error: Page elements not loaded correctly. Please refresh.');
 }
 
-// Setup canvas
-function setupCanvas() {
-  if (!canvas) return;
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * window.devicePixelRatio;
-  canvas.height = rect.height * window.devicePixelRatio;
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+// Load character from API
+function loadCharacter(index) {
+  const char = characters[index];
 
-  ctx.strokeStyle = '#4A90E2';
-  ctx.lineWidth = 4;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-}
+  // Update display
+  if (targetCharacterEl) targetCharacterEl.textContent = char.character;
+  if (characterPinyinEl) characterPinyinEl.textContent = char.pinyin;
+  if (characterMeaningEl) characterMeaningEl.textContent = char.uzbek_meaning;
+  if (progressEl) progressEl.textContent = `${index + 1} / ${characters.length}`;
+  if (progressBarEl) progressBarEl.style.width = `${((index + 1) / characters.length) * 100}%`;
 
-setupCanvas();
-window.addEventListener('resize', setupCanvas);
+  // Hide next button, show skip button
+  if (nextBtnEl) nextBtnEl.style.display = 'none';
+  if (skipBtnEl) skipBtnEl.style.display = 'flex';
 
-// Drawing functions
-function startDrawing(e) {
-  isDrawing = true;
-  const pos = getPosition(e);
-  currentStroke = [pos];
-  ctx.beginPath();
-  ctx.moveTo(pos.x, pos.y);
-}
+  // Create Hanzi Writer instance
+  const container = document.getElementById('hanziWriterContainer');
+  container.innerHTML = ''; // Clear previous character
 
-function draw(e) {
-  if (!isDrawing) return;
-  e.preventDefault();
-  const pos = getPosition(e);
-  currentStroke.push(pos);
-  ctx.lineTo(pos.x, pos.y);
-  ctx.stroke();
-}
+  try {
+    writer = HanziWriter.create(container, char.character, {
+      width: container.offsetWidth || 400,
+      height: container.offsetWidth || 400,
+      padding: 10,
+      strokeAnimationSpeed: 1,
+      delayBetweenStrokes: 200,
+      showOutline: true,
+      showCharacter: false, // Hide the character initially for quiz mode
+      radicalColor: '#4A90E2',
+      strokeColor: '#555',
+      outlineColor: '#DDD',
+      drawingColor: '#4A90E2',
+      drawingWidth: 4,
 
-function stopDrawing() {
-  if (isDrawing && currentStroke.length > 0) {
-    strokes.push([...currentStroke]);
-    currentStroke = [];
-    stats.attempts++;
-    updateStats();
+      // Quiz mode options
+      highlightColor: '#50E3C2',
+      leniency: 0.7, // How lenient to be with stroke accuracy (0-1)
+      showHintAfterMisses: 2, // Show hint after 2 incorrect strokes
+      highlightOnComplete: true,
+      highlightCompleteColor: '#50E3C2'
+    });
+
+    // Start quiz mode immediately
+    writer.quiz({
+      onMistake: function(strokeData) {
+        console.log('Incorrect stroke');
+        stats.attempts++;
+        updateStats();
+        // Haptic feedback
+        if (telegramApp.HapticFeedback) {
+          telegramApp.HapticFeedback.notificationOccurred('error');
+        }
+      },
+      onCorrectStroke: function(strokeData) {
+        console.log('Correct stroke:', strokeData.index + 1);
+        // Haptic feedback
+        if (telegramApp.HapticFeedback) {
+          telegramApp.HapticFeedback.impactOccurred('light');
+        }
+      },
+      onComplete: function(summaryData) {
+        console.log('Character completed!', summaryData);
+        stats.correct++;
+        stats.attempts++;
+        updateStats();
+
+        // Haptic feedback
+        if (telegramApp.HapticFeedback) {
+          telegramApp.HapticFeedback.notificationOccurred('success');
+        }
+
+        // Show next button
+        if (nextBtnEl) nextBtnEl.style.display = 'flex';
+        if (skipBtnEl) skipBtnEl.style.display = 'none';
+
+        // Show success message
+        writer.showCharacter({ duration: 500 });
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating Hanzi Writer:', error);
+    alert('Character not supported or error loading stroke data. Please skip.');
   }
-  isDrawing = false;
 }
 
-// Redraw all strokes
-function redrawStrokes() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  strokes.forEach(stroke => {
-    if (stroke.length > 0) {
-      ctx.beginPath();
-      ctx.moveTo(stroke[0].x, stroke[0].y);
-      stroke.forEach(point => {
-        ctx.lineTo(point.x, point.y);
+// Erase last stroke
+if (eraseBtnEl) {
+  eraseBtnEl.addEventListener('click', () => {
+    if (writer) {
+      writer.cancelQuiz();
+      // Restart quiz
+      loadCharacter(currentIndex);
+    }
+  });
+}
+
+// Show animation
+if (showAnimationBtnEl) {
+  showAnimationBtnEl.addEventListener('click', () => {
+    if (writer) {
+      writer.cancelQuiz();
+      writer.animateCharacter({
+        onComplete: () => {
+          // Restart quiz after animation
+          setTimeout(() => {
+            loadCharacter(currentIndex);
+          }, 1000);
+        }
       });
-      ctx.stroke();
     }
   });
 }
 
-function getPosition(e) {
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches ? e.touches[0] : e;
-  return {
-    x: touch.clientX - rect.left,
-    y: touch.clientY - rect.top
-  };
-}
-
-// Event listeners for drawing
-if (canvas) {
-  canvas.addEventListener('mousedown', startDrawing);
-  canvas.addEventListener('mousemove', draw);
-  canvas.addEventListener('mouseup', stopDrawing);
-  canvas.addEventListener('mouseout', stopDrawing);
-
-  canvas.addEventListener('touchstart', startDrawing);
-  canvas.addEventListener('touchmove', draw);
-  canvas.addEventListener('touchend', stopDrawing);
-}
-
-// Undo last stroke
-if (undoBtnEl) {
-  undoBtnEl.addEventListener('click', () => {
-    if (strokes.length > 0) {
-      strokes.pop();
-      redrawStrokes();
+// Show hint (show next stroke)
+if (showHintBtnEl) {
+  showHintBtnEl.addEventListener('click', () => {
+    if (writer) {
+      writer.showHint();
     }
-  });
-}
-
-// Clear canvas
-if (clearBtnEl) {
-  clearBtnEl.addEventListener('click', () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    strokes = [];
-    currentStroke = [];
-  });
-}
-
-// Toggle guide
-if (showGuideBtnEl) {
-  showGuideBtnEl.addEventListener('click', () => {
-    showGuide = !showGuide;
-    if (guideCharacterEl) guideCharacterEl.style.display = showGuide ? 'flex' : 'none';
-    const icon = showGuideBtnEl.querySelector('.material-symbols-outlined');
-    if (icon) icon.textContent = showGuide ? 'visibility_off' : 'visibility';
   });
 }
 
@@ -155,99 +157,57 @@ if (playAudioBtnEl) {
   playAudioBtnEl.addEventListener('click', () => {
     const char = characters[currentIndex];
     if (char) {
-      // Try to play audio from URL first
-      if (char.audio_url) {
-        const audio = new Audio(char.audio_url);
-        audio.play().catch(err => {
-          console.error('Audio playback failed:', err);
-          // Fallback to TTS
-          if (window.tts) {
-            tts.speak(char.char);
-          }
-        });
-      } else if (window.tts) {
-        // Use TTS if no audio URL
-        tts.speak(char.char);
+      // Use TTS to speak the character
+      if (window.tts) {
+        tts.speak(char.character);
+      } else {
+        // Fallback: try HTML5 Speech Synthesis
+        const utterance = new SpeechSynthesisUtterance(char.character);
+        utterance.lang = 'zh-CN';
+        window.speechSynthesis.speak(utterance);
       }
     }
   });
 }
 
-// Load character
-function loadCharacter(index) {
-  const char = characters[index];
-  if (targetCharacterEl) targetCharacterEl.textContent = char.char;
-  if (characterPinyinEl) characterPinyinEl.textContent = char.pinyin;
-  if (characterMeaningEl) characterMeaningEl.textContent = char.meaning;
-  if (guideCharacterEl) guideCharacterEl.textContent = char.char;
-  if (progressEl) progressEl.textContent = `${index + 1} / ${characters.length}`;
-  if (progressBarEl) progressBarEl.style.width = `${((index + 1) / characters.length) * 100}%`;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  strokes = [];
-  currentStroke = [];
-  showGuide = false;
-  if (guideCharacterEl) guideCharacterEl.style.display = 'none';
-  if (showGuideBtnEl) {
-    const icon = showGuideBtnEl.querySelector('.material-symbols-outlined');
-    if (icon) icon.textContent = 'visibility';
-  }
-}
-
-// Check answer (simplified - in real app, would use OCR or stroke order validation)
-if (checkBtnEl) {
-  checkBtnEl.addEventListener('click', () => {
-
-    // Simplified check - just count as correct if they drew something
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const hasDrawing = imageData.data.some(channel => channel !== 0);
-
-    if (hasDrawing) {
-      stats.correct++;
-      updateStats();
-
-      // Show success feedback
-      const originalBg = checkBtnEl.style.backgroundColor;
-      checkBtnEl.style.backgroundColor = '#50E3C2';
-      checkBtnEl.innerHTML = '<span class="material-symbols-outlined">check</span> Correct!';
-
-      setTimeout(() => {
-        checkBtnEl.style.backgroundColor = originalBg;
-        checkBtnEl.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Check';
-        nextCharacter();
-      }, 1000);
-    } else {
-      alert('Please draw the character first!');
-    }
-  });
-}
-
-// Skip
+// Skip current character
 if (skipBtnEl) {
   skipBtnEl.addEventListener('click', () => {
     nextCharacter();
   });
 }
 
-// Next character
+// Next character (shown after completing current one)
+if (nextBtnEl) {
+  nextBtnEl.addEventListener('click', () => {
+    nextCharacter();
+  });
+}
+
+// Next character function
 function nextCharacter() {
   if (currentIndex < characters.length - 1) {
     currentIndex++;
     loadCharacter(currentIndex);
   } else {
-    // Finished
+    // Finished all characters
     const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
     alert(`Practice complete! 🎉\n\nCorrect: ${stats.correct}\nAttempts: ${stats.attempts}\nAccuracy: ${accuracy}%`);
     window.location.href = '/practice.html';
   }
 }
 
-// Update stats
+// Update stats display
 function updateStats() {
-  document.getElementById('correctCount').textContent = stats.correct;
-  document.getElementById('attemptCount').textContent = stats.attempts;
+  const correctEl = document.getElementById('correctCount');
+  const attemptEl = document.getElementById('attemptCount');
+  const accuracyEl = document.getElementById('accuracyPercent');
+
+  if (correctEl) correctEl.textContent = stats.correct;
+  if (attemptEl) attemptEl.textContent = stats.attempts;
+
   const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
-  document.getElementById('accuracyPercent').textContent = accuracy + '%';
+  if (accuracyEl) accuracyEl.textContent = accuracy + '%';
 }
 
 // Back button
@@ -257,28 +217,34 @@ if (backBtnEl) {
   });
 }
 
-// Load vocabulary from API
-async function loadVocabulary() {
+// Load characters from API
+async function loadCharacters() {
   try {
-    const response = await fetch(API_CONFIG.url(API_CONFIG.endpoints.vocabulary));
+    const response = await fetch(API_CONFIG.url('/api/character-writing?enabled=true'));
     const data = await response.json();
-    characters = data.slice(0, 10).map(word => ({
-      char: word.chinese,
-      pinyin: word.pinyin,
-      meaning: word.uzbek || word.english,
-      audio_url: word.audio_url
+
+    characters = data.map(char => ({
+      character: char.character,
+      pinyin: char.pinyin,
+      uzbek_meaning: char.uzbek_meaning,
+      hsk_level: char.hsk_level,
+      difficulty_rating: char.difficulty_rating
     }));
 
     if (characters.length > 0) {
+      // Show only first 10 characters per session
+      characters = characters.slice(0, 10);
       loadCharacter(currentIndex);
     } else {
-      alert('No characters available. Please add vocabulary first.');
+      alert('No characters available. Please add characters in the admin panel first.');
+      window.location.href = '/practice.html';
     }
   } catch (error) {
-    console.error('Failed to load vocabulary:', error);
-    alert('Failed to load vocabulary. Please try again.');
+    console.error('Failed to load characters:', error);
+    alert('Failed to load characters. Please try again.');
+    window.location.href = '/practice.html';
   }
 }
 
 // Initialize
-loadVocabulary();
+loadCharacters();
