@@ -15,6 +15,10 @@ let currentStroke = []; // Current stroke being drawn
 
 // Elements
 const canvas = document.getElementById('drawingCanvas');
+if (!canvas) {
+  console.error('Canvas element not found!');
+  throw new Error('Canvas element not found');
+}
 const ctx = canvas.getContext('2d');
 const targetCharacter = document.getElementById('targetCharacter');
 const characterPinyin = document.getElementById('characterPinyin');
@@ -30,8 +34,15 @@ const playAudioBtn = document.getElementById('playAudioBtn');
 const skipBtn = document.getElementById('skipBtn');
 const checkBtn = document.getElementById('checkBtn');
 
+// Validate critical elements
+if (!targetCharacter || !characterPinyin || !characterMeaning || !backBtn || !clearBtn || !undoBtn || !showGuideBtn || !checkBtn || !skipBtn) {
+  console.error('Required elements not found!');
+  alert('Error: Page elements not loaded correctly. Please refresh.');
+}
+
 // Setup canvas
 function setupCanvas() {
+  if (!canvas) return;
   const rect = canvas.getBoundingClientRect();
   canvas.width = rect.width * window.devicePixelRatio;
   canvas.height = rect.height * window.devicePixelRatio;
@@ -99,58 +110,68 @@ function getPosition(e) {
 }
 
 // Event listeners for drawing
-canvas.addEventListener('mousedown', startDrawing);
-canvas.addEventListener('mousemove', draw);
-canvas.addEventListener('mouseup', stopDrawing);
-canvas.addEventListener('mouseout', stopDrawing);
+if (canvas) {
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseout', stopDrawing);
 
-canvas.addEventListener('touchstart', startDrawing);
-canvas.addEventListener('touchmove', draw);
-canvas.addEventListener('touchend', stopDrawing);
+  canvas.addEventListener('touchstart', startDrawing);
+  canvas.addEventListener('touchmove', draw);
+  canvas.addEventListener('touchend', stopDrawing);
+}
 
 // Undo last stroke
-undoBtn.addEventListener('click', () => {
-  if (strokes.length > 0) {
-    strokes.pop();
-    redrawStrokes();
-  }
-});
+if (undoBtn) {
+  undoBtn.addEventListener('click', () => {
+    if (strokes.length > 0) {
+      strokes.pop();
+      redrawStrokes();
+    }
+  });
+}
 
 // Clear canvas
-clearBtn.addEventListener('click', () => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  strokes = [];
-  currentStroke = [];
-});
+if (clearBtn) {
+  clearBtn.addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    strokes = [];
+    currentStroke = [];
+  });
+}
 
 // Toggle guide
-showGuideBtn.addEventListener('click', () => {
-  showGuide = !showGuide;
-  guideCharacter.style.display = showGuide ? 'flex' : 'none';
-  const icon = showGuideBtn.querySelector('.material-symbols-outlined');
-  icon.textContent = showGuide ? 'visibility_off' : 'visibility';
-});
+if (showGuideBtn) {
+  showGuideBtn.addEventListener('click', () => {
+    showGuide = !showGuide;
+    if (guideCharacter) guideCharacter.style.display = showGuide ? 'flex' : 'none';
+    const icon = showGuideBtn.querySelector('.material-symbols-outlined');
+    if (icon) icon.textContent = showGuide ? 'visibility_off' : 'visibility';
+  });
+}
 
 // Play audio
-playAudioBtn.addEventListener('click', () => {
-  const char = characters[currentIndex];
-  if (char) {
-    // Try to play audio from URL first
-    if (char.audio_url) {
-      const audio = new Audio(char.audio_url);
-      audio.play().catch(err => {
-        console.error('Audio playback failed:', err);
-        // Fallback to TTS
-        if (window.tts) {
-          tts.speak(char.char);
-        }
-      });
-    } else if (window.tts) {
-      // Use TTS if no audio URL
-      tts.speak(char.char);
+if (playAudioBtn) {
+  playAudioBtn.addEventListener('click', () => {
+    const char = characters[currentIndex];
+    if (char) {
+      // Try to play audio from URL first
+      if (char.audio_url) {
+        const audio = new Audio(char.audio_url);
+        audio.play().catch(err => {
+          console.error('Audio playback failed:', err);
+          // Fallback to TTS
+          if (window.tts) {
+            tts.speak(char.char);
+          }
+        });
+      } else if (window.tts) {
+        // Use TTS if no audio URL
+        tts.speak(char.char);
+      }
     }
-  }
-});
+  });
+}
 
 // Load character
 function loadCharacter(index) {
@@ -172,35 +193,39 @@ function loadCharacter(index) {
 }
 
 // Check answer (simplified - in real app, would use OCR or stroke order validation)
-checkBtn.addEventListener('click', () => {
+if (checkBtn) {
+  checkBtn.addEventListener('click', () => {
 
-  // Simplified check - just count as correct if they drew something
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const hasDrawing = imageData.data.some(channel => channel !== 0);
+    // Simplified check - just count as correct if they drew something
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const hasDrawing = imageData.data.some(channel => channel !== 0);
 
-  if (hasDrawing) {
-    stats.correct++;
-    updateStats();
+    if (hasDrawing) {
+      stats.correct++;
+      updateStats();
 
-    // Show success feedback
-    const originalBg = checkBtn.style.backgroundColor;
-    checkBtn.style.backgroundColor = '#50E3C2';
-    checkBtn.innerHTML = '<span class="material-symbols-outlined">check</span> Correct!';
+      // Show success feedback
+      const originalBg = checkBtn.style.backgroundColor;
+      checkBtn.style.backgroundColor = '#50E3C2';
+      checkBtn.innerHTML = '<span class="material-symbols-outlined">check</span> Correct!';
 
-    setTimeout(() => {
-      checkBtn.style.backgroundColor = originalBg;
-      checkBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Check';
-      nextCharacter();
-    }, 1000);
-  } else {
-    alert('Please draw the character first!');
-  }
-});
+      setTimeout(() => {
+        checkBtn.style.backgroundColor = originalBg;
+        checkBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Check';
+        nextCharacter();
+      }, 1000);
+    } else {
+      alert('Please draw the character first!');
+    }
+  });
+}
 
 // Skip
-skipBtn.addEventListener('click', () => {
-  nextCharacter();
-});
+if (skipBtn) {
+  skipBtn.addEventListener('click', () => {
+    nextCharacter();
+  });
+}
 
 // Next character
 function nextCharacter() {
@@ -224,9 +249,11 @@ function updateStats() {
 }
 
 // Back button
-backBtn.addEventListener('click', () => {
-  window.location.href = '/practice.html';
-});
+if (backBtn) {
+  backBtn.addEventListener('click', () => {
+    window.location.href = '/practice.html';
+  });
+}
 
 // Load vocabulary from API
 async function loadVocabulary() {
