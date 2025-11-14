@@ -9,6 +9,14 @@ async function initializePage() {
   tg.expand();
   tg.ready();
 
+  // Setup Telegram WebApp BackButton
+  if (tg.BackButton) {
+    tg.BackButton.show();
+    tg.BackButton.onClick(() => {
+      window.history.back();
+    });
+  }
+
   const urlParams = new URLSearchParams(window.location.search);
   const lessonId = urlParams.get('id');
 
