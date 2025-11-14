@@ -19,6 +19,7 @@
   let characters = [];
   let currentIndex = 0;
   let writer = null;
+  let currentStrokeIndex = 0;
   let stats = { correct: 0, attempts: 0 };
 
   // Elements
@@ -56,6 +57,9 @@
     if (nextBtnEl) nextBtnEl.style.display = 'none';
     if (skipBtnEl) skipBtnEl.style.display = 'flex';
 
+    // Reset stroke tracking
+    currentStrokeIndex = 0;
+
     // Create Hanzi Writer instance
     const container = document.getElementById('hanziWriterContainer');
     container.innerHTML = ''; // Clear previous character
@@ -92,6 +96,7 @@
         },
         onCorrectStroke: function(strokeData) {
           console.log('Correct stroke:', strokeData.index + 1);
+          currentStrokeIndex = strokeData.index + 1; // Track next stroke to draw
           if (telegramApp.HapticFeedback) {
             telegramApp.HapticFeedback.impactOccurred('light');
           }
@@ -141,19 +146,15 @@
     });
   }
 
-  // Show hint - temporarily show the character outline
+  // Show hint - animate the next stroke
   if (showHintBtnEl) {
     showHintBtnEl.addEventListener('click', () => {
       if (writer) {
-        // Briefly show the complete character as a hint
-        writer.showCharacter({
-          duration: 800,
-          onComplete: () => {
-            // Hide it again after a moment
-            setTimeout(() => {
-              writer.hideCharacter({ duration: 400 });
-            }, 1000);
-          }
+        console.log('Showing hint for stroke:', currentStrokeIndex);
+        // Animate just the next stroke that needs to be drawn
+        writer.animateStroke(currentStrokeIndex, {
+          strokeColor: '#FFD700', // Gold color to highlight the hint
+          radicalColor: '#FFD700'
         });
       }
     });
