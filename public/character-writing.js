@@ -44,6 +44,18 @@
     alert('Error: Page elements not loaded correctly. Please refresh.');
   }
 
+  // Prevent scrolling while drawing - add event listeners once on page load
+  const container = document.getElementById('hanziWriterContainer');
+  if (container) {
+    container.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    container.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+  }
+
   // Load character from API
   function loadCharacter(index) {
     const char = characters[index];
@@ -63,17 +75,7 @@
     currentStrokeIndex = 0;
 
     // Create Hanzi Writer instance
-    const container = document.getElementById('hanziWriterContainer');
     container.innerHTML = ''; // Clear previous character
-
-    // Prevent scrolling while drawing
-    container.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-    }, { passive: false });
-
-    container.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-    }, { passive: false });
 
     try {
       writer = HanziWriter.create(container, char.character, {
