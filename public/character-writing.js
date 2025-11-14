@@ -236,7 +236,7 @@ async function loadVocabulary() {
     characters = data.slice(0, 10).map(word => ({
       char: word.chinese,
       pinyin: word.pinyin,
-      meaning: word.english,
+      meaning: word.uzbek || word.english,
       audio_url: word.audio_url
     }));
 
