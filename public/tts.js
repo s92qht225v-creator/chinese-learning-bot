@@ -87,5 +87,7 @@ class ChineseTTS {
   }
 }
 
-// Create global instance
-const tts = new ChineseTTS();
+// Create global instance (only if not already defined)
+if (typeof window.tts === 'undefined') {
+  window.tts = new ChineseTTS();
+}
