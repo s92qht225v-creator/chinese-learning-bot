@@ -19,6 +19,7 @@
   let characters = [];
   let currentIndex = 0;
   let writer = null;
+  let quiz = null;
   let stats = { correct: 0, attempts: 0 };
 
   // Elements
@@ -81,7 +82,7 @@
         highlightCompleteColor: '#50E3C2'
       });
 
-      writer.quiz({
+      quiz = writer.quiz({
         onMistake: function() {
           console.log('Incorrect stroke');
           stats.attempts++;
@@ -118,18 +119,20 @@
   // Erase last stroke
   if (eraseBtnEl) {
     eraseBtnEl.addEventListener('click', () => {
-      if (writer) {
-        writer.cancelQuiz();
-        loadCharacter(currentIndex);
+      if (quiz) {
+        quiz.cancel();
       }
+      loadCharacter(currentIndex);
     });
   }
 
   // Show animation
   if (showAnimationBtnEl) {
     showAnimationBtnEl.addEventListener('click', () => {
+      if (quiz) {
+        quiz.cancel();
+      }
       if (writer) {
-        writer.cancelQuiz();
         writer.animateCharacter({
           onComplete: () => {
             setTimeout(() => {
@@ -144,8 +147,8 @@
   // Show hint
   if (showHintBtnEl) {
     showHintBtnEl.addEventListener('click', () => {
-      if (writer) {
-        writer.showHint();
+      if (quiz) {
+        quiz.showHint();
       }
     });
   }
