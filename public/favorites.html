@@ -38,13 +38,8 @@
     <!-- Header -->
     <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
       <div class="max-w-screen-xl mx-auto px-4 py-3">
-        <div class="flex items-center justify-between">
-          <button id="backBtn" class="flex items-center gap-2 text-text-light dark:text-text-dark">
-            <span class="material-symbols-outlined">arrow_back</span>
-            <span class="font-medium">Back</span>
-          </button>
+        <div class="text-center">
           <h1 class="text-lg font-bold">Favorites</h1>
-          <div class="w-20"></div>
         </div>
       </div>
     </header>
@@ -76,14 +71,16 @@
     let favorites = [];
 
     // Elements
-    const backBtn = document.getElementById('backBtn');
     const favoritesList = document.getElementById('favoritesList');
     const emptyState = document.getElementById('emptyState');
 
-    // Back button
-    backBtn.addEventListener('click', () => {
-      window.history.back();
-    });
+    // Setup Telegram WebApp BackButton
+    if (tg.BackButton) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(() => {
+        window.history.back();
+      });
+    }
 
     // Load favorites
     async function loadFavorites() {

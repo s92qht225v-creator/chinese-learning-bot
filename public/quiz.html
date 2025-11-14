@@ -336,9 +336,6 @@
       <div class="px-4 py-3">
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-3">
-            <button id="backBtn" class="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
-              <span class="material-symbols-outlined text-gray-500">close</span>
-            </button>
             <div>
               <div class="flex items-center gap-2">
                 <span id="quizTitle" class="text-sm font-semibold text-text-light dark:text-text-dark">Quiz</span>
@@ -427,7 +424,18 @@
     const optionsContainer = document.getElementById('optionsContainer');
     const nextBtn = document.getElementById('nextBtn');
     const skipBtn = document.getElementById('skipBtn');
-    const backBtn = document.getElementById('backBtn');
+
+    // Setup Telegram WebApp BackButton
+    if (tg.BackButton) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(() => {
+        // End study session if user leaves early
+        if (typeof studyTracker !== 'undefined') {
+          studyTracker.endSession();
+        }
+        window.location.href = '/quiz-levels.html';
+      });
+    }
 
     // Set quiz title based on HSK level
     const quizTitle = document.getElementById('quizTitle');
@@ -1824,16 +1832,7 @@
       window.location.href = '/main-app.html?tab=practice';
     }
 
-    // Back button
-    backBtn.addEventListener('click', () => {
-      // End study session if user leaves early
-      if (typeof studyTracker !== 'undefined') {
-        studyTracker.endSession();
-      }
-      window.history.back();
-    });
-
-    // Also track when user leaves page (browser back, close, etc.)
+    // Track when user leaves page (browser back, close, etc.)
     window.addEventListener('beforeunload', () => {
       if (typeof studyTracker !== 'undefined' && studyTracker.currentSession) {
         studyTracker.endSession();

@@ -35,7 +35,6 @@ function getSupabaseClient() {
 }
 
 // Elements
-var backBtn = document.getElementById('backBtn');
 var pageTitle = document.getElementById('pageTitle');
 var levelRadios = document.querySelectorAll('input[name="hsk_level"]');
 var lessonsContainer = document.getElementById('lessonsContainer');
@@ -47,19 +46,12 @@ var continueTitle = document.getElementById('continueTitle');
 var currentHskLevel = 1;
 var lessonProgress = {}; // Store lesson completion status
 
-// Back button handler (remove old listeners to prevent duplicates)
-if (backBtn) {
-  var backBtnHandler = () => {
+// Setup Telegram WebApp BackButton
+if (window.tg && window.tg.BackButton) {
+  window.tg.BackButton.show();
+  window.tg.BackButton.onClick(() => {
     window.history.back();
-  };
-
-  // Remove old listener if exists
-  if (backBtn._lessonsClickHandler) {
-    backBtn.removeEventListener('click', backBtn._lessonsClickHandler);
-  }
-
-  backBtn._lessonsClickHandler = backBtnHandler;
-  backBtn.addEventListener('click', backBtnHandler);
+  });
 }
 
 // Level selector handler
