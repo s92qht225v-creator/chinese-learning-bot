@@ -19,7 +19,6 @@
   let characters = [];
   let currentIndex = 0;
   let writer = null;
-  let quiz = null;
   let stats = { correct: 0, attempts: 0 };
 
   // Elements
@@ -82,7 +81,7 @@
         highlightCompleteColor: '#50E3C2'
       });
 
-      quiz = writer.quiz({
+      writer.quiz({
         onMistake: function() {
           console.log('Incorrect stroke');
           stats.attempts++;
@@ -116,16 +115,11 @@
     }
   }
 
-  // Erase last stroke
+  // Erase last stroke - reload character to reset quiz
   if (eraseBtnEl) {
     eraseBtnEl.addEventListener('click', () => {
-      console.log('Erase button clicked, quiz:', quiz, 'writer:', writer);
-      if (quiz) {
-        try {
-          quiz.cancel();
-        } catch (e) {
-          console.log('Quiz cancel error:', e);
-        }
+      if (writer) {
+        writer.cancelQuiz();
       }
       loadCharacter(currentIndex);
     });
@@ -134,15 +128,8 @@
   // Show animation
   if (showAnimationBtnEl) {
     showAnimationBtnEl.addEventListener('click', () => {
-      console.log('Animation button clicked, quiz:', quiz, 'writer:', writer);
-      if (quiz) {
-        try {
-          quiz.cancel();
-        } catch (e) {
-          console.log('Quiz cancel error:', e);
-        }
-      }
       if (writer) {
+        writer.cancelQuiz();
         writer.animateCharacter({
           onComplete: () => {
             setTimeout(() => {
@@ -157,15 +144,8 @@
   // Show hint
   if (showHintBtnEl) {
     showHintBtnEl.addEventListener('click', () => {
-      console.log('Hint button clicked, quiz:', quiz);
-      if (quiz) {
-        try {
-          quiz.showHint();
-        } catch (e) {
-          console.log('Show hint error:', e);
-        }
-      } else {
-        console.log('Quiz not initialized yet');
+      if (writer) {
+        writer.showHint();
       }
     });
   }
