@@ -637,6 +637,67 @@ const db = {
       .delete()
       .eq('id', id);
     if (error) throw error;
+  },
+
+  // ========== CHARACTER WRITING ==========
+  async getCharacterWritingList(enabled = null) {
+    if (!supabase) return [];
+
+    let query = supabase
+      .from('character_writing_list')
+      .select('*')
+      .order('practice_order', { ascending: true });
+
+    if (enabled !== null) {
+      query = query.eq('enabled', enabled);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getCharacterWritingById(id) {
+    if (!supabase) return null;
+    const { data, error } = await supabase
+      .from('character_writing_list')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async addCharacterWriting(character) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('character_writing_list')
+      .insert([character])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateCharacterWriting(id, character) {
+    if (!supabase) throw new Error('Database not configured');
+    const { data, error } = await supabase
+      .from('character_writing_list')
+      .update(character)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteCharacterWriting(id) {
+    if (!supabase) throw new Error('Database not configured');
+    const { error } = await supabase
+      .from('character_writing_list')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
   }
 };
 

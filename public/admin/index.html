@@ -348,6 +348,7 @@
             <button class="tab" onclick="showTab(event, 'grammar')">📝 Grammar</button>
             <button class="tab" onclick="showTab(event, 'quizzes')">❓ Quizzes</button>
             <button class="tab" onclick="showTab(event, 'practice')">✏️ Practice</button>
+            <button class="tab" onclick="showTab(event, 'charwriting')">✍️ Character Writing</button>
             <button class="tab" onclick="showTab(event, 'users')">👥 Users</button>
         </div>
 
@@ -1260,6 +1261,101 @@
             ></iframe>
         </div>
 
+        <!-- Character Writing Tab -->
+        <div id="charwritingPanel" class="panel">
+            <h2 style="margin-bottom: 20px;">Character Writing Practice Management</h2>
+            <p style="margin-bottom: 20px; color: #666;">
+                Manage individual Chinese characters for writing practice. Each character should have its standalone meaning (e.g., 你 = "you", not 你好 = "hello").
+            </p>
+
+            <button class="btn" onclick="showCharacterWritingForm()">➕ Add New Character</button>
+
+            <div id="characterWritingFormContainer" style="display: none; margin-top: 20px;">
+                <h3 style="margin-bottom: 15px;">Add/Edit Character</h3>
+                <input type="hidden" id="charWritingId" />
+
+                <div class="form-group">
+                    <label>Character *</label>
+                    <input type="text" id="charCharacter" placeholder="e.g., 你" maxlength="1" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Pinyin *</label>
+                    <input type="text" id="charPinyin" placeholder="e.g., nǐ" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Uzbek Meaning *</label>
+                    <input type="text" id="charUzbekMeaning" placeholder="e.g., sen" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Practice Order *</label>
+                    <input type="number" id="charPracticeOrder" placeholder="e.g., 1" min="0" required />
+                </div>
+
+                <div class="form-group">
+                    <label>HSK Level</label>
+                    <select id="charHskLevel">
+                        <option value="">None</option>
+                        <option value="1">HSK 1</option>
+                        <option value="2">HSK 2</option>
+                        <option value="3">HSK 3</option>
+                        <option value="4">HSK 4</option>
+                        <option value="5">HSK 5</option>
+                        <option value="6">HSK 6</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Difficulty Rating</label>
+                    <select id="charDifficulty">
+                        <option value="">None</option>
+                        <option value="1">1 - Very Easy</option>
+                        <option value="2">2 - Easy</option>
+                        <option value="3">3 - Medium</option>
+                        <option value="4">4 - Hard</option>
+                        <option value="5">5 - Very Hard</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="charEnabled" checked /> Enabled
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="charNotes" rows="3" placeholder="Optional notes about the character"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn" onclick="saveCharacterWriting()">💾 Save</button>
+                    <button class="btn btn-secondary" onclick="cancelCharacterWritingForm()">Cancel</button>
+                </div>
+                <div id="charWritingMessage"></div>
+            </div>
+
+            <div class="table-container" style="margin-top: 20px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Character</th>
+                            <th>Pinyin</th>
+                            <th>Uzbek Meaning</th>
+                            <th>HSK</th>
+                            <th>Difficulty</th>
+                            <th>Enabled</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="characterWritingTable"></tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Users Tab -->
         <div id="usersPanel" class="panel">
             <h2 style="margin-bottom: 20px;">User Management</h2>
@@ -1338,6 +1434,7 @@
             if (tabName === 'lessons') loadLessons();
             if (tabName === 'dialogues') { loadMultiLineDialogues(); }
             // Grammar and Quiz management are now in embedded iframes, no loading needed
+            if (tabName === 'charwriting') loadCharacterWriting();
             if (tabName === 'users') loadUsers();
         }
 
@@ -2664,6 +2761,156 @@
             
             // Re-append sorted rows
             rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // ========== CHARACTER WRITING FUNCTIONS ==========
+        async function loadCharacterWriting() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/character-writing`, {
+                    headers: { 'X-Admin-Password': ADMIN_PASSWORD }
+                });
+                const characters = await response.json();
+
+                const tbody = document.getElementById('characterWritingTable');
+                tbody.innerHTML = characters.map(char => `
+                    <tr>
+                        <td>${char.practice_order}</td>
+                        <td style="font-size: 24px; font-weight: bold;">${char.character}</td>
+                        <td>${char.pinyin}</td>
+                        <td>${char.uzbek_meaning}</td>
+                        <td>${char.hsk_level || '-'}</td>
+                        <td>${char.difficulty_rating ? '⭐'.repeat(char.difficulty_rating) : '-'}</td>
+                        <td>${char.enabled ? '✅' : '❌'}</td>
+                        <td>
+                            <button class="btn-small" onclick="editCharacterWriting(${char.id})">Edit</button>
+                            <button class="btn-small btn-danger" onclick="deleteCharacterWriting(${char.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading character writing:', error);
+            }
+        }
+
+        function showCharacterWritingForm() {
+            document.getElementById('characterWritingFormContainer').style.display = 'block';
+            document.getElementById('charWritingId').value = '';
+            document.getElementById('charCharacter').value = '';
+            document.getElementById('charPinyin').value = '';
+            document.getElementById('charUzbekMeaning').value = '';
+            document.getElementById('charPracticeOrder').value = '';
+            document.getElementById('charHskLevel').value = '';
+            document.getElementById('charDifficulty').value = '';
+            document.getElementById('charEnabled').checked = true;
+            document.getElementById('charNotes').value = '';
+        }
+
+        function cancelCharacterWritingForm() {
+            document.getElementById('characterWritingFormContainer').style.display = 'none';
+        }
+
+        async function editCharacterWriting(id) {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/character-writing/${id}`, {
+                    headers: { 'X-Admin-Password': ADMIN_PASSWORD }
+                });
+                const char = await response.json();
+
+                document.getElementById('characterWritingFormContainer').style.display = 'block';
+                document.getElementById('charWritingId').value = char.id;
+                document.getElementById('charCharacter').value = char.character;
+                document.getElementById('charPinyin').value = char.pinyin;
+                document.getElementById('charUzbekMeaning').value = char.uzbek_meaning;
+                document.getElementById('charPracticeOrder').value = char.practice_order;
+                document.getElementById('charHskLevel').value = char.hsk_level || '';
+                document.getElementById('charDifficulty').value = char.difficulty_rating || '';
+                document.getElementById('charEnabled').checked = char.enabled;
+                document.getElementById('charNotes').value = char.notes || '';
+
+                // Scroll to form
+                document.getElementById('characterWritingFormContainer').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                console.error('Error loading character:', error);
+                alert('Failed to load character');
+            }
+        }
+
+        async function saveCharacterWriting() {
+            const messageEl = document.getElementById('charWritingMessage');
+            const id = document.getElementById('charWritingId').value;
+            const character = document.getElementById('charCharacter').value.trim();
+            const pinyin = document.getElementById('charPinyin').value.trim();
+            const uzbek_meaning = document.getElementById('charUzbekMeaning').value.trim();
+            const practice_order = parseInt(document.getElementById('charPracticeOrder').value);
+            const hsk_level = document.getElementById('charHskLevel').value ? parseInt(document.getElementById('charHskLevel').value) : null;
+            const difficulty_rating = document.getElementById('charDifficulty').value ? parseInt(document.getElementById('charDifficulty').value) : null;
+            const enabled = document.getElementById('charEnabled').checked;
+            const notes = document.getElementById('charNotes').value.trim() || null;
+
+            if (!character || !pinyin || !uzbek_meaning || isNaN(practice_order)) {
+                messageEl.innerHTML = '<div class="message error">Please fill in all required fields</div>';
+                return;
+            }
+
+            try {
+                const url = id
+                    ? `${API_BASE}/api/admin/character-writing/${id}`
+                    : `${API_BASE}/api/admin/character-writing`;
+
+                const method = id ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Password': ADMIN_PASSWORD
+                    },
+                    body: JSON.stringify({
+                        character,
+                        pinyin,
+                        uzbek_meaning,
+                        practice_order,
+                        hsk_level,
+                        difficulty_rating,
+                        enabled,
+                        notes
+                    })
+                });
+
+                if (response.ok) {
+                    messageEl.innerHTML = '<div class="message success">Character saved successfully!</div>';
+                    setTimeout(() => {
+                        messageEl.innerHTML = '';
+                        cancelCharacterWritingForm();
+                        loadCharacterWriting();
+                    }, 2000);
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (error) {
+                console.error('Error saving character:', error);
+                messageEl.innerHTML = '<div class="message error">Failed to save character</div>';
+            }
+        }
+
+        async function deleteCharacterWriting(id) {
+            if (!confirm('Are you sure you want to delete this character?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/character-writing/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'X-Admin-Password': ADMIN_PASSWORD }
+                });
+
+                if (response.ok) {
+                    loadCharacterWriting();
+                } else {
+                    throw new Error('Failed to delete');
+                }
+            } catch (error) {
+                console.error('Error deleting character:', error);
+                alert('Failed to delete character');
+            }
         }
     </script>
 </body>

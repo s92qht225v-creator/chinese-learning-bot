@@ -175,6 +175,18 @@ app.get('/api/vocabulary/search', async (req, res) => {
   }
 });
 
+// Character writing endpoints
+app.get('/api/character-writing', async (req, res) => {
+  try {
+    const enabled = req.query.enabled === 'true' ? true : req.query.enabled === 'false' ? false : null;
+    const characters = await db.getCharacterWritingList(enabled);
+    res.json(characters);
+  } catch (error) {
+    console.error('Error fetching character writing list:', error);
+    res.status(500).json({ error: 'Failed to fetch character writing list' });
+  }
+});
+
 app.get('/api/quiz', async (req, res) => {
   try {
     console.log('[API] Quiz request received');
@@ -935,6 +947,65 @@ app.delete('/api/admin/vocabulary/:id', adminAuth, async (req, res) => {
   } catch (error) {
     console.error('Error deleting vocabulary:', error);
     res.status(500).json({ error: 'Failed to delete vocabulary' });
+  }
+});
+
+// ========== CHARACTER WRITING ADMIN ENDPOINTS ==========
+// Get all character writing list (admin)
+app.get('/api/admin/character-writing', adminAuth, async (req, res) => {
+  try {
+    const characters = await db.getCharacterWritingList();
+    res.json(characters);
+  } catch (error) {
+    console.error('Error fetching character writing list:', error);
+    res.status(500).json({ error: 'Failed to fetch character writing list' });
+  }
+});
+
+// Get single character writing entry (admin)
+app.get('/api/admin/character-writing/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const character = await db.getCharacterWritingById(id);
+    res.json(character);
+  } catch (error) {
+    console.error('Error fetching character writing:', error);
+    res.status(500).json({ error: 'Failed to fetch character writing' });
+  }
+});
+
+// Add character writing entry (admin)
+app.post('/api/admin/character-writing', adminAuth, async (req, res) => {
+  try {
+    const character = await db.addCharacterWriting(req.body);
+    res.json(character);
+  } catch (error) {
+    console.error('Error adding character writing:', error);
+    res.status(500).json({ error: 'Failed to add character writing' });
+  }
+});
+
+// Update character writing entry (admin)
+app.put('/api/admin/character-writing/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const character = await db.updateCharacterWriting(id, req.body);
+    res.json(character);
+  } catch (error) {
+    console.error('Error updating character writing:', error);
+    res.status(500).json({ error: 'Failed to update character writing' });
+  }
+});
+
+// Delete character writing entry (admin)
+app.delete('/api/admin/character-writing/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.deleteCharacterWriting(id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting character writing:', error);
+    res.status(500).json({ error: 'Failed to delete character writing' });
   }
 });
 
