@@ -119,8 +119,13 @@
   // Erase last stroke
   if (eraseBtnEl) {
     eraseBtnEl.addEventListener('click', () => {
+      console.log('Erase button clicked, quiz:', quiz, 'writer:', writer);
       if (quiz) {
-        quiz.cancel();
+        try {
+          quiz.cancel();
+        } catch (e) {
+          console.log('Quiz cancel error:', e);
+        }
       }
       loadCharacter(currentIndex);
     });
@@ -129,8 +134,13 @@
   // Show animation
   if (showAnimationBtnEl) {
     showAnimationBtnEl.addEventListener('click', () => {
+      console.log('Animation button clicked, quiz:', quiz, 'writer:', writer);
       if (quiz) {
-        quiz.cancel();
+        try {
+          quiz.cancel();
+        } catch (e) {
+          console.log('Quiz cancel error:', e);
+        }
       }
       if (writer) {
         writer.animateCharacter({
@@ -147,8 +157,15 @@
   // Show hint
   if (showHintBtnEl) {
     showHintBtnEl.addEventListener('click', () => {
+      console.log('Hint button clicked, quiz:', quiz);
       if (quiz) {
-        quiz.showHint();
+        try {
+          quiz.showHint();
+        } catch (e) {
+          console.log('Show hint error:', e);
+        }
+      } else {
+        console.log('Quiz not initialized yet');
       }
     });
   }
