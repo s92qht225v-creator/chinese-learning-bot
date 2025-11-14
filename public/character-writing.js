@@ -29,7 +29,6 @@
   const characterMeaningEl = document.getElementById('characterMeaning');
   const progressEl = document.getElementById('progress');
   const progressBarEl = document.getElementById('progressBar');
-  const backBtnEl = document.getElementById('backBtn');
   const eraseBtnEl = document.getElementById('eraseBtn');
   const showAnimationBtnEl = document.getElementById('showAnimationBtn');
   const toggleOutlineBtnEl = document.getElementById('toggleOutlineBtn');
@@ -243,13 +242,6 @@
 
     const accuracy = stats.attempts > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0;
     if (accuracyEl) accuracyEl.textContent = accuracy + '%';
-  }
-
-  // Back button
-  if (backBtnEl) {
-    backBtnEl.addEventListener('click', () => {
-      window.location.href = '/practice.html';
-    });
   }
 
   // Load characters from API
