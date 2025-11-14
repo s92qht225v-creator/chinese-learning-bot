@@ -152,10 +152,7 @@
       if (writer) {
         console.log('Showing hint for stroke:', currentStrokeIndex);
         // Animate just the next stroke that needs to be drawn
-        writer.animateStroke(currentStrokeIndex, {
-          strokeColor: '#FFD700', // Gold color to highlight the hint
-          radicalColor: '#FFD700'
-        });
+        writer.animateStroke(currentStrokeIndex);
       }
     });
   }
