@@ -161,7 +161,14 @@
       if (writer) {
         console.log('Showing hint for stroke:', currentStrokeIndex);
         // Animate just the next stroke that needs to be drawn
-        writer.animateStroke(currentStrokeIndex);
+        writer.animateStroke(currentStrokeIndex, {
+          onComplete: () => {
+            // Hide the stroke after 800ms so user can see it but then continue drawing
+            setTimeout(() => {
+              writer.hideCharacter({ duration: 200 });
+            }, 800);
+          }
+        });
       }
     });
   }
