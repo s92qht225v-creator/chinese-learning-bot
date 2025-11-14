@@ -26,16 +26,16 @@ const characterMeaningEl = document.getElementById('characterMeaning');
 const guideCharacterEl = document.getElementById('guideCharacter');
 const progressEl = document.getElementById('progress');
 const progressBarEl = document.getElementById('progressBar');
-const backBtn = document.getElementById('backBtn');
-const clearBtn = document.getElementById('clearBtn');
-const undoBtn = document.getElementById('undoBtn');
-const showGuideBtn = document.getElementById('showGuideBtn');
-const playAudioBtn = document.getElementById('playAudioBtn');
-const skipBtn = document.getElementById('skipBtn');
-const checkBtn = document.getElementById('checkBtn');
+const backBtnEl = document.getElementById('backBtn');
+const clearBtnEl = document.getElementById('clearBtn');
+const undoBtnEl = document.getElementById('undoBtn');
+const showGuideBtnEl = document.getElementById('showGuideBtn');
+const playAudioBtnEl = document.getElementById('playAudioBtn');
+const skipBtnEl = document.getElementById('skipBtn');
+const checkBtnEl = document.getElementById('checkBtn');
 
 // Validate critical elements
-if (!targetCharacterEl || !characterPinyinEl || !characterMeaningEl || !backBtn || !clearBtn || !undoBtn || !showGuideBtn || !checkBtn || !skipBtn) {
+if (!targetCharacterEl || !characterPinyinEl || !characterMeaningEl || !backBtnEl || !clearBtnEl || !undoBtnEl || !showGuideBtnEl || !checkBtnEl || !skipBtnEl) {
   console.error('Required elements not found!');
   alert('Error: Page elements not loaded correctly. Please refresh.');
 }
@@ -122,8 +122,8 @@ if (canvas) {
 }
 
 // Undo last stroke
-if (undoBtn) {
-  undoBtn.addEventListener('click', () => {
+if (undoBtnEl) {
+  undoBtnEl.addEventListener('click', () => {
     if (strokes.length > 0) {
       strokes.pop();
       redrawStrokes();
@@ -132,8 +132,8 @@ if (undoBtn) {
 }
 
 // Clear canvas
-if (clearBtn) {
-  clearBtn.addEventListener('click', () => {
+if (clearBtnEl) {
+  clearBtnEl.addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     strokes = [];
     currentStroke = [];
@@ -141,18 +141,18 @@ if (clearBtn) {
 }
 
 // Toggle guide
-if (showGuideBtn) {
-  showGuideBtn.addEventListener('click', () => {
+if (showGuideBtnEl) {
+  showGuideBtnEl.addEventListener('click', () => {
     showGuide = !showGuide;
     if (guideCharacterEl) guideCharacterEl.style.display = showGuide ? 'flex' : 'none';
-    const icon = showGuideBtn.querySelector('.material-symbols-outlined');
+    const icon = showGuideBtnEl.querySelector('.material-symbols-outlined');
     if (icon) icon.textContent = showGuide ? 'visibility_off' : 'visibility';
   });
 }
 
 // Play audio
-if (playAudioBtn) {
-  playAudioBtn.addEventListener('click', () => {
+if (playAudioBtnEl) {
+  playAudioBtnEl.addEventListener('click', () => {
     const char = characters[currentIndex];
     if (char) {
       // Try to play audio from URL first
@@ -188,15 +188,15 @@ function loadCharacter(index) {
   currentStroke = [];
   showGuide = false;
   if (guideCharacterEl) guideCharacterEl.style.display = 'none';
-  if (showGuideBtn) {
-    const icon = showGuideBtn.querySelector('.material-symbols-outlined');
+  if (showGuideBtnEl) {
+    const icon = showGuideBtnEl.querySelector('.material-symbols-outlined');
     if (icon) icon.textContent = 'visibility';
   }
 }
 
 // Check answer (simplified - in real app, would use OCR or stroke order validation)
-if (checkBtn) {
-  checkBtn.addEventListener('click', () => {
+if (checkBtnEl) {
+  checkBtnEl.addEventListener('click', () => {
 
     // Simplified check - just count as correct if they drew something
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -207,13 +207,13 @@ if (checkBtn) {
       updateStats();
 
       // Show success feedback
-      const originalBg = checkBtn.style.backgroundColor;
-      checkBtn.style.backgroundColor = '#50E3C2';
-      checkBtn.innerHTML = '<span class="material-symbols-outlined">check</span> Correct!';
+      const originalBg = checkBtnEl.style.backgroundColor;
+      checkBtnEl.style.backgroundColor = '#50E3C2';
+      checkBtnEl.innerHTML = '<span class="material-symbols-outlined">check</span> Correct!';
 
       setTimeout(() => {
-        checkBtn.style.backgroundColor = originalBg;
-        checkBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Check';
+        checkBtnEl.style.backgroundColor = originalBg;
+        checkBtnEl.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Check';
         nextCharacter();
       }, 1000);
     } else {
@@ -223,8 +223,8 @@ if (checkBtn) {
 }
 
 // Skip
-if (skipBtn) {
-  skipBtn.addEventListener('click', () => {
+if (skipBtnEl) {
+  skipBtnEl.addEventListener('click', () => {
     nextCharacter();
   });
 }
@@ -251,8 +251,8 @@ function updateStats() {
 }
 
 // Back button
-if (backBtn) {
-  backBtn.addEventListener('click', () => {
+if (backBtnEl) {
+  backBtnEl.addEventListener('click', () => {
     window.location.href = '/practice.html';
   });
 }
