@@ -141,11 +141,20 @@
     });
   }
 
-  // Show hint
+  // Show hint - temporarily show the character outline
   if (showHintBtnEl) {
     showHintBtnEl.addEventListener('click', () => {
       if (writer) {
-        writer.showHint();
+        // Briefly show the complete character as a hint
+        writer.showCharacter({
+          duration: 800,
+          onComplete: () => {
+            // Hide it again after a moment
+            setTimeout(() => {
+              writer.hideCharacter({ duration: 400 });
+            }, 1000);
+          }
+        });
       }
     });
   }
