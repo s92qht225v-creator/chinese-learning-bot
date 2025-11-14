@@ -273,9 +273,19 @@
   }
 
   // Initialize - wait for HanziWriter to load
+  let initializeAttempts = 0;
+  const maxAttempts = 50; // 5 seconds max wait time
+
   function initialize() {
     if (typeof HanziWriter === 'undefined') {
-      console.log('Waiting for HanziWriter to load...');
+      initializeAttempts++;
+      if (initializeAttempts >= maxAttempts) {
+        console.error('HanziWriter failed to load after 5 seconds');
+        alert('Failed to load character writing library. Please check your internet connection and try again.');
+        window.location.href = '/practice.html';
+        return;
+      }
+      console.log('Waiting for HanziWriter to load... (attempt ' + initializeAttempts + ')');
       setTimeout(initialize, 100);
       return;
     }
