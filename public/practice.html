@@ -155,6 +155,74 @@
       background: #1e2732;
       border-color: #2d3748;
     }
+
+    /* Bottom Navigation */
+    body {
+      padding-bottom: 80px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(220, 224, 229, 0.6);
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem 0 max(0.5rem, env(safe-area-inset-bottom));
+      z-index: 1000;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .dark .bottom-nav {
+      background: rgba(24, 34, 44, 0.95);
+      border-top-color: rgba(45, 55, 72, 0.6);
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 1rem;
+      color: #647487;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      min-width: 70px;
+      position: relative;
+      border-radius: 12px;
+    }
+
+    .dark .nav-item {
+      color: #a0aec0;
+    }
+
+    .nav-item:active {
+      transform: scale(0.95);
+    }
+
+    .nav-item.active {
+      color: #448fe4;
+    }
+
+    .dark .nav-item.active {
+      color: #5ba3ff;
+    }
+
+    .nav-item .material-symbols-outlined {
+      font-size: 26px;
+      margin-bottom: 0.25rem;
+    }
+
+    .nav-item span:last-child {
+      font-size: 11px;
+      font-weight: 600;
+    }
   </style>
 </head>
 
@@ -273,11 +341,39 @@
 
   </div>
 
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/main-app.html#learn" class="nav-item">
+      <span class="material-symbols-outlined">school</span>
+      <span>Learn</span>
+    </a>
+    <a href="/main-app.html#practice" class="nav-item active">
+      <span class="material-symbols-outlined">quiz</span>
+      <span>Practice</span>
+    </a>
+    <a href="/main-app.html#writing" class="nav-item">
+      <span class="material-symbols-outlined">draw</span>
+      <span>Writing</span>
+    </a>
+    <a href="/main-app.html#profile" class="nav-item">
+      <span class="material-symbols-outlined">person</span>
+      <span>Profile</span>
+    </a>
+  </nav>
+
   <script>
     // Initialize Telegram WebApp
     const tg = window.Telegram.WebApp;
     tg.expand();
     tg.ready();
+
+    // Setup Telegram back button
+    if (tg.BackButton) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(() => {
+        window.location.href = '/main-app.html';
+      });
+    }
 
     // Animate progress bar on load
     window.addEventListener('load', () => {

@@ -7,6 +7,14 @@
   telegramApp.expand();
   telegramApp.ready();
 
+  // Setup Telegram back button
+  if (telegramApp.BackButton) {
+    telegramApp.BackButton.show();
+    telegramApp.BackButton.onClick(() => {
+      window.location.href = '/practice.html';
+    });
+  }
+
   // Character data - will be loaded from API
   let characters = [];
   let currentIndex = 0;
