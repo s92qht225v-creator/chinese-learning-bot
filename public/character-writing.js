@@ -249,7 +249,7 @@
   // Load characters from API
   async function loadCharacters() {
     try {
-      const response = await fetch(API_CONFIG.url('/api/character-writing?enabled=true'));
+      const response = await API_CONFIG.cachedFetch(API_CONFIG.url('/api/character-writing?enabled=true'));
       const data = await response.json();
 
       characters = data.map(char => ({

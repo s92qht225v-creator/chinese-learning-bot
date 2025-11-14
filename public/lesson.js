@@ -39,7 +39,7 @@ async function initializePage() {
 
 async function loadLesson(lessonId) {
   try {
-    const response = await fetch(`/api/lessons/${lessonId}`);
+    const response = await API_CONFIG.cachedFetch(`/api/lessons/${lessonId}`);
     if (!response.ok) throw new Error('Failed to load lesson');
 
     currentLesson = await response.json();
@@ -57,9 +57,9 @@ async function loadLesson(lessonId) {
 
 async function loadDialogues(lessonId) {
   try {
-    const response = await fetch(`/api/lessons/${lessonId}/dialogues`);
+    const response = await API_CONFIG.cachedFetch(`/api/lessons/${lessonId}/dialogues`);
     if (!response.ok) throw new Error('Failed to load dialogues');
-    
+
     const dialogues = await response.json();
     renderDialogues(dialogues);
   } catch (error) {
@@ -107,7 +107,7 @@ function renderDialogues(dialogues) {
 
 async function loadVocabulary(lessonId) {
   try {
-    const response = await fetch(`/api/vocabulary?lesson_id=${lessonId}`);
+    const response = await API_CONFIG.cachedFetch(`/api/vocabulary?lesson_id=${lessonId}`);
     if (!response.ok) throw new Error('Failed to load vocabulary');
 
     currentVocabulary = await response.json();
@@ -205,9 +205,9 @@ function renderVocabulary(vocabulary) {
 
 async function loadGrammar(lessonId) {
   try {
-    const response = await fetch(`/api/lessons/${lessonId}/grammar`);
+    const response = await API_CONFIG.cachedFetch(`/api/lessons/${lessonId}/grammar`);
     if (!response.ok) throw new Error('Failed to load grammar');
-    
+
     const grammar = await response.json();
     renderGrammar(grammar);
   } catch (error) {
@@ -343,8 +343,15 @@ function highlightGrammarWords(text, keywords) {
 function playExampleAudio(audioUrl) {
   if (!audioUrl) return;
 
-  const audio = new Audio(audioUrl);
-  audio.play().catch(error => {
+  // Clean up previous example audio to prevent memory leaks
+  if (exampleAudio) {
+    exampleAudio.pause();
+    exampleAudio.src = '';
+    exampleAudio.load();
+  }
+
+  exampleAudio = new Audio(audioUrl);
+  exampleAudio.play().catch(error => {
     console.error('Failed to play audio:', error);
   });
 }
@@ -600,9 +607,18 @@ function updateDialogueDisplay() {
 
 let audioPlayer = null;
 let lessonAudio = null;
+let exampleAudio = null;
 
 function initializeAudioPlayer(audioUrl, thumbnailUrl) {
   if (!audioUrl) return;
+
+  // Clean up old audio instance to prevent memory leaks
+  if (lessonAudio) {
+    lessonAudio.pause();
+    lessonAudio.src = ''; // Release the resource
+    lessonAudio.load(); // Force release
+    lessonAudio = null;
+  }
 
   // Create audio element
   lessonAudio = new Audio(audioUrl);
@@ -628,8 +644,13 @@ function initializeAudioPlayer(audioUrl, thumbnailUrl) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
+  // Remove old event listener to prevent duplicates
+  if (playBtn._audioClickHandler) {
+    playBtn.removeEventListener('click', playBtn._audioClickHandler);
+  }
+
   // Play/Pause button handler
-  playBtn.addEventListener('click', () => {
+  const clickHandler = () => {
     if (lessonAudio.paused) {
       lessonAudio.play();
       playBtn.querySelector('.material-symbols-outlined').textContent = 'pause';
@@ -637,7 +658,10 @@ function initializeAudioPlayer(audioUrl, thumbnailUrl) {
       lessonAudio.pause();
       playBtn.querySelector('.material-symbols-outlined').textContent = 'play_arrow';
     }
-  });
+  };
+
+  playBtn._audioClickHandler = clickHandler;
+  playBtn.addEventListener('click', clickHandler);
 
   // Update progress and time
   lessonAudio.addEventListener('timeupdate', () => {

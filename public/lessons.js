@@ -54,42 +54,37 @@ if (window.tg && window.tg.BackButton) {
   });
 }
 
-// Level selector handler
-levelRadios.forEach(radio => {
-  // Remove old listener if exists
-  if (radio._lessonsChangeHandler) {
-    radio.removeEventListener('change', radio._lessonsChangeHandler);
-  }
+// Level selector handler - use event delegation to prevent memory leaks
+function handleLevelChange(e) {
+  if (e.target.name !== 'hsk_level') return;
 
-  var changeHandler = (e) => {
-    const level = parseInt(e.target.value);
-    currentHskLevel = level;
+  const level = parseInt(e.target.value);
+  currentHskLevel = level;
 
-    // Update visual styling for all tabs
-    levelRadios.forEach(r => {
-      const tabContent = r.nextElementSibling;
-      if (r.checked) {
-        tabContent.style.background = '#448fe4';
-        tabContent.style.color = 'white';
-        tabContent.style.borderColor = '#448fe4';
-        tabContent.style.transform = 'scale(1.05)';
-        tabContent.style.boxShadow = '0 4px 12px rgba(68, 143, 228, 0.3)';
-      } else {
-        tabContent.style.background = '';
-        tabContent.style.color = '';
-        tabContent.style.borderColor = '';
-        tabContent.style.transform = '';
-        tabContent.style.boxShadow = '';
-      }
-    });
+  // Update visual styling for all tabs
+  levelRadios.forEach(r => {
+    const tabContent = r.nextElementSibling;
+    if (r.checked) {
+      tabContent.style.background = '#448fe4';
+      tabContent.style.color = 'white';
+      tabContent.style.borderColor = '#448fe4';
+      tabContent.style.transform = 'scale(1.05)';
+      tabContent.style.boxShadow = '0 4px 12px rgba(68, 143, 228, 0.3)';
+    } else {
+      tabContent.style.background = '';
+      tabContent.style.color = '';
+      tabContent.style.borderColor = '';
+      tabContent.style.transform = '';
+      tabContent.style.boxShadow = '';
+    }
+  });
 
-    pageTitle.textContent = `HSK ${level} Lessons`;
-    loadLessons(level);
-  };
+  pageTitle.textContent = `HSK ${level} Lessons`;
+  loadLessons(level);
+}
 
-  radio._lessonsChangeHandler = changeHandler;
-  radio.addEventListener('change', changeHandler);
-});
+// Add single event listener to parent instead of multiple listeners
+document.addEventListener('change', handleLevelChange);
 
 // Load lessons from Supabase
 async function loadLessons(hskLevel = 1) {
@@ -97,17 +92,20 @@ async function loadLessons(hskLevel = 1) {
     console.log('🔄 Loading lessons for HSK level:', hskLevel);
     lessonsContainer.innerHTML = '<div class="text-center py-8"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div></div>';
 
-    // Wait for Supabase client with retry (max 500ms)
+    // Wait for Supabase client with exponential backoff (max ~800ms)
     let client = getSupabaseClient();
     let retries = 0;
-    while (!client && retries < 5) {
-      await new Promise(resolve => setTimeout(resolve, 50));
+    const maxRetries = 5;
+    while (!client && retries < maxRetries) {
+      // Exponential backoff: 50ms, 100ms, 200ms, 400ms, 800ms
+      const delay = 50 * Math.pow(2, retries);
+      await new Promise(resolve => setTimeout(resolve, delay));
       client = getSupabaseClient();
       retries++;
     }
 
     if (!client) {
-      throw new Error('Supabase client not available after 500ms');
+      throw new Error('Supabase client not available after retries');
     }
 
     const { data: lessons, error } = await client
