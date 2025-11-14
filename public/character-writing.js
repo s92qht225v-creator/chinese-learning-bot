@@ -20,12 +20,12 @@ if (!canvas) {
   throw new Error('Canvas element not found');
 }
 const ctx = canvas.getContext('2d');
-const targetCharacter = document.getElementById('targetCharacter');
-const characterPinyin = document.getElementById('characterPinyin');
-const characterMeaning = document.getElementById('characterMeaning');
-const guideCharacter = document.getElementById('guideCharacter');
-const progress = document.getElementById('progress');
-const progressBar = document.getElementById('progressBar');
+const targetCharacterEl = document.getElementById('targetCharacter');
+const characterPinyinEl = document.getElementById('characterPinyin');
+const characterMeaningEl = document.getElementById('characterMeaning');
+const guideCharacterEl = document.getElementById('guideCharacter');
+const progressEl = document.getElementById('progress');
+const progressBarEl = document.getElementById('progressBar');
 const backBtn = document.getElementById('backBtn');
 const clearBtn = document.getElementById('clearBtn');
 const undoBtn = document.getElementById('undoBtn');
@@ -35,7 +35,7 @@ const skipBtn = document.getElementById('skipBtn');
 const checkBtn = document.getElementById('checkBtn');
 
 // Validate critical elements
-if (!targetCharacter || !characterPinyin || !characterMeaning || !backBtn || !clearBtn || !undoBtn || !showGuideBtn || !checkBtn || !skipBtn) {
+if (!targetCharacterEl || !characterPinyinEl || !characterMeaningEl || !backBtn || !clearBtn || !undoBtn || !showGuideBtn || !checkBtn || !skipBtn) {
   console.error('Required elements not found!');
   alert('Error: Page elements not loaded correctly. Please refresh.');
 }
@@ -144,7 +144,7 @@ if (clearBtn) {
 if (showGuideBtn) {
   showGuideBtn.addEventListener('click', () => {
     showGuide = !showGuide;
-    if (guideCharacter) guideCharacter.style.display = showGuide ? 'flex' : 'none';
+    if (guideCharacterEl) guideCharacterEl.style.display = showGuide ? 'flex' : 'none';
     const icon = showGuideBtn.querySelector('.material-symbols-outlined');
     if (icon) icon.textContent = showGuide ? 'visibility_off' : 'visibility';
   });
@@ -176,20 +176,22 @@ if (playAudioBtn) {
 // Load character
 function loadCharacter(index) {
   const char = characters[index];
-  targetCharacter.textContent = char.char;
-  characterPinyin.textContent = char.pinyin;
-  characterMeaning.textContent = char.meaning;
-  guideCharacter.textContent = char.char;
-  progress.textContent = `${index + 1} / ${characters.length}`;
-  progressBar.style.width = `${((index + 1) / characters.length) * 100}%`;
+  if (targetCharacterEl) targetCharacterEl.textContent = char.char;
+  if (characterPinyinEl) characterPinyinEl.textContent = char.pinyin;
+  if (characterMeaningEl) characterMeaningEl.textContent = char.meaning;
+  if (guideCharacterEl) guideCharacterEl.textContent = char.char;
+  if (progressEl) progressEl.textContent = `${index + 1} / ${characters.length}`;
+  if (progressBarEl) progressBarEl.style.width = `${((index + 1) / characters.length) * 100}%`;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   strokes = [];
   currentStroke = [];
   showGuide = false;
-  guideCharacter.style.display = 'none';
-  const icon = showGuideBtn.querySelector('.material-symbols-outlined');
-  icon.textContent = 'visibility';
+  if (guideCharacterEl) guideCharacterEl.style.display = 'none';
+  if (showGuideBtn) {
+    const icon = showGuideBtn.querySelector('.material-symbols-outlined');
+    if (icon) icon.textContent = 'visibility';
+  }
 }
 
 // Check answer (simplified - in real app, would use OCR or stroke order validation)
