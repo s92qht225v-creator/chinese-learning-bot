@@ -92,6 +92,29 @@ async function loadLessons(hskLevel = 1) {
     console.log('🔄 Loading lessons for HSK level:', hskLevel);
     lessonsContainer.innerHTML = '<div class="text-center py-8"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div></div>';
 
+    // Check cache first (10 minute TTL for lessons list)
+    const cacheKey = `lessons_hsk${hskLevel}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const cacheEntry = JSON.parse(cached);
+        const age = Date.now() - cacheEntry.timestamp;
+        if (age < 10 * 60 * 1000) { // 10 minutes
+          console.log('📦 Cache HIT: lessons for HSK', hskLevel);
+          await loadProgress(cacheEntry.data);
+          updateOverallProgress(cacheEntry.data);
+          cacheEntry.data.forEach((lesson, index) => {
+            const card = createLessonCard(lesson, index);
+            lessonsContainer.appendChild(card);
+          });
+          console.log('✅ Lessons loaded from cache');
+          return;
+        }
+      } catch (e) {
+        console.log('Cache parse error, fetching fresh data');
+      }
+    }
+
     // Wait for Supabase client with exponential backoff (max ~800ms)
     let client = getSupabaseClient();
     let retries = 0;
@@ -116,6 +139,19 @@ async function loadLessons(hskLevel = 1) {
       .order('lesson_number', { ascending: true });
 
     console.log('📦 Supabase response:', { lessons, error, count: lessons?.length });
+
+    // Cache the lessons list
+    if (lessons && lessons.length > 0) {
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({
+          data: lessons,
+          timestamp: Date.now()
+        }));
+        console.log('💾 Cached lessons for HSK', hskLevel);
+      } catch (e) {
+        console.log('Cache write failed:', e);
+      }
+    }
 
     if (error) {
       console.error('❌ Supabase error:', error);
