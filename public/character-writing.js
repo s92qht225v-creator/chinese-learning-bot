@@ -159,13 +159,17 @@
   if (showHintBtnEl) {
     showHintBtnEl.addEventListener('click', () => {
       if (writer) {
-        console.log('Showing hint for stroke:', currentStrokeIndex);
+        // Save which stroke to show before reloading
+        const strokeToShow = currentStrokeIndex;
+        console.log('Showing hint for stroke:', strokeToShow);
         // Cancel quiz temporarily
         writer.cancelQuiz();
-        // Animate just the next stroke that needs to be drawn
-        writer.animateStroke(currentStrokeIndex, {
+        // Show the character outline briefly to help orient the user
+        writer.showOutline();
+        // Animate the stroke that needs to be drawn
+        writer.animateStroke(strokeToShow, {
           onComplete: () => {
-            // Wait a moment then reload the character to clear the hint and restart quiz
+            // Wait a moment then reload the character to clear and restart
             setTimeout(() => {
               loadCharacter(currentIndex);
             }, 1000);
