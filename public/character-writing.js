@@ -64,6 +64,15 @@
     const container = document.getElementById('hanziWriterContainer');
     container.innerHTML = ''; // Clear previous character
 
+    // Prevent scrolling while drawing
+    container.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    container.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
     try {
       writer = HanziWriter.create(container, char.character, {
         width: container.offsetWidth || 400,
