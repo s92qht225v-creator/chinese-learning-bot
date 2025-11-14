@@ -1503,9 +1503,7 @@
                     chinese,
                     pinyin,
                     part_of_speech: partOfSpeech || null,
-                    english: document.getElementById('english').value,
                     uzbek: document.getElementById('uzbek').value || null,
-                    russian: document.getElementById('russian').value || null,
                     hsk_level: parseInt(document.getElementById('hskLevel').value),
                     lesson_id: lessonId ? parseInt(lessonId) : null,
                     audio_url: document.getElementById('vocabAudioUrl').value || null
@@ -2466,9 +2464,7 @@
                 document.getElementById('chinese').value = word.chinese;
                 document.getElementById('pinyin').value = word.pinyin;
                 document.getElementById('partOfSpeech').value = word.part_of_speech || '';
-                document.getElementById('english').value = word.english;
                 document.getElementById('uzbek').value = word.uzbek || '';
-                document.getElementById('russian').value = word.russian || '';
                 document.getElementById('hskLevel').value = word.hsk_level;
                 document.getElementById('vocabAudioUrl').value = word.audio_url || '';
                 
