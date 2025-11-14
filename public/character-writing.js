@@ -1,7 +1,7 @@
 // Initialize Telegram WebApp
-const tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
+const telegramApp = window.Telegram.WebApp;
+telegramApp.expand();
+telegramApp.ready();
 
 // Character data - will be loaded from API
 let characters = [];
