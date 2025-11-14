@@ -246,5 +246,20 @@ async function loadCharacters() {
   }
 }
 
-// Initialize
-loadCharacters();
+// Initialize - wait for HanziWriter to load
+function initialize() {
+  if (typeof HanziWriter === 'undefined') {
+    console.log('Waiting for HanziWriter to load...');
+    setTimeout(initialize, 100);
+    return;
+  }
+  console.log('HanziWriter loaded, starting character loading...');
+  loadCharacters();
+}
+
+// Start initialization when page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialize);
+} else {
+  initialize();
+}
