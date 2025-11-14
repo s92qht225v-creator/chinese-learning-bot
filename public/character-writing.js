@@ -155,18 +155,20 @@
     });
   }
 
-  // Show hint - animate the next stroke
+  // Show hint - animate the next stroke then reload to clear it
   if (showHintBtnEl) {
     showHintBtnEl.addEventListener('click', () => {
       if (writer) {
         console.log('Showing hint for stroke:', currentStrokeIndex);
+        // Cancel quiz temporarily
+        writer.cancelQuiz();
         // Animate just the next stroke that needs to be drawn
         writer.animateStroke(currentStrokeIndex, {
           onComplete: () => {
-            // Hide the stroke after 800ms so user can see it but then continue drawing
+            // Wait a moment then reload the character to clear the hint and restart quiz
             setTimeout(() => {
-              writer.hideCharacter({ duration: 200 });
-            }, 800);
+              loadCharacter(currentIndex);
+            }, 1000);
           }
         });
       }
